@@ -1,0 +1,32 @@
+{
+  "name": "kleros",
+  "version": "0.0.1",
+  "description": "Kleros smart contracts",
+  "main": "truffle.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test",
+    "compile": "rm -rf build/contracts; truffle compile",
+    "migrate": "truffle migrate",
+    "deploy": "npm run migrate --network kovan",
+    "testrpc": "testrpc --networkId 50"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kleros/kleros.git"
+  },
+  "author": "nicolas@kleros.io",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kleros/kleros/issues"
+  },
+  "homepage": "https://github.com/kleros/kleros#readme",
+  "devDependencies": {
+    "truffle": "^3.4.9",
+    "web3": "^1.0.0-beta.22"
+  },
+  "dependencies": {
+  }
+}
