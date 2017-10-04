@@ -6,26 +6,37 @@
 
 pragma solidity ^0.4.15;
 
-// We'll have to remove those for tests as truffle does not support github import.
 import "../../kleros-interaction/code/contracts/standard/arbitration/Arbitrator.sol";
 import "./Tokens/Token.sol";
 
-contract KlerosPOC is Arbitrator{
+contract KlerosPOC is Arbitrator {
     
     // **************************** //
     // *    Contract variables    * //
     // **************************** //
     
-    uint public session = 1; // Current session of the court.
-    uint public segmentSize; // Size of the segment of activated tokens.
+    // Variables which should not change after initialization.
+    Token public pinakion;
     
     // Variables which will subject to the governance mechanism.
     uint public arbitrationFeePerJuror = 0.05 ether; // The fee which will be paid to each juror.
     uint public defaultNumberJuror = 3; // Number of draw juror unless specified otherwise.
     uint public minActivatedToken = 1e18; // Minimum of tokens to be activated (in basic units).
     uint public alpha = 200; // alpha in ‱.
-    
     uint constant ALPHA_DIVISOR = 1e4; // Amount we need to dived alpha in ‱ to get the float value of alpha.
+    
+    // Variables changing during day to day interaction.
+    uint public session = 1; // Current session of the court.
+    uint public segmentSize; // Size of the segment of activated tokens.
+    
+    enum Period {
+        Activation, // When juror can activate their tokens and parties give evidences.
+        Draw,       // When jurors are drawn at random, note that this period is fast.
+        Vote,       // Where jurors can vote on disputes.
+        Appeal,     // When parties can appeal the rulings.
+        Execution   // When Kleros call the arbitrated contracts and where token redistribution occurs.
+    }
+    Period period;
     
     struct Juror {
         uint balance;      // The amount of token the contract holds for this juror.
@@ -62,5 +73,46 @@ contract KlerosPOC is Arbitrator{
         VoteCounter[] voteCounter; // The vote counters in the form voteCounter[appeals].
         mapping (address => uint) lastSessionVote; // Last session a juror has voted on this dispute. Is 0 if he never did.
     }
+    
+    /** @dev Constructor.
+     *  @param _pinakion The address of the pinakion contract.
+     */
+    function KlerosPOC(Token _pinakion) public {
+        pinakion=_pinakion;
+    }
+    
+    
+    // **************************** //
+    // *  Functions interacting   * //
+    // *  with Pinakion contract  * //
+    // **************************** //
+    
+    /** @dev Deposit pinakions of a juror in the contract. Should be call by the pinakion contract. TRUSTED.
+     *  @param _from The address making the deposit.
+     *  @param _value Amount of fractions of token to deposit.
+     */
+    function deposit(address _from, uint _value) public {
+        require(msg.sender==address(pinakion));
+        require(pinakion.transferFrom(msg.sender,this,_value));
+        
+        jurors[msg.sender].balance+=_value;
+    }
+    
+    /** @dev Withdraw tokens. Note that we can't withdraw the tokens which are still atStake. Jurors can't withdraw their tokens if they have activated some during Draw and Vote.
+     *  This is to prevent jurors from withdrawing tokens they could loose.
+     *  @param _value The amount to withdraw.
+     */
+    function withdraw(uint _value) public {
+        Juror juror = jurors[msg.sender];
+        require(juror.atStake<=juror.balance); // Make sure that there is no more at stake than owned to avoid overflow.
+        require(_value<=juror.balance-juror.atStake);
+        if (juror.session==session)
+            require(period!=Period.Draw && period!=Period.Vote);
+            
+        juror.balance-=_value;
+        pinakion.transfer(msg.sender,_value);
+    }
+    
+    
     
 }
