@@ -6,8 +6,10 @@
 
 pragma solidity ^0.4.15;
 
+// We'll have to remove those for tests as truffle does not support github import.
 import "../../kleros-interaction/code/contracts/standard/arbitration/Arbitrator.sol";
 import "./Tokens/Token.sol";
+import "../../kleros-interaction//code/contracts/standard/rng/RNG.sol";
 
 contract KlerosPOC is Arbitrator {
     
@@ -19,6 +21,7 @@ contract KlerosPOC is Arbitrator {
     Token public pinakion;
     
     // Variables which will subject to the governance mechanism.
+    RNG rng; // Random Number Generator used to draw jurors.
     uint public arbitrationFeePerJuror = 0.05 ether; // The fee which will be paid to each juror.
     uint public defaultNumberJuror = 3; // Number of draw juror unless specified otherwise.
     uint public minActivatedToken = 1e18; // Minimum of tokens to be activated (in basic units).
@@ -36,12 +39,12 @@ contract KlerosPOC is Arbitrator {
         Appeal,     // When parties can appeal the rulings.
         Execution   // When Kleros call the arbitrated contracts and where token redistribution occurs.
     }
-    Period period;
+    Period public period;
     
     struct Juror {
         uint balance;      // The amount of token the contract holds for this juror.
         uint atStake;      // Total number of tokens the juror can loose in disputes he is drawn in. Those tokens are locked.
-        uint session;      // Last session the tokens were activated.
+        uint lastSession;      // Last session the tokens were activated.
         uint segmentStart; // Start of the segment of activated tokens.
         uint segmentEnd;   // End of the segment of activated tokens.
     }
@@ -81,6 +84,11 @@ contract KlerosPOC is Arbitrator {
         pinakion=_pinakion;
     }
     
+    // **************************** //
+    // *         Modifiers        * //
+    // **************************** //    
+    modifier onlyBy(address _account) { require(msg.sender==_account); require(true); _; }
+    modifier onlyDuring(Period _period) { require(period==_period); _;}
     
     // **************************** //
     // *  Functions interacting   * //
@@ -91,8 +99,7 @@ contract KlerosPOC is Arbitrator {
      *  @param _from The address making the deposit.
      *  @param _value Amount of fractions of token to deposit.
      */
-    function deposit(address _from, uint _value) public {
-        require(msg.sender==address(pinakion));
+    function deposit(address _from, uint _value) public onlyBy(pinakion) {
         require(pinakion.transferFrom(msg.sender,this,_value));
         
         jurors[msg.sender].balance+=_value;
@@ -106,12 +113,35 @@ contract KlerosPOC is Arbitrator {
         Juror juror = jurors[msg.sender];
         require(juror.atStake<=juror.balance); // Make sure that there is no more at stake than owned to avoid overflow.
         require(_value<=juror.balance-juror.atStake);
-        if (juror.session==session)
+        if (juror.lastSession==session)
             require(period!=Period.Draw && period!=Period.Vote);
             
         juror.balance-=_value;
         pinakion.transfer(msg.sender,_value);
     }
+    
+    // **************************** //
+    // *      Court functions     * //
+    // **************************** //
+  
+    /** @dev Activate tokens in order to have chances of being drawn. Note that once tokens are activated, there is no possibility of activating more.
+     *  @param _value Amount of fractions of token to activate.
+     */
+    function activateTokens(uint _value) onlyDuring(Period.Activation) {
+        Juror juror = jurors[msg.sender];
+        require(_value<=juror.balance);
+        require(_value>=minActivatedToken);
+        require(juror.lastSession!=session); // Verify that tokens were not already activated for this session.
+        
+        juror.lastSession=session;
+        juror.segmentStart=segmentSize;
+        segmentSize+=_value;
+        juror.segmentEnd=segmentSize;
+        
+    }
+  
+  
+  
     
     
     
