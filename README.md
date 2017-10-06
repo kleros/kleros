@@ -6,4 +6,7 @@ Kleros smart contracts
 
 We'll reimplement there hackathonPOC smart contracts to cope with the change and the arbitration standard.
 
-Note that this folder should be in the same folder as kleros-interaction.
+Note that we need kleros-interaction:
+```
+npm install kleros-interaction
+```
