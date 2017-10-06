@@ -22,7 +22,7 @@ contract KlerosPOC is Arbitrator {
     // Variables which will subject to the governance mechanism.
     RNG rng; // Random Number Generator used to draw jurors.
     uint public arbitrationFeePerJuror = 0.05 ether; // The fee which will be paid to each juror.
-    uint public defaultNumberJuror = 3; // Number of draw juror unless specified otherwise.
+    uint16 public defaultNumberJuror = 3; // Number of draw juror unless specified otherwise.
     uint public minActivatedToken = 1e18; // Minimum of tokens to be activated (in basic units).
     uint public alpha = 200; // alpha in ‱.
     uint constant ALPHA_DIVISOR = 1e4; // Amount we need to dived alpha in ‱ to get the float value of alpha.
@@ -70,7 +70,7 @@ contract KlerosPOC is Arbitrator {
         uint appeals;              // Number of appeals.
         uint randomNumber;         // Random number drawn for the dispute to be use to draw jurors. Is 0 before the number is available.
         uint choices;              // The number of choices availables to the jurors.
-        uint initialNumberJurors;  // The initial number of jurors.
+        uint16 initialNumberJurors;  // The initial number of jurors.
         DisputeState state;        // The state of the dispute.
         Vote[][] votes;            // The votes in the form vote[appeals][voteID].
         VoteCounter[] voteCounter; // The vote counters in the form voteCounter[appeals].
@@ -185,7 +185,27 @@ contract KlerosPOC is Arbitrator {
         return _draws.length;
     }
     
+    // **************************** //
+    // *  Arbitrator functions    * //
+    // **************************** //
     
+    /** @dev Compute the cost of arbitration. It is recommended not to increase it often, as it can be higly time and gas consuming for the arbitrated contracts to cope with fee augmentation.
+     *  @param _extraData Can be used to give additional info on the dispute to be created.
+     *  @return fee Amount to be paid.
+     */
+    function arbitrationCost(bytes _extraData) public constant returns(uint fee) {
+        return extraDataToNbJurors(_extraData) * arbitrationFeePerJuror;
+    }
     
+    /** @dev Compute the amount of jurors to be drawn.
+     *  @param _extraData Null for the default number. Other first 16 bytes will be used to return the number of jurors.
+     *  Note that it does not check that the number of jurors is odd, but users are advised to choose a odd number of jurors.
+     */
+    function extraDataToNbJurors(bytes _extraData) internal constant returns(uint16 nbJurors) {
+        if (_extraData.length<2)
+            return defaultNumberJuror;
+        else
+            return (uint16(_extraData[0])<<8) + uint16(_extraData[1]);
+    }
     
 }
