@@ -20,7 +20,7 @@ contract KlerosPOC is Arbitrator {
     Token public pinakion;
     
     // Variables which will subject to the governance mechanism.
-    RNG rng; // Random Number Generator used to draw jurors.
+    RNG public rng; // Random Number Generator used to draw jurors.
     uint public arbitrationFeePerJuror = 0.05 ether; // The fee which will be paid to each juror.
     uint16 public defaultNumberJuror = 3; // Number of draw juror unless specified otherwise.
     uint public minActivatedToken = 1e18; // Minimum of tokens to be activated (in basic units).
@@ -65,15 +65,15 @@ contract KlerosPOC is Arbitrator {
         Executed    // Everything has been done and the dispute can't be intercted with anymore.
     }
     struct Dispute {
-        Arbitrable arbitrated;     // Contract to be arbitrated.
-        uint session;              // Session the dispute was raised.
-        uint appeals;              // Number of appeals.
-        uint randomNumber;         // Random number drawn for the dispute to be use to draw jurors. Is 0 before the number is available.
-        uint choices;              // The number of choices availables to the jurors.
-        uint16 initialNumberJurors;  // The initial number of jurors.
-        DisputeState state;        // The state of the dispute.
-        Vote[][] votes;            // The votes in the form vote[appeals][voteID].
-        VoteCounter[] voteCounter; // The vote counters in the form voteCounter[appeals].
+        Arbitrable arbitrated;      // Contract to be arbitrated.
+        uint session;               // Session the dispute was raised.
+        uint appeals;               // Number of appeals.
+        uint randomNumber;          // Random number drawn for the dispute to be use to draw jurors. Is 0 before the number is available.
+        uint choices;               // The number of choices availables to the jurors.
+        uint16 initialNumberJurors; // The initial number of jurors.
+        DisputeState state;         // The state of the dispute.
+        Vote[][] votes;             // The votes in the form vote[appeals][voteID].
+        VoteCounter[] voteCounter;  // The vote counters in the form voteCounter[appeals].
         mapping (address => uint) lastSessionVote; // Last session a juror has voted on this dispute. Is 0 if he never did.
     }
     Dispute[] public disputes;
@@ -172,6 +172,7 @@ contract KlerosPOC is Arbitrator {
         uint nbJurors = amountJurors(dispute);
         
         require(juror.lastSession==session); // Make sure that the tokens were activated for this session.
+        require(dispute.session+dispute.appeals == session); // Make sure this currently a dispute.
         require(period>Period.Draw); // Make sure that it's already drawn.
         for (uint i;i<_draws.length;++i) {
             require(_draws[i]>draw); // Make sure that draws are always increasing to avoid someone inputing the same multiple times.
@@ -186,7 +187,56 @@ contract KlerosPOC is Arbitrator {
     }
     
     // **************************** //
-    // *  Arbitrator functions    * //
+    // *   Arbitrator functions   * //
+    // *   Modifying the state    * //
+    // **************************** //
+    
+    /** @dev Create a dispute. Must be called by the arbitrable contract.
+     *  Must be paid at least arbitrationCost().
+     *  @param _choices Amount of choices the arbitrator can make in this dispute.
+     *  @param _extraData Can be used to give additional info on the dispute to be created.
+     *  @return disputeID ID of the dispute created.
+     */
+    function createDispute(uint _choices, bytes _extraData) public payable returns(uint disputeID) {
+        uint16 nbJurors = extraDataToNbJurors(_extraData);
+        require(msg.value >= nbJurors*arbitrationFeePerJuror);
+        
+        disputeID = disputes.length++;
+        Dispute storage dispute = disputes[disputeID];
+        dispute.arbitrated = Arbitrable(msg.sender);
+        if (period < Period.Draw) // If drawing did not start schedule it for the current session.
+            dispute.session = session;
+        else // Otherwize schedule it for the next one.
+            dispute.session = session+1;
+        dispute.choices = _choices;
+        dispute.initialNumberJurors = nbJurors;
+        dispute.votes.length++;
+        dispute.voteCounter.length++;
+        
+        return disputeID;
+    }
+    
+    /** @dev Appeal a ruling. Note that it has to be called before the arbitrator contract calls rule.
+     *  @param _disputeID ID of the dispute to be appealed.
+     *  @param _extraData Can be used to give extra info on the appeal.
+     */
+    function appeal(uint _disputeID, bytes _extraData) public payable {
+        Dispute storage dispute = disputes[_disputeID];
+        require(msg.value >= appealCost(_disputeID,_extraData));
+        require(period==Period.Appeal);
+        require(dispute.session+dispute.appeals == session); // Dispute of the current session.
+        require(dispute.state==DisputeState.Open);
+        
+        dispute.appeals++;
+        dispute.randomNumber=0;
+        dispute.votes.length++;
+        dispute.voteCounter.length++;
+        
+    }
+    
+    // **************************** //
+    // *   Arbitrator functions   * //
+    // *    Constant and pure     * //
     // **************************** //
     
     /** @dev Compute the cost of arbitration. It is recommended not to increase it often, as it can be higly time and gas consuming for the arbitrated contracts to cope with fee augmentation.
@@ -195,6 +245,15 @@ contract KlerosPOC is Arbitrator {
      */
     function arbitrationCost(bytes _extraData) public constant returns(uint fee) {
         return extraDataToNbJurors(_extraData) * arbitrationFeePerJuror;
+    }
+    
+    /** @dev Compute the cost of appeal. It is recommended not to increase it often, as it can be higly time and gas consuming for the arbitrated contracts to cope with fee augmentation.
+     *  @param _disputeID ID of the dispute to be appealed.
+     *  @param _extraData Is not used there.
+     *  @return fee Amount to be paid.
+     */
+    function appealCost(uint _disputeID, bytes _extraData) public constant returns(uint fee) {
+        return (2*amountJurors(disputes[_disputeID]) + 1) * arbitrationFeePerJuror;
     }
     
     /** @dev Compute the amount of jurors to be drawn.
