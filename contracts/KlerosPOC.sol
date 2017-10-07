@@ -267,4 +267,15 @@ contract KlerosPOC is Arbitrator {
             return (uint16(_extraData[0])<<8) + uint16(_extraData[1]);
     }
     
+    /** @dev Execute the ruling of a dispute which is in the state executable. UNTRUSTED.
+     *  @param disputeID ID of the dispute to execute the ruling.
+     */
+    function executeRuling(uint disputeID) public {
+        Dispute storage dispute = disputes[disputeID];
+        require(dispute.state==DisputeState.Executable);
+        
+        dispute.state=DisputeState.Executed;
+        dispute.arbitrated.rule(disputeID,dispute.voteCounter[dispute.appeals].winningChoice);
+    }
+    
 }
