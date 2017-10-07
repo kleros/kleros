@@ -28,8 +28,9 @@ contract KlerosPOC is Arbitrator {
     uint constant ALPHA_DIVISOR = 1e4; // Amount we need to dived alpha in ‱ to get the float value of alpha.
     
     // Variables changing during day to day interaction.
-    uint public session = 1; // Current session of the court.
-    uint public segmentSize; // Size of the segment of activated tokens.
+    uint public session = 1;  // Current session of the court.
+    uint public segmentSize;  // Size of the segment of activated tokens.
+    uint public randomNumber; // Random number of the session.
     
     enum Period {
         Activation, // When juror can activate their tokens and parties give evidences.
@@ -68,7 +69,6 @@ contract KlerosPOC is Arbitrator {
         Arbitrable arbitrated;      // Contract to be arbitrated.
         uint session;               // Session the dispute was raised.
         uint appeals;               // Number of appeals.
-        uint randomNumber;          // Random number drawn for the dispute to be use to draw jurors. Is 0 before the number is available.
         uint choices;               // The number of choices availables to the jurors.
         uint16 initialNumberJurors; // The initial number of jurors.
         DisputeState state;         // The state of the dispute.
@@ -142,6 +142,36 @@ contract KlerosPOC is Arbitrator {
         
     }
     
+    /** @dev Vote a ruling. Juror must input the draw ID he was drawn.
+     *  @param _disputeID The ID of the dispute the juror was drawn.
+     *  @param _ruling The ruling given.
+     *  @param _draws The list of draws the juror was drawn. It draw numbering starts at 1 and the numbers should be increasing.
+     */
+    function vote(uint _disputeID, uint _ruling, uint[] _draws) public constant {
+        Dispute storage dispute = disputes[_disputeID];
+        VoteCounter storage voteCounter = dispute.voteCounter[dispute.appeals];
+        require(dispute.lastSessionVote[msg.sender] != session); // Make sure he hasn't voted yet.
+        require(period==Period.Vote);
+        // Note that it throws if the draws are incorrect or if it has no weight (not drawn yet).
+        uint maxWeight = hasWeightAtMin(msg.sender,_disputeID,_draws);
+        
+        dispute.lastSessionVote[msg.sender]=session;
+        voteCounter.voteCount[_ruling]+=maxWeight;
+        if (voteCounter.winningCount<voteCounter.voteCount[_ruling]) {
+            voteCounter.winningCount=voteCounter.voteCount[_ruling];
+            voteCounter.winningChoice=_ruling;
+        } else if (voteCounter.winningCount==voteCounter.voteCount[_ruling]) {
+            voteCounter.winningChoice=0; // It's currently a tie.
+        }
+        for (uint i=0;i<maxWeight;++i) {
+            dispute.votes[dispute.appeals].push(Vote({
+                account:msg.sender,
+                ruling:_ruling
+            }));
+        }
+            
+    }
+    
     // **************************** //
     // *      Court functions     * //
     // *     Constant and Pure    * //
@@ -178,7 +208,7 @@ contract KlerosPOC is Arbitrator {
             require(_draws[i]>draw); // Make sure that draws are always increasing to avoid someone inputing the same multiple times.
             draw = _draws[i];
             require(draw<=nbJurors);
-            uint position = uint(keccak256(dispute.randomNumber,draw)) % segmentSize; // Random position on the segment for draw.
+            uint position = uint(keccak256(keccak256(randomNumber,_disputeID),draw)) % segmentSize; // Random position on the segment for draw.
             require(position>=juror.segmentStart);
             require(position<juror.segmentEnd);
         }
@@ -228,7 +258,6 @@ contract KlerosPOC is Arbitrator {
         require(dispute.state==DisputeState.Open);
         
         dispute.appeals++;
-        dispute.randomNumber=0;
         dispute.votes.length++;
         dispute.voteCounter.length++;
         
