@@ -25,13 +25,16 @@ contract KlerosPOC is Arbitrator {
     uint public arbitrationFeePerJuror = 0.05 ether; // The fee which will be paid to each juror.
     uint16 public defaultNumberJuror = 3; // Number of draw juror unless specified otherwise.
     uint public minActivatedToken = 1e18; // Minimum of tokens to be activated (in basic units).
+    uint[5] public timePerPeriod; // The minimum time each period lasts.
     uint public alpha = 200; // alpha in ‱.
     uint constant ALPHA_DIVISOR = 1e4; // Amount we need to dived alpha in ‱ to get the float value of alpha.
     
     // Variables changing during day to day interaction.
-    uint public session = 1;  // Current session of the court.
-    uint public segmentSize;  // Size of the segment of activated tokens.
-    uint public randomNumber; // Random number of the session.
+    uint public session = 1;      // Current session of the court.
+    uint public lastPeriodChange; // The last time time we changed of period.
+    uint public segmentSize;      // Size of the segment of activated tokens.
+    uint public rnBlock;          // The block linked with the RN which is requested.
+    uint public randomNumber;     // Random number of the session.
     
     enum Period {
         Activation, // When juror can activate their tokens and parties give evidences.
@@ -81,9 +84,14 @@ contract KlerosPOC is Arbitrator {
     
     /** @dev Constructor.
      *  @param _pinakion The address of the pinakion contract.
+     *  @param _rng The random number generator which will be used.
+     *  @param _timePerPeriod The minimal time for each period.
      */
-    function KlerosPOC(Token _pinakion) public {
+    function KlerosPOC(Token _pinakion, RNG _rng, uint[5] _timePerPeriod) public {
         pinakion=_pinakion;
+        rng=_rng;
+        lastPeriodChange=now;
+        timePerPeriod=_timePerPeriod;
     }
     
     // **************************** //
@@ -126,6 +134,36 @@ contract KlerosPOC is Arbitrator {
     // *      Court functions     * //
     // *    Modifying the state   * //
     // **************************** //
+    
+    /** @dev To call to go to a new period. TRUSTED.
+     */
+    function passPeriod() public {
+        require(now-lastPeriodChange>timePerPeriod[uint8(period)]);
+        
+        if (period==Period.Activation) {
+            rnBlock=block.number+1;
+            rng.requestRN(rnBlock);
+            period=Period.Draw;
+        } else if (period==Period.Draw) {
+            randomNumber=rng.getUncorrelatedRN(rnBlock);
+            require(randomNumber!=0);
+            period=Period.Vote;
+        } else if (period==Period.Vote) {
+            period=Period.Appeal;
+        } else if (period==Period.Appeal) {
+            period=Period.Execution;
+        } else if (period==Period.Execution) {
+            period=Period.Activation;
+            ++session;
+            segmentSize=0;
+            rnBlock=0;
+            randomNumber=0;
+        }
+        
+        
+        lastPeriodChange=now;
+    }
+  
   
     /** @dev Activate tokens in order to have chances of being drawn. Note that once tokens are activated, there is no possibility of activating more.
      *  @param _value Amount of fractions of token to activate.
