@@ -20,6 +20,7 @@ contract KlerosPOC is Arbitrator {
     Token public pinakion;
     
     // Variables which will subject to the governance mechanism.
+    // Note they will only be able to be changed during the activation period (because a session assumes they don't change after it).
     RNG public rng; // Random Number Generator used to draw jurors.
     uint public arbitrationFeePerJuror = 0.05 ether; // The fee which will be paid to each juror.
     uint16 public defaultNumberJuror = 3; // Number of draw juror unless specified otherwise.
@@ -37,14 +38,14 @@ contract KlerosPOC is Arbitrator {
         Draw,       // When jurors are drawn at random, note that this period is fast.
         Vote,       // Where jurors can vote on disputes.
         Appeal,     // When parties can appeal the rulings.
-        Execution   // When Kleros call the arbitrated contracts and where token redistribution occurs.
+        Execution   // When where token redistribution occurs and Kleros call the arbitrated contracts.
     }
     Period public period;
     
     struct Juror {
         uint balance;      // The amount of token the contract holds for this juror.
-        uint atStake;      // Total number of tokens the juror can loose in disputes he is drawn in. Those tokens are locked.
-        uint lastSession;      // Last session the tokens were activated.
+        uint atStake;      // Total number of tokens the juror can loose in disputes he is drawn in. Those tokens are locked. We always have atStake<=balance.
+        uint lastSession;  // Last session the tokens were activated.
         uint segmentStart; // Start of the segment of activated tokens.
         uint segmentEnd;   // End of the segment of activated tokens.
     }
@@ -61,7 +62,7 @@ contract KlerosPOC is Arbitrator {
     }
     enum DisputeState {
         Open,       // The dispute is opened but not outcome is available yet (this include when jurors voted but appeal is still possible).
-        Resolvable, // The dispute can be resolved: Token redistribution functions can be called.
+        Resolving,  // The token repartition has started. Note that if it's done in just one call, this state is skipped.
         Executable, // The arbitrated contract can be called to enforce the decision.
         Executed    // Everything has been done and the dispute can't be intercted with anymore.
     }
@@ -147,7 +148,7 @@ contract KlerosPOC is Arbitrator {
      *  @param _ruling The ruling given.
      *  @param _draws The list of draws the juror was drawn. It draw numbering starts at 1 and the numbers should be increasing.
      */
-    function vote(uint _disputeID, uint _ruling, uint[] _draws) public constant {
+    function vote(uint _disputeID, uint _ruling, uint[] _draws) public {
         Dispute storage dispute = disputes[_disputeID];
         Juror storage juror = jurors[msg.sender];
         VoteCounter storage voteCounter = dispute.voteCounter[dispute.appeals];
@@ -172,6 +173,55 @@ contract KlerosPOC is Arbitrator {
         }
         
         juror.atStake+=(alpha*minActivatedToken)/ALPHA_DIVISOR;
+    }
+    
+    /** @dev Execute all the token repartition.
+     *  Note that this function could consume to much gas if there is too much votes.
+     *  In the next version, there will also be a function to execute it in multiple calls (but note that one shot execution, if possible is less expensive).
+     *  @param _disputeID ID of the dispute.
+     */
+    function oneShotTokenRepartition(uint _disputeID) public {
+        Dispute storage dispute = disputes[_disputeID];
+        require(dispute.state==DisputeState.Open);
+        require(dispute.session+dispute.appeals==session);
+        require(period==Period.Execution);
+        
+        uint winningChoice=dispute.voteCounter[dispute.appeals].winningChoice;
+        uint amountShift=(alpha*minActivatedToken)/ALPHA_DIVISOR;
+        for (uint i=0;i<=dispute.appeals;++i) {
+            // If the result is not a tie, some parties are incoherent. Note that 0 (refuse to arbitrate) winning is not a tie.
+            if (winningChoice!=0 || (dispute.voteCounter[dispute.appeals].voteCount[0] == dispute.voteCounter[dispute.appeals].winningCount)) {
+                uint totalToRedistibute=0;
+                uint nbCoherant=0;
+                // First loop to penalize the incoherent votes.
+                for (uint j=0;j<dispute.votes[i].length;++j) {
+                    Vote storage vote = dispute.votes[i][j];
+                    if (vote.ruling!=winningChoice) {
+                        Juror storage juror = jurors[vote.account];
+                        juror.balance-=amountShift;
+                        totalToRedistibute+=amountShift;
+                    } else {
+                        ++nbCoherant;
+                    }
+                }
+                uint toRedistribute = totalToRedistibute/nbCoherant; // Note that few fractions of tokens can be lost but due to the high amount of decimals we don't care.
+                // Second loop to redistibute.
+                for (j=0;j<dispute.votes[i].length;++j) {
+                    vote = dispute.votes[i][j];
+                    if (vote.ruling==winningChoice) {
+                        juror = jurors[vote.account];
+                        juror.balance+=toRedistribute;
+                    }
+                }
+            }
+            // Third loop to lower the atStake in order to unlock tokens.
+            for (j=0;j<dispute.votes[i].length;++j) {
+                vote = dispute.votes[i][j];
+                juror = jurors[vote.account];
+                juror.atStake -= amountShift; // Note that it can't underflow due to amountShift not changing between vote and redistribution.
+            }
+        }
+        dispute.state=DisputeState.Executable; // Since it was solved in one shot, go directly to the executable step.
     }
     
     // **************************** //
