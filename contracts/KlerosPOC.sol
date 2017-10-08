@@ -149,6 +149,7 @@ contract KlerosPOC is Arbitrator {
      */
     function vote(uint _disputeID, uint _ruling, uint[] _draws) public constant {
         Dispute storage dispute = disputes[_disputeID];
+        Juror storage juror = jurors[msg.sender];
         VoteCounter storage voteCounter = dispute.voteCounter[dispute.appeals];
         require(dispute.lastSessionVote[msg.sender] != session); // Make sure he hasn't voted yet.
         require(period==Period.Vote);
@@ -169,7 +170,8 @@ contract KlerosPOC is Arbitrator {
                 ruling:_ruling
             }));
         }
-            
+        
+        juror.atStake+=(alpha*minActivatedToken)/ALPHA_DIVISOR;
     }
     
     // **************************** //
