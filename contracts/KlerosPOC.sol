@@ -148,7 +148,7 @@ contract KlerosPOC is Arbitrator {
      *  @param _ruling The ruling given.
      *  @param _draws The list of draws the juror was drawn. It draw numbering starts at 1 and the numbers should be increasing.
      */
-    function vote(uint _disputeID, uint _ruling, uint[] _draws) public {
+    function voteRuling(uint _disputeID, uint _ruling, uint[] _draws) public {
         Dispute storage dispute = disputes[_disputeID];
         Juror storage juror = jurors[msg.sender];
         VoteCounter storage voteCounter = dispute.voteCounter[dispute.appeals];
