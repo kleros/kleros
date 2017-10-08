@@ -155,17 +155,17 @@ contract KlerosPOC is Arbitrator {
         require(dispute.lastSessionVote[msg.sender] != session); // Make sure he hasn't voted yet.
         require(period==Period.Vote);
         // Note that it throws if the draws are incorrect or if it has no weight (not drawn yet).
-        uint maxWeight = hasWeightAtMin(msg.sender,_disputeID,_draws);
+        uint minWeight = hasWeightAtMin(msg.sender,_disputeID,_draws);
         
         dispute.lastSessionVote[msg.sender]=session;
-        voteCounter.voteCount[_ruling]+=maxWeight;
+        voteCounter.voteCount[_ruling]+=minWeight;
         if (voteCounter.winningCount<voteCounter.voteCount[_ruling]) {
             voteCounter.winningCount=voteCounter.voteCount[_ruling];
             voteCounter.winningChoice=_ruling;
         } else if (voteCounter.winningCount==voteCounter.voteCount[_ruling]) {
             voteCounter.winningChoice=0; // It's currently a tie.
         }
-        for (uint i=0;i<maxWeight;++i) {
+        for (uint i=0;i<minWeight;++i) {
             dispute.votes[dispute.appeals].push(Vote({
                 account:msg.sender,
                 ruling:_ruling
@@ -173,6 +173,25 @@ contract KlerosPOC is Arbitrator {
         }
         
         juror.atStake+=(alpha*minActivatedToken)/ALPHA_DIVISOR;
+    }
+    
+    /** @dev Steal part of the tokens of a juror who failed to vote.
+     *  Note that a juror who voted but without all his weight can't be penalized.
+     *  @param _jurorAddress Address of the juror to steal tokens from.
+     *  @param _disputeID The ID of the dispute the juror was drawn.
+     *  @param _draws The list of draws the juror was drawn. It draw numbering starts at 1 and the numbers should be increasing.
+     */
+    function penalizeInactiveJuror(address _jurorAddress, uint _disputeID, uint[] _draws) public {
+        Dispute dispute = disputes[_disputeID];
+        Juror storage inactiveJuror = jurors[_jurorAddress];
+        require(period>Period.Vote);
+        require(dispute.lastSessionVote[_jurorAddress]!=session); // Verify the juror hasn't voted.
+        uint penality = hasWeightAtMin(_jurorAddress,_disputeID,_draws) * minActivatedToken * 2 * alpha / ALPHA_DIVISOR;
+        
+        penality = (penality<inactiveJuror.balance-inactiveJuror.atStake) ? penality : inactiveJuror.balance-inactiveJuror.atStake; // Make sure the penality is not higher than what the juror can lose.
+        inactiveJuror.balance-=penality;
+        jurors[msg.sender].balance+=penality/2; // Give half of the penalty to the caller.
+        jurors[this].balance+=penality/2; // The other half to Kleros.
     }
     
     /** @dev Execute all the token repartition.
@@ -204,13 +223,17 @@ contract KlerosPOC is Arbitrator {
                         ++nbCoherant;
                     }
                 }
-                uint toRedistribute = totalToRedistibute/nbCoherant; // Note that few fractions of tokens can be lost but due to the high amount of decimals we don't care.
-                // Second loop to redistibute.
-                for (j=0;j<dispute.votes[i].length;++j) {
-                    vote = dispute.votes[i][j];
-                    if (vote.ruling==winningChoice) {
-                        juror = jurors[vote.account];
-                        juror.balance+=toRedistribute;
+                if (nbCoherant==0) { // No one was coherant at this stage. Take the tokens.
+                    jurors[this].balance+=totalToRedistibute;
+                } else { // otherwise, redistribute them.
+                    uint toRedistribute = totalToRedistibute/nbCoherant; // Note that few fractions of tokens can be lost but due to the high amount of decimals we don't care.
+                    // Second loop to redistibute.
+                    for (j=0;j<dispute.votes[i].length;++j) {
+                        vote = dispute.votes[i][j];
+                        if (vote.ruling==winningChoice) {
+                            juror = jurors[vote.account];
+                            juror.balance+=toRedistribute;
+                        }
                     }
                 }
             }
@@ -223,6 +246,8 @@ contract KlerosPOC is Arbitrator {
         }
         dispute.state=DisputeState.Executable; // Since it was solved in one shot, go directly to the executable step.
     }
+    
+    
     
     // **************************** //
     // *      Court functions     * //
