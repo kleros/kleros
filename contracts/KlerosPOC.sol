@@ -82,6 +82,23 @@ contract KlerosPOC is Arbitrator {
     }
     Dispute[] public disputes;
     
+    // **************************** //
+    // *          Events          * //
+    // **************************** //
+    
+    /** @dev Emmited when we pass to a new period.
+     *  @param _period The new period.
+     */
+    event newPeriod(Period _period);
+    
+    // **************************** //
+    // *         Modifiers        * //
+    // **************************** //    
+    modifier onlyBy(address _account) { require(msg.sender==_account); require(true); _; }
+    modifier onlyDuring(Period _period) { require(period==_period); _;}
+    
+    
+    
     /** @dev Constructor.
      *  @param _pinakion The address of the pinakion contract.
      *  @param _rng The random number generator which will be used.
@@ -94,11 +111,6 @@ contract KlerosPOC is Arbitrator {
         timePerPeriod=_timePerPeriod;
     }
     
-    // **************************** //
-    // *         Modifiers        * //
-    // **************************** //    
-    modifier onlyBy(address _account) { require(msg.sender==_account); require(true); _; }
-    modifier onlyDuring(Period _period) { require(period==_period); _;}
     
     // **************************** //
     // *  Functions interacting   * //
@@ -162,6 +174,7 @@ contract KlerosPOC is Arbitrator {
         
         
         lastPeriodChange=now;
+        newPeriod(period);
     }
   
   
