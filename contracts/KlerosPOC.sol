@@ -6,9 +6,9 @@
 
 pragma solidity ^0.4.15;
 
-import "../../kleros-interaction/code/contracts/standard/arbitration/Arbitrator.sol";
+import "kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
 import "./Tokens/Token.sol";
-import "../../kleros-interaction//code/contracts/standard/rng/RNG.sol";
+import "kleros-interaction/contracts/standard/rng/RNG.sol";
 
 contract KlerosPOC is Arbitrator {
     
@@ -246,7 +246,7 @@ contract KlerosPOC is Arbitrator {
     }
     
     /** @dev Execute all the token repartition.
-     *  Note that this function could consume to much gas if there is too much votes.
+     *  Note that this function could consume to much gas if there is too much votes. It is O(v), where v is the number of votes for this dispute.
      *  In the next version, there will also be a function to execute it in multiple calls (but note that one shot execution, if possible is less expensive).
      *  @param _disputeID ID of the dispute.
      */
