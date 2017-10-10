@@ -7,7 +7,7 @@
 pragma solidity ^0.4.15;
 
 import "kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
-import "./Tokens/Token.sol";
+import "./PinakionPOC.sol";
 import "kleros-interaction/contracts/standard/rng/RNG.sol";
 
 contract KlerosPOC is Arbitrator {
@@ -17,7 +17,7 @@ contract KlerosPOC is Arbitrator {
     // **************************** //
     
     // Variables which should not change after initialization.
-    Token public pinakion;
+    PinakionPOC public pinakion;
     
     // Variables which will subject to the governance mechanism.
     // Note they will only be able to be changed during the activation period (because a session assumes they don't change after it).
@@ -104,7 +104,7 @@ contract KlerosPOC is Arbitrator {
      *  @param _rng The random number generator which will be used.
      *  @param _timePerPeriod The minimal time for each period.
      */
-    function KlerosPOC(Token _pinakion, RNG _rng, uint[5] _timePerPeriod) public {
+    function KlerosPOC(PinakionPOC _pinakion, RNG _rng, uint[5] _timePerPeriod) public {
         pinakion=_pinakion;
         rng=_rng;
         lastPeriodChange=now;
@@ -139,7 +139,7 @@ contract KlerosPOC is Arbitrator {
             require(period!=Period.Draw && period!=Period.Vote);
             
         juror.balance-=_value;
-        pinakion.transfer(msg.sender,_value);
+        require(pinakion.transfer(msg.sender,_value));
     }
     
     /** @dev Give Pinakions at the rate 1 ETH = 1 PNK.
@@ -148,6 +148,7 @@ contract KlerosPOC is Arbitrator {
     function buyPinakion() public payable {
         Juror storage juror = jurors[msg.sender];
         juror.balance+=msg.value;
+        pinakion.mint(this,msg.value);
     }
     
     // **************************** //

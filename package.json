@@ -28,7 +28,7 @@
     "web3": "^1.0.0-beta.22"
   },
   "dependencies": {
-    "kleros-interaction": "0.0.3",
+    "kleros-interaction": "0.0.6",
     "zeppelin-solidity": "^1.3.0"
   }
 }
