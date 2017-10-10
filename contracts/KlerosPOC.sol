@@ -441,4 +441,65 @@ contract KlerosPOC is Arbitrator {
         dispute.arbitrated.rule(disputeID,dispute.voteCounter[dispute.appeals].winningChoice);
     }
     
+    // **************************** //
+    // *     Constant getters     * //
+    // **************************** //
+    
+    /** @dev Getter for account in Vote.
+     *  @param _disputeID ID of the dispute.
+     *  @param _appeals Which appeal (or 0 for the initial session).
+     *  @param _voteID The ID of the vote for this appeal (or initial session).
+     *  @return account The address of the voter.
+     */
+    function getVoteAccount(uint _disputeID, uint _appeals, uint _voteID) public constant returns(address account) {
+        return disputes[_disputeID].votes[_appeals][_voteID].account;
+    }
+    
+    /** @dev Getter for ruling in Vote.
+     *  @param _disputeID ID of the dispute.
+     *  @param _appeals Which appeal (or 0 for the initial session).
+     *  @param _voteID The ID of the vote for this appeal (or initial session).
+     *  @return ruling The ruling given by the voter.
+     */
+    function getVoteRuling(uint _disputeID, uint _appeals, uint _voteID) public constant returns(uint ruling) {
+        return disputes[_disputeID].votes[_appeals][_voteID].ruling;
+    }
+    
+    /** @dev Getter for winningChoice in VoteCounter.
+     *  @param _disputeID ID of the dispute.
+     *  @param _appeals Which appeal (or 0 for the initial session).
+     *  @return winningChoice The currently winning choice (or 0 if it's tied). Note that 0 can also be return if the juror mainly refuse to arbitrate.
+     */
+    function getWinningChoice(uint _disputeID, uint _appeals) public constant returns(uint winningChoice) {
+        return disputes[_disputeID].voteCounter[_appeals].winningChoice;
+    }
+    
+    /** @dev Getter for winningCount in VoteCounter.
+     *  @param _disputeID ID of the dispute.
+     *  @param _appeals Which appeal (or 0 for the initial session).
+     *  @return winningCount The amount of votes the winning choice (or those who are tied) has.
+     */
+    function getWinningCount(uint _disputeID, uint _appeals) public constant returns(uint winningCount) {
+        return disputes[_disputeID].voteCounter[_appeals].winningCount;
+    }
+    
+    /** @dev Getter for voteCount in VoteCounter.
+     *  @param _disputeID ID of the dispute.
+     *  @param _appeals Which appeal (or 0 for the initial session).
+     *  @param _choice The choice.
+     *  @return voteCount The amount of votes the winning choice (or those who are tied) has.
+     */
+    function getVoteCount(uint _disputeID, uint _appeals, uint _choice) public constant returns(uint voteCount) {
+        return disputes[_disputeID].voteCounter[_appeals].voteCount[_choice];
+    }
+    
+    /** @dev Getter for lastSessionVote in Dispute.
+     *  @param _disputeID ID of the dispute.
+     *  @param _juror The juror we want to get the last session he voted.
+     *  @return lastSessionVote The last session the juror voted.
+     */
+    function getLastSessionVote(uint _disputeID, address _juror) public constant returns(uint lastSessionVote) {
+        return disputes[_disputeID].lastSessionVote[_juror];
+    }
+    
 }
