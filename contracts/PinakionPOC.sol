@@ -15,8 +15,8 @@ contract PinakionPOC is MintableToken {
     /** @dev Deposit pinakions in the Kleros contract. TRUSTED.
      *  @param _value Amount of fractions of token to deposit.
      */
-    function deposit(address _from, uint _value) public {
-        approve(msg.sender,_value);
+    function deposit(uint _value) public {
+        approve(kleros,_value);
         kleros.deposit(msg.sender,_value);
     }
     

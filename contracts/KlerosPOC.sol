@@ -124,7 +124,7 @@ contract KlerosPOC is Arbitrator {
     function deposit(address _from, uint _value) public onlyBy(pinakion) {
         require(pinakion.transferFrom(_from,this,_value));
         
-        jurors[msg.sender].balance+=_value;
+        jurors[_from].balance+=_value;
     }
     
     /** @dev Withdraw tokens. Note that we can't withdraw the tokens which are still atStake. Jurors can't withdraw their tokens if they have activated some during Draw and Vote.
@@ -208,12 +208,11 @@ contract KlerosPOC is Arbitrator {
      *  @param _ruling The ruling given.
      *  @param _draws The list of draws the juror was drawn. It draw numbering starts at 1 and the numbers should be increasing.
      */
-    function voteRuling(uint _disputeID, uint _ruling, uint[] _draws) public {
+    function voteRuling(uint _disputeID, uint _ruling, uint[] _draws) public onlyDuring(Period.Vote) {
         Dispute storage dispute = disputes[_disputeID];
         Juror storage juror = jurors[msg.sender];
         VoteCounter storage voteCounter = dispute.voteCounter[dispute.appeals];
         require(dispute.lastSessionVote[msg.sender] != session); // Make sure he hasn't voted yet.
-        require(period==Period.Vote);
         // Note that it throws if the draws are incorrect or if it has no weight (not drawn yet).
         uint minWeight = hasWeightAtMin(msg.sender,_disputeID,_draws);
         
@@ -259,11 +258,10 @@ contract KlerosPOC is Arbitrator {
      *  In the next version, there will also be a function to execute it in multiple calls (but note that one shot execution, if possible is less expensive).
      *  @param _disputeID ID of the dispute.
      */
-    function oneShotTokenRepartition(uint _disputeID) public {
+    function oneShotTokenRepartition(uint _disputeID) public onlyDuring(Period.Execution) {
         Dispute storage dispute = disputes[_disputeID];
         require(dispute.state==DisputeState.Open);
         require(dispute.session+dispute.appeals==session);
-        require(period==Period.Execution);
         
         uint winningChoice=dispute.voteCounter[dispute.appeals].winningChoice;
         uint amountShift=(alpha*minActivatedToken)/ALPHA_DIVISOR;
@@ -387,10 +385,9 @@ contract KlerosPOC is Arbitrator {
      *  @param _disputeID ID of the dispute to be appealed.
      *  @param _extraData Can be used to give extra info on the appeal.
      */
-    function appeal(uint _disputeID, bytes _extraData) public payable {
+    function appeal(uint _disputeID, bytes _extraData) public payable onlyDuring(Period.Appeal) {
         Dispute storage dispute = disputes[_disputeID];
         require(msg.value >= appealCost(_disputeID,_extraData));
-        require(period==Period.Appeal);
         require(dispute.session+dispute.appeals == session); // Dispute of the current session.
         require(dispute.state==DisputeState.Open);
         
