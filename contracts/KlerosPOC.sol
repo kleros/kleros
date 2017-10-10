@@ -24,7 +24,7 @@ contract KlerosPOC is Arbitrator {
     RNG public rng; // Random Number Generator used to draw jurors.
     uint public arbitrationFeePerJuror = 0.05 ether; // The fee which will be paid to each juror.
     uint16 public defaultNumberJuror = 3; // Number of draw juror unless specified otherwise.
-    uint public minActivatedToken = 1e18; // Minimum of tokens to be activated (in basic units).
+    uint public minActivatedToken = 0.1 * 1e18; // Minimum of tokens to be activated (in basic units).
     uint[5] public timePerPeriod; // The minimum time each period lasts.
     uint public alpha = 200; // alpha in ‱.
     uint constant ALPHA_DIVISOR = 1e4; // Amount we need to dived alpha in ‱ to get the float value of alpha.
@@ -140,6 +140,14 @@ contract KlerosPOC is Arbitrator {
             
         juror.balance-=_value;
         pinakion.transfer(msg.sender,_value);
+    }
+    
+    /** @dev Give Pinakions at the rate 1 ETH = 1 PNK.
+     *  Note that in the real Kleros, the token supply will be fixed but for the proof of concept, we prefer to allow users to get some easily to try it.
+     */
+    function buyPinakion() public payable {
+        Juror storage juror = jurors[msg.sender];
+        juror.balance+=msg.value;
     }
     
     // **************************** //
