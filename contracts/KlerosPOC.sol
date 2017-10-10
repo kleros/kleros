@@ -159,7 +159,7 @@ contract KlerosPOC is Arbitrator {
     /** @dev To call to go to a new period. TRUSTED.
      */
     function passPeriod() public {
-        require(now-lastPeriodChange>timePerPeriod[uint8(period)]);
+        require(now-lastPeriodChange>=timePerPeriod[uint8(period)]);
         
         if (period==Period.Activation) {
             rnBlock=block.number+1;
@@ -231,7 +231,7 @@ contract KlerosPOC is Arbitrator {
             }));
         }
         
-        juror.atStake+=(alpha*minActivatedToken)/ALPHA_DIVISOR;
+        juror.atStake+=minWeight*(alpha*minActivatedToken)/ALPHA_DIVISOR;
     }
     
     /** @dev Steal part of the tokens of a juror who failed to vote.
