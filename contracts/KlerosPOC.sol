@@ -1,3 +1,5 @@
+
+
 /**
  *  @title Kleros POC
  *  @author Clément Lesaege - <clement@lesaege.com>
@@ -26,7 +28,7 @@ contract KlerosPOC is Arbitrator {
     uint16 public defaultNumberJuror = 3; // Number of draw juror unless specified otherwise.
     uint public minActivatedToken = 0.1 * 1e18; // Minimum of tokens to be activated (in basic units).
     uint[5] public timePerPeriod; // The minimum time each period lasts.
-    uint public alpha = 200; // alpha in ‱.
+    uint public alpha = 2000; // alpha in ‱.
     uint constant ALPHA_DIVISOR = 1e4; // Amount we need to dived alpha in ‱ to get the float value of alpha.
     
     // Variables changing during day to day interaction.
@@ -213,6 +215,7 @@ contract KlerosPOC is Arbitrator {
         Juror storage juror = jurors[msg.sender];
         VoteCounter storage voteCounter = dispute.voteCounter[dispute.appeals];
         require(dispute.lastSessionVote[msg.sender] != session); // Make sure he hasn't voted yet.
+        require(_ruling<=dispute.choices);
         // Note that it throws if the draws are incorrect or if it has no weight (not drawn yet).
         uint minWeight = hasWeightAtMin(msg.sender,_disputeID,_draws);
         
@@ -241,7 +244,7 @@ contract KlerosPOC is Arbitrator {
      *  @param _draws The list of draws the juror was drawn. It draw numbering starts at 1 and the numbers should be increasing.
      */
     function penalizeInactiveJuror(address _jurorAddress, uint _disputeID, uint[] _draws) public {
-        Dispute dispute = disputes[_disputeID];
+        Dispute storage dispute = disputes[_disputeID];
         Juror storage inactiveJuror = jurors[_jurorAddress];
         require(period>Period.Vote);
         require(dispute.lastSessionVote[_jurorAddress]!=session); // Verify the juror hasn't voted.
@@ -397,6 +400,17 @@ contract KlerosPOC is Arbitrator {
         
     }
     
+    /** @dev Execute the ruling of a dispute which is in the state executable. UNTRUSTED.
+     *  @param disputeID ID of the dispute to execute the ruling.
+     */
+    function executeRuling(uint disputeID) public {
+        Dispute storage dispute = disputes[disputeID];
+        require(dispute.state==DisputeState.Executable);
+        
+        dispute.state=DisputeState.Executed;
+        dispute.arbitrated.rule(disputeID,dispute.voteCounter[dispute.appeals].winningChoice);
+    }
+    
     // **************************** //
     // *   Arbitrator functions   * //
     // *    Constant and pure     * //
@@ -430,16 +444,6 @@ contract KlerosPOC is Arbitrator {
             return (uint16(_extraData[0])<<8) + uint16(_extraData[1]);
     }
     
-    /** @dev Execute the ruling of a dispute which is in the state executable. UNTRUSTED.
-     *  @param disputeID ID of the dispute to execute the ruling.
-     */
-    function executeRuling(uint disputeID) public {
-        Dispute storage dispute = disputes[disputeID];
-        require(dispute.state==DisputeState.Executable);
-        
-        dispute.state=DisputeState.Executed;
-        dispute.arbitrated.rule(disputeID,dispute.voteCounter[dispute.appeals].winningChoice);
-    }
     
     // **************************** //
     // *     Constant getters     * //
@@ -500,6 +504,29 @@ contract KlerosPOC is Arbitrator {
      */
     function getLastSessionVote(uint _disputeID, address _juror) public constant returns(uint lastSessionVote) {
         return disputes[_disputeID].lastSessionVote[_juror];
+    }
+    
+    /** @dev Is the juror drawn in the draw of the dispute.
+     *  @param _disputeID ID of the dispute.
+     *  @param _juror The juror.
+     *  @param _draw The draw. Note that it starts at 1.
+     *  @return drawn True if the juror is drawn, false otherwize.
+     */
+    function isDrawn(uint _disputeID, address _juror, uint _draw) public constant returns(bool drawn) {
+        Dispute storage dispute = disputes[_disputeID];
+        Juror storage juror = jurors[_juror];
+        if (juror.lastSession!=session 
+        || (dispute.session+dispute.appeals != session)
+        || period<=Period.Draw
+        || _draw > amountJurors(dispute)
+        || _draw == 0
+        ) {
+            return false;
+        } else {
+            uint position = uint(keccak256(keccak256(randomNumber,_disputeID),_draw)) % segmentSize;
+            return (position>=juror.segmentStart) && (position<juror.segmentEnd);
+        }
+        
     }
     
 }

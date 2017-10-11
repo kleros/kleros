@@ -16,6 +16,7 @@ contract('KlerosPOC', function(accounts) {
     let payee   = accounts[6]
 
     
+    
     // Constructor
     it("Should create the contract with the initial values", async () => {
         let pinakion  = await Pinakion.new({from:creator})
@@ -202,14 +203,14 @@ contract('KlerosPOC', function(accounts) {
     })
     
     // voteRuling
-    it("Should put the correct number of tokens at stake", async () => {
+    it("Should be able to vote and update the state accordingly (single juror)", async () => {
         let pinakion  = await Pinakion.new({from:creator})
         let rng       = await ConstantRandom.new(10,{from:creator})
         let klerosPOC = await KlerosPOC.new(pinakion.address,rng.address,[0,0,0,0,0],{from:creator})
         await pinakion.setKleros(klerosPOC.address,{from:creator})
         await pinakion.transferOwnership(klerosPOC.address,{from:creator})
-        await klerosPOC.buyPinakion({from:jurorA,value:1.2e18})
-        await klerosPOC.activateTokens(1.2e18,{from:jurorA})
+        await klerosPOC.buyPinakion({from:jurorA,value:0.2e18})
+        await klerosPOC.activateTokens(0.2e18,{from:jurorA})
         let arbitrableTransaction = await ArbitrableTransaction.new(klerosPOC.address, 0x0, 0, payee, 0x0, {from:payer,value:0.1e18})
         let arbitrationFee = await klerosPOC.arbitrationCost(0x0,{from:payer})
         await arbitrableTransaction.payArbitrationFeeByPartyA({from:payer,value:arbitrationFee})
@@ -223,16 +224,21 @@ contract('KlerosPOC', function(accounts) {
         
         let stakePerWeight = (await klerosPOC.minActivatedToken())*(await klerosPOC.alpha())/(1e4)
         assert.equal((await klerosPOC.jurors(jurorA))[1], 3*stakePerWeight, "The amount of token at stake is incorrect.")
+        assert.equal(await klerosPOC.getVoteAccount(0,0,2), jurorA, "The address in the vote is incorrect.")
+        assert.equal(await klerosPOC.getVoteRuling(0,0,2), 1, "The ruling in the vote is incorrect.")
+        assert.equal(await klerosPOC.getWinningChoice(0,0), 1, "The current winning choice is incorrect.")
+        assert.equal(await klerosPOC.getWinningCount(0,0), 3, "The current winning count is incorrect.")
+        assert.equal(await klerosPOC.getVoteCount(0,0,1), 3, "The vote count is incorrect.")
     })
     
-    it("Should not be possible to vote with extra weight (single juror case)", async () => {
+    it("Should not be possible to vote with extra weight", async () => {
         let pinakion  = await Pinakion.new({from:creator})
         let rng       = await ConstantRandom.new(10,{from:creator})
         let klerosPOC = await KlerosPOC.new(pinakion.address,rng.address,[0,0,0,0,0],{from:creator})
         await pinakion.setKleros(klerosPOC.address,{from:creator})
         await pinakion.transferOwnership(klerosPOC.address,{from:creator})
-        await klerosPOC.buyPinakion({from:jurorA,value:1.2e18})
-        await klerosPOC.activateTokens(1.2e18,{from:jurorA})
+        await klerosPOC.buyPinakion({from:jurorA,value:0.2e18})
+        await klerosPOC.activateTokens(0.2e18,{from:jurorA})
         let arbitrableTransaction = await ArbitrableTransaction.new(klerosPOC.address, 0x0, 0, payee, 0x0, {from:payer,value:0.1e18})
         let arbitrationFee = await klerosPOC.arbitrationCost(0x0,{from:payer})
         await arbitrableTransaction.payArbitrationFeeByPartyA({from:payer,value:arbitrationFee})
@@ -243,7 +249,308 @@ contract('KlerosPOC', function(accounts) {
         await klerosPOC.passPeriod({from:other})
         
         await expectThrow(klerosPOC.voteRuling(0, 1, [1,2,3,4],{from:jurorA}))
+        await expectThrow(klerosPOC.voteRuling(0, 1, [1,2,2,3],{from:jurorA}))
     })
+    
+    it("Should not be possible to vote before draws", async () => {
+        let pinakion  = await Pinakion.new({from:creator})
+        let rng       = await ConstantRandom.new(10,{from:creator})
+        let klerosPOC = await KlerosPOC.new(pinakion.address,rng.address,[0,0,0,0,0],{from:creator})
+        await pinakion.setKleros(klerosPOC.address,{from:creator})
+        await pinakion.transferOwnership(klerosPOC.address,{from:creator})
+        await klerosPOC.buyPinakion({from:jurorA,value:0.2e18})
+        await klerosPOC.activateTokens(0.2e18,{from:jurorA})
+        let arbitrableTransaction = await ArbitrableTransaction.new(klerosPOC.address, 0x0, 0, payee, 0x0, {from:payer,value:0.1e18})
+        let arbitrationFee = await klerosPOC.arbitrationCost(0x0,{from:payer})
+        await arbitrableTransaction.payArbitrationFeeByPartyA({from:payer,value:arbitrationFee})
+        await arbitrableTransaction.payArbitrationFeeByPartyB({from:payee,value:arbitrationFee})
+        
+        await expectThrow(klerosPOC.voteRuling(0, 1, [1],{from:jurorA}))
+        await klerosPOC.passPeriod({from:other}) // Pass twice to go to vote.
+        await expectThrow(klerosPOC.voteRuling(0, 1, [1],{from:jurorA}))
+        await klerosPOC.passPeriod({from:other})
+    })
+    
+    it("Should be able to vote and update the state accordingly (multiple jurors)", async () => {
+        let pinakion  = await Pinakion.new({from:creator})
+        let rng       = await ConstantRandom.new(10,{from:creator})
+        let klerosPOC = await KlerosPOC.new(pinakion.address,rng.address,[0,0,0,0,0],{from:creator})
+        await pinakion.setKleros(klerosPOC.address,{from:creator})
+        await pinakion.transferOwnership(klerosPOC.address,{from:creator})
+        await klerosPOC.buyPinakion({from:jurorA,value:0.4e18})
+        await klerosPOC.activateTokens(0.4e18,{from:jurorA})
+        await klerosPOC.buyPinakion({from:jurorB,value:0.6e18})
+        await klerosPOC.activateTokens(0.6e18,{from:jurorB})
+        let arbitrableTransaction = await ArbitrableTransaction.new(klerosPOC.address, 0x0, 0, payee, 0x0, {from:payer,value:0.1e18})
+        let arbitrationFee = await klerosPOC.arbitrationCost(0x0,{from:payer})
+        await arbitrableTransaction.payArbitrationFeeByPartyA({from:payer,value:arbitrationFee})
+        await arbitrableTransaction.payArbitrationFeeByPartyB({from:payee,value:arbitrationFee})
+        
+        
+        await klerosPOC.passPeriod({from:other}) // Pass twice to go to vote.
+        await klerosPOC.passPeriod({from:other})
+        
+        let drawA=[]
+        let drawB=[]
+        for (let i = 1; i <= 3; i++) {
+            if(await klerosPOC.isDrawn(0, jurorA, i))
+                drawA.push(i)
+            else   
+                drawB.push(i)
+        }
+        // Note that it should work for every case, even if the same juror is drawn thrice.
+        
+        await klerosPOC.voteRuling(0, 1, drawA,{from:jurorA})
+        await klerosPOC.voteRuling(0, 1, drawB,{from:jurorB})
+        
+        let stakePerWeight = (await klerosPOC.minActivatedToken())*(await klerosPOC.alpha())/(1e4)
+        assert.equal((await klerosPOC.jurors(jurorA))[1], (drawA.length)*stakePerWeight, "The amount of token at stake for juror A is incorrect.")
+        assert.equal((await klerosPOC.jurors(jurorB))[1], (drawB.length)*stakePerWeight, "The amount of token at stake for juror B is incorrect.")
+        assert.equal(await klerosPOC.getWinningChoice(0,0), 1, "The current winning choice is incorrect.")
+        assert.equal(await klerosPOC.getWinningCount(0,0), 3, "The current winning count is incorrect.")
+        assert.equal(await klerosPOC.getVoteCount(0,0,1), 3, "The vote count is incorrect.")
+    })
+    
+    // penalizeInactiveJuror
+    it("Should be possible to penalize a juror who did not vote after votes but not before", async () => {
+        let pinakion  = await Pinakion.new({from:creator})
+        let rng       = await ConstantRandom.new(10,{from:creator})
+        let klerosPOC = await KlerosPOC.new(pinakion.address,rng.address,[0,0,0,0,0],{from:creator})
+        await pinakion.setKleros(klerosPOC.address,{from:creator})
+        await pinakion.transferOwnership(klerosPOC.address,{from:creator})
+        await klerosPOC.buyPinakion({from:jurorA,value:0.8e18})
+        await klerosPOC.activateTokens(0.8e18,{from:jurorA})
+        let arbitrableTransaction = await ArbitrableTransaction.new(klerosPOC.address, 0x0, 0, payee, 0x0, {from:payer,value:0.1e18})
+        let arbitrationFee = await klerosPOC.arbitrationCost(0x0,{from:payer})
+        await arbitrableTransaction.payArbitrationFeeByPartyA({from:payer,value:arbitrationFee})
+        await arbitrableTransaction.payArbitrationFeeByPartyB({from:payee,value:arbitrationFee})
+        
+        
+        await klerosPOC.passPeriod({from:other}) // Pass twice to go to vote.
+        await klerosPOC.passPeriod({from:other})
+        await expectThrow(klerosPOC.penalizeInactiveJuror(jurorA,0, [1,2,3],{from:jurorC})) // The votes hasn't finished yet, so it should not be possible to penalize.
+        await klerosPOC.passPeriod({from:other}) 
+        await klerosPOC.penalizeInactiveJuror(jurorA,0, [1,2,3],{from:jurorC}) // Now we should be able to penalize.
+        
+        let stakePerWeight = (await klerosPOC.minActivatedToken())*(await klerosPOC.alpha())/(1e4)
+        assert.equal((await klerosPOC.jurors(jurorA))[0], 0.8e18-6*stakePerWeight, "The amount of token at stake is incorrect.")
+        assert.equal((await klerosPOC.jurors(jurorC))[0], 3*stakePerWeight, "The amount of token at stake is incorrect.")
+    })
+    
+    it("Should take all the balance if the balance is too low, in case of penalization", async () => {
+        let pinakion  = await Pinakion.new({from:creator})
+        let rng       = await ConstantRandom.new(10,{from:creator})
+        let klerosPOC = await KlerosPOC.new(pinakion.address,rng.address,[0,0,0,0,0],{from:creator})
+        await pinakion.setKleros(klerosPOC.address,{from:creator})
+        await pinakion.transferOwnership(klerosPOC.address,{from:creator})
+        await klerosPOC.buyPinakion({from:jurorA,value:0.1e18})
+        await klerosPOC.activateTokens(0.1e18,{from:jurorA})
+        let arbitrableTransaction = await ArbitrableTransaction.new(klerosPOC.address, 0x0, 0, payee, 0x0, {from:payer,value:0.1e18})
+        let arbitrationFee = await klerosPOC.arbitrationCost(0x0,{from:payer})
+        await arbitrableTransaction.payArbitrationFeeByPartyA({from:payer,value:arbitrationFee})
+        await arbitrableTransaction.payArbitrationFeeByPartyB({from:payee,value:arbitrationFee})
+        
+        for (let i = 0; i < 3; i++) // Go up to after the vote.
+            await klerosPOC.passPeriod({from:other}) 
+        await klerosPOC.penalizeInactiveJuror(jurorA,0, [1,2,3],{from:jurorC}) // Now we should be able to penalize.
+        
+        
+        assert.equal((await klerosPOC.jurors(jurorA))[0], 0, "The amount of token at stake is incorrect.")
+        assert.equal((await klerosPOC.jurors(jurorC))[0], 0.05e18, "The amount of token at stake is incorrect.")
+    })
+    
+    it("Should not be possible to penalize a juror who voted", async () => {
+        let pinakion  = await Pinakion.new({from:creator})
+        let rng       = await ConstantRandom.new(10,{from:creator})
+        let klerosPOC = await KlerosPOC.new(pinakion.address,rng.address,[0,0,0,0,0],{from:creator})
+        await pinakion.setKleros(klerosPOC.address,{from:creator})
+        await pinakion.transferOwnership(klerosPOC.address,{from:creator})
+        await klerosPOC.buyPinakion({from:jurorA,value:0.2e18})
+        await klerosPOC.activateTokens(0.2e18,{from:jurorA})
+        let arbitrableTransaction = await ArbitrableTransaction.new(klerosPOC.address, 0x0, 0, payee, 0x0, {from:payer,value:0.1e18})
+        let arbitrationFee = await klerosPOC.arbitrationCost(0x0,{from:payer})
+        await arbitrableTransaction.payArbitrationFeeByPartyA({from:payer,value:arbitrationFee})
+        await arbitrableTransaction.payArbitrationFeeByPartyB({from:payee,value:arbitrationFee})
+        
+        
+        await klerosPOC.passPeriod({from:other}) // Pass twice to go to vote.
+        await klerosPOC.passPeriod({from:other})
+        await klerosPOC.voteRuling(0, 1, [1,2,3],{from:jurorA})
+        await klerosPOC.passPeriod({from:other})
+        await expectThrow(klerosPOC.penalizeInactiveJuror(jurorA,0, [1,2,3],{from:jurorC}))
+        
+    })
+    
+    // oneShotTokenRepartition
+    it("Should realocate tokens correctly", async () => {
+        let pinakion  = await Pinakion.new({from:creator})
+        let rng       = await ConstantRandom.new(10,{from:creator})
+        let klerosPOC = await KlerosPOC.new(pinakion.address,rng.address,[0,0,0,0,0],{from:creator})
+        await pinakion.setKleros(klerosPOC.address,{from:creator})
+        await pinakion.transferOwnership(klerosPOC.address,{from:creator})
+        await klerosPOC.buyPinakion({from:jurorA,value:0.4e18})
+        await klerosPOC.activateTokens(0.4e18,{from:jurorA})
+        await klerosPOC.buyPinakion({from:jurorB,value:0.6e18})
+        await klerosPOC.activateTokens(0.6e18,{from:jurorB})
+        let arbitrableTransaction = await ArbitrableTransaction.new(klerosPOC.address, 0x0, 0, payee, 0x0, {from:payer,value:0.1e18})
+        let arbitrationFee = await klerosPOC.arbitrationCost(0x0,{from:payer})
+        await arbitrableTransaction.payArbitrationFeeByPartyA({from:payer,value:arbitrationFee})
+        await arbitrableTransaction.payArbitrationFeeByPartyB({from:payee,value:arbitrationFee})
+        
+        
+        await klerosPOC.passPeriod({from:other}) // Pass twice to go to vote.
+        await klerosPOC.passPeriod({from:other})
+        
+        let drawA=[]
+        let drawB=[]
+        for (let i = 1; i <= 3; i++) {
+            if(await klerosPOC.isDrawn(0, jurorA, i))
+                drawA.push(i)
+            else   
+                drawB.push(i)
+        }
+        // Note that it should work for every case, even if the same juror is drawn thrice.
+        
+        await klerosPOC.voteRuling(0, 1, drawA,{from:jurorA})
+        await klerosPOC.voteRuling(0, 2, drawB,{from:jurorB})
+        
+        await klerosPOC.passPeriod({from:other}) // Pass twice to go to execution.
+        await klerosPOC.passPeriod({from:other})
+        await klerosPOC.oneShotTokenRepartition(0,{from:other})
+        
+        
+        let stakePerWeight = (await klerosPOC.minActivatedToken())*(await klerosPOC.alpha())/(1e4)     
+        
+        assert.equal((await klerosPOC.jurors(jurorA))[1].toNumber(), 0, "The amount of token at stake for juror A is incorrect.")
+        assert.equal((await klerosPOC.jurors(jurorB))[1].toNumber(), 0, "The amount of token at stake for juror B is incorrect.")
+        if (drawA.length>drawB.length) {
+            assert.equal((await klerosPOC.jurors(jurorA))[0].toNumber(), 0.4e18+drawB.length*stakePerWeight, "The balance of juror A has not been updated correctly.")
+            assert.equal((await klerosPOC.jurors(jurorB))[0].toNumber(), 0.6e18-drawB.length*stakePerWeight, "The balance of juror B has not been updated correctly.")
+        } else {
+            assert.equal((await klerosPOC.jurors(jurorA))[0].toNumber(), 0.4e18-drawA.length*stakePerWeight, "The balance of juror A has not been updated correctly.")
+            assert.equal((await klerosPOC.jurors(jurorB))[0].toNumber(), 0.6e18+drawA.length*stakePerWeight, "The balance of juror B has not been updated correctly.")
+        }
+    })
+    
+    it("Should not be possible to call execution before or do it multiple times", async () => {
+        let pinakion  = await Pinakion.new({from:creator})
+        let rng       = await ConstantRandom.new(10,{from:creator})
+        let klerosPOC = await KlerosPOC.new(pinakion.address,rng.address,[0,0,0,0,0],{from:creator})
+        await pinakion.setKleros(klerosPOC.address,{from:creator})
+        await pinakion.transferOwnership(klerosPOC.address,{from:creator})
+        await klerosPOC.buyPinakion({from:jurorA,value:0.4e18})
+        await klerosPOC.activateTokens(0.4e18,{from:jurorA})
+        await klerosPOC.buyPinakion({from:jurorB,value:0.6e18})
+        await klerosPOC.activateTokens(0.6e18,{from:jurorB})
+        let arbitrableTransaction = await ArbitrableTransaction.new(klerosPOC.address, 0x0, 0, payee, 0x0, {from:payer,value:0.1e18})
+        let arbitrationFee = await klerosPOC.arbitrationCost(0x0,{from:payer})
+        await arbitrableTransaction.payArbitrationFeeByPartyA({from:payer,value:arbitrationFee})
+        await arbitrableTransaction.payArbitrationFeeByPartyB({from:payee,value:arbitrationFee})
+        
+        await expectThrow(klerosPOC.oneShotTokenRepartition(0,{from:other}))
+        await klerosPOC.passPeriod({from:other}) // Pass twice to go to vote.
+        await expectThrow(klerosPOC.oneShotTokenRepartition(0,{from:other}))
+        await klerosPOC.passPeriod({from:other})
+        
+        let drawA=[]
+        let drawB=[]
+        for (let i = 1; i <= 3; i++) {
+            if(await klerosPOC.isDrawn(0, jurorA, i))
+                drawA.push(i)
+            else   
+                drawB.push(i)
+        }
+        
+        await klerosPOC.voteRuling(0, 1, drawA,{from:jurorA})
+        await klerosPOC.voteRuling(0, 2, drawB,{from:jurorB})
+        await expectThrow(klerosPOC.oneShotTokenRepartition(0,{from:other}))
+        await klerosPOC.passPeriod({from:other}) // Pass twice to go to execution.
+        await expectThrow(klerosPOC.oneShotTokenRepartition(0,{from:other}))
+        await klerosPOC.passPeriod({from:other})
+        await klerosPOC.oneShotTokenRepartition(0,{from:other})
+        await expectThrow(klerosPOC.oneShotTokenRepartition(0,{from:other}))
+        await klerosPOC.passPeriod({from:other})
+        await expectThrow(klerosPOC.oneShotTokenRepartition(0,{from:other}))
+        await klerosPOC.passPeriod({from:other})
+        await expectThrow(klerosPOC.oneShotTokenRepartition(0,{from:other}))
+    })
+    
+    it("Should realocate tokens correctly (when appeal)", async () => {
+        let pinakion  = await Pinakion.new({from:creator})
+        let rng       = await ConstantRandom.new(10,{from:creator})
+        let klerosPOC = await KlerosPOC.new(pinakion.address,rng.address,[0,0,0,0,0],{from:creator})
+        await pinakion.setKleros(klerosPOC.address,{from:creator})
+        await pinakion.transferOwnership(klerosPOC.address,{from:creator})
+        await klerosPOC.buyPinakion({from:jurorA,value:0.4e18})
+        await klerosPOC.activateTokens(0.4e18,{from:jurorA})
+        await klerosPOC.buyPinakion({from:jurorB,value:0.6e18})
+        await klerosPOC.activateTokens(0.6e18,{from:jurorB})
+        await klerosPOC.buyPinakion({from:jurorC,value:0.5e18})
+
+        let arbitrableTransaction = await ArbitrableTransaction.new(klerosPOC.address, 0x0, 0, payee, 0x0, {from:payer,value:0.1e18})
+        let arbitrationFee = await klerosPOC.arbitrationCost(0x0,{from:payer})
+        await arbitrableTransaction.payArbitrationFeeByPartyA({from:payer,value:arbitrationFee})
+        await arbitrableTransaction.payArbitrationFeeByPartyB({from:payee,value:arbitrationFee})
+        
+        
+        await klerosPOC.passPeriod({from:other}) // Pass twice to go to vote.
+        await klerosPOC.passPeriod({from:other})
+        
+        let drawAInitial=[]
+        let drawBInitial=[]
+        for (let i = 1; i <= 3; i++) {
+            if(await klerosPOC.isDrawn(0, jurorA, i))
+                drawAInitial.push(i)
+            else   
+                drawBInitial.push(i)
+        }
+        // Note that it should work for every case, even if the same juror is drawn thrice.
+        
+        await klerosPOC.voteRuling(0, 1, drawAInitial,{from:jurorA})
+        await klerosPOC.voteRuling(0, 2, drawBInitial,{from:jurorB})
+        
+        await klerosPOC.passPeriod({from:other}) // Pass once to go to appeal.
+        let appealFee = await klerosPOC.appealCost(0,0x0)
+        arbitrableTransaction.appeal(0x0,{from:payee,value:appealFee})
+        await klerosPOC.passPeriod({from:other}) // Pass twice to go to activation.
+        await klerosPOC.passPeriod({from:other})
+
+        await klerosPOC.activateTokens(0.4e18,{from:jurorA})
+        await klerosPOC.activateTokens(0.5e18,{from:jurorC})
+        
+        await klerosPOC.passPeriod({from:other}) // Pass twice to go to vote.
+        await klerosPOC.passPeriod({from:other})
+        
+        let drawAAppeal=[]
+        let drawCAppeal=[]
+        for (let i = 1; i <= 3; i++) {
+            if(await klerosPOC.isDrawn(0, jurorA, i))
+                drawAAppeal.push(i)
+            else   
+                drawCAppeal.push(i)
+        }
+        
+        await klerosPOC.voteRuling(0, 1, drawAAppeal,{from:jurorA})
+        await klerosPOC.voteRuling(0, 2, drawCAppeal,{from:jurorC})
+        await klerosPOC.passPeriod({from:other}) // Pass twice to go to execution.
+        await klerosPOC.passPeriod({from:other})
+        await klerosPOC.oneShotTokenRepartition(0,{from:other})
+        
+        assert.equal((await klerosPOC.jurors(jurorA))[1].toNumber(), 0, "The amount of token at stake for juror A is incorrect.")
+        assert.equal((await klerosPOC.jurors(jurorB))[1].toNumber(), 0, "The amount of token at stake for juror B is incorrect.")
+        assert.equal((await klerosPOC.jurors(jurorC))[1].toNumber(), 0, "The amount of token at stake for juror C is incorrect.")
+        let stakePerWeight = (await klerosPOC.minActivatedToken())*(await klerosPOC.alpha())/(1e4)
+        if (drawAAppeal.length>drawCAppeal.length) { // Payer wins. So juror A is coherant.
+            assert.equal((await klerosPOC.jurors(jurorA))[0].toNumber(), 0.4e18+(drawCAppeal.length+drawBInitial.length)*stakePerWeight, "The balance of juror A has not been updated correctly.")
+            assert.equal((await klerosPOC.jurors(jurorB))[0].toNumber(), 0.6e18-drawBInitial.length*stakePerWeight, "The balance of juror B has not been updated correctly.")
+            assert.equal((await klerosPOC.jurors(jurorC))[0].toNumber(), 0.5e18-drawCAppeal.length*stakePerWeight, "The balance of juror C has not been updated correctly.")
+        } else { // Payee wins. So juror B and C are coherant.
+            assert.equal((await klerosPOC.jurors(jurorA))[0].toNumber(), 0.4e18-(drawAAppeal.length+drawAInitial.length)*stakePerWeight, "The balance of juror A has not been updated correctly.")
+            assert.equal((await klerosPOC.jurors(jurorB))[0].toNumber(), 0.6e18+drawAInitial.length*stakePerWeight, "The balance of juror B has not been updated correctly.")
+            assert.equal((await klerosPOC.jurors(jurorC))[0].toNumber(), 0.5e18+drawAAppeal.length*stakePerWeight, "The balance of juror C has not been updated correctly.")
+        } 
+    })
+
     
 })
 
