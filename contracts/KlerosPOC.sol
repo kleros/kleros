@@ -215,7 +215,7 @@ contract KlerosPOC is Arbitrator {
         VoteCounter storage voteCounter = dispute.voteCounter[dispute.appeals];
         require(dispute.lastSessionVote[msg.sender] != session); // Make sure he hasn't voted yet.
         require(_ruling<=dispute.choices);
-        // Note that it throws if the draws are incorrect or if it has no weight (not drawn yet).
+        // Note that it throws if the draws are incorrect.
         uint minWeight = hasWeightAtMin(msg.sender,_disputeID,_draws);
         
         dispute.lastSessionVote[msg.sender]=session;
