@@ -1,5 +1,3 @@
-
-
 /**
  *  @title Kleros POC
  *  @author Clément Lesaege - <clement@lesaege.com>
@@ -25,6 +23,7 @@ contract KlerosPOC is Arbitrator {
     // Note they will only be able to be changed during the activation period (because a session assumes they don't change after it).
     RNG public rng; // Random Number Generator used to draw jurors.
     uint public arbitrationFeePerJuror = 0.05 ether; // The fee which will be paid to each juror.
+    uint public arbitrationFeePerJurorLastSession = 0.05 ether; // The fee which will be paid to each appeal juror. We need this variable because appeal fees are paid according to the price of last session.
     uint16 public defaultNumberJuror = 3; // Number of draw juror unless specified otherwise.
     uint public minActivatedToken = 0.1 * 1e18; // Minimum of tokens to be activated (in basic units).
     uint[5] public timePerPeriod; // The minimum time each period lasts.
@@ -73,7 +72,7 @@ contract KlerosPOC is Arbitrator {
     }
     struct Dispute {
         Arbitrable arbitrated;      // Contract to be arbitrated.
-        uint session;               // Session the dispute was raised.
+        uint session;               // First session the dispute was schedule.
         uint appeals;               // Number of appeals.
         uint choices;               // The number of choices availables to the jurors.
         uint16 initialNumberJurors; // The initial number of jurors.
@@ -235,6 +234,10 @@ contract KlerosPOC is Arbitrator {
         }
         
         juror.atStake+=minWeight*(alpha*minActivatedToken)/ALPHA_DIVISOR;
+        if (dispute.appeals==0)
+            msg.sender.transfer(minWeight*arbitrationFeePerJuror);
+        else
+            msg.sender.transfer(minWeight*arbitrationFeePerJurorLastSession);
     }
     
     /** @dev Steal part of the tokens of a juror who failed to vote.
@@ -248,17 +251,24 @@ contract KlerosPOC is Arbitrator {
         Juror storage inactiveJuror = jurors[_jurorAddress];
         require(period>Period.Vote);
         require(dispute.lastSessionVote[_jurorAddress]!=session); // Verify the juror hasn't voted.
-        uint penality = hasWeightAtMin(_jurorAddress,_disputeID,_draws) * minActivatedToken * 2 * alpha / ALPHA_DIVISOR;
+        uint minWeight = hasWeightAtMin(_jurorAddress,_disputeID,_draws);
+        uint penality = minWeight * minActivatedToken * 2 * alpha / ALPHA_DIVISOR;
         
         penality = (penality<inactiveJuror.balance-inactiveJuror.atStake) ? penality : inactiveJuror.balance-inactiveJuror.atStake; // Make sure the penality is not higher than what the juror can lose.
         inactiveJuror.balance-=penality;
         jurors[msg.sender].balance+=penality/2; // Give half of the penalty to the caller.
         jurors[this].balance+=penality/2; // The other half to Kleros.
+        if (dispute.appeals==0)
+            msg.sender.transfer(minWeight*arbitrationFeePerJuror);
+        else
+            msg.sender.transfer(minWeight*arbitrationFeePerJurorLastSession);
     }
     
     /** @dev Execute all the token repartition.
      *  Note that this function could consume to much gas if there is too much votes. It is O(v), where v is the number of votes for this dispute.
      *  In the next version, there will also be a function to execute it in multiple calls (but note that one shot execution, if possible is less expensive).
+     *  Note that if no one calls this function during the execution step, the tokens at stake will be locked for ever.
+     *  In next versions Ethereum Alarm Clock or a similar system will be used to make sure the function is called.
      *  @param _disputeID ID of the dispute.
      */
     function oneShotTokenRepartition(uint _disputeID) public onlyDuring(Period.Execution) {
@@ -520,6 +530,7 @@ contract KlerosPOC is Arbitrator {
         || period<=Period.Draw
         || _draw > amountJurors(dispute)
         || _draw == 0
+        || segmentSize == 0
         ) {
             return false;
         } else {
