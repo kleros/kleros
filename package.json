@@ -17,8 +17,8 @@
     "type": "git",
     "url": "git+https://github.com/kleros/kleros.git"
   },
-  "author": "nicolas@kleros.io",
-  "license": "ISC",
+  "author": "Kleros",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/kleros/kleros/issues"
   },
