@@ -48,7 +48,7 @@ contract KlerosPOC is Arbitrator {
     
     struct Juror {
         uint balance;      // The amount of token the contract holds for this juror.
-        uint atStake;      // Total number of tokens the juror can loose in disputes he is drawn in. Those tokens are locked. We always have atStake<=balance.
+        uint atStake;      // Total number of tokens the juror can loose in disputes he is drawn in. Those tokens are locked. Note that we can have atStake>balance but it should be statistically unlikely and does not pose issues.
         uint lastSession;  // Last session the tokens were activated.
         uint segmentStart; // Start of the segment of activated tokens.
         uint segmentEnd;   // End of the segment of activated tokens.
@@ -288,6 +288,7 @@ contract KlerosPOC is Arbitrator {
                     Vote storage vote = dispute.votes[i][j];
                     if (vote.ruling!=winningChoice) {
                         Juror storage juror = jurors[vote.account];
+                        uint penalty=amountShift<juror.balance ? amountShift : juror.balance;
                         juror.balance-=amountShift;
                         totalToRedistibute+=amountShift;
                     } else {

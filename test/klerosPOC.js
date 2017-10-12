@@ -486,11 +486,11 @@ contract('KlerosPOC', function(accounts) {
         let klerosPOC = await KlerosPOC.new(pinakion.address,rng.address,[0,0,0,0,0],{from:creator})
         await pinakion.setKleros(klerosPOC.address,{from:creator})
         await pinakion.transferOwnership(klerosPOC.address,{from:creator})
-        await klerosPOC.buyPinakion({from:jurorA,value:0.4e18})
-        await klerosPOC.activateTokens(0.4e18,{from:jurorA})
-        await klerosPOC.buyPinakion({from:jurorB,value:0.6e18})
-        await klerosPOC.activateTokens(0.6e18,{from:jurorB})
-        await klerosPOC.buyPinakion({from:jurorC,value:0.5e18})
+        await klerosPOC.buyPinakion({from:jurorA,value:1.4e18})
+        await klerosPOC.activateTokens(1.4e18,{from:jurorA})
+        await klerosPOC.buyPinakion({from:jurorB,value:1.6e18})
+        await klerosPOC.activateTokens(1.6e18,{from:jurorB})
+        await klerosPOC.buyPinakion({from:jurorC,value:1.5e18})
 
         let arbitrableTransaction = await ArbitrableTransaction.new(klerosPOC.address, 0x0, 0, payee, 0x0, {from:payer,value:0.1e18})
         let arbitrationFee = await klerosPOC.arbitrationCost(0x0,{from:payer})
@@ -520,8 +520,8 @@ contract('KlerosPOC', function(accounts) {
         await klerosPOC.passPeriod({from:other}) // Pass twice to go to activation.
         await klerosPOC.passPeriod({from:other})
 
-        await klerosPOC.activateTokens(0.4e18,{from:jurorA})
-        await klerosPOC.activateTokens(0.5e18,{from:jurorC})
+        await klerosPOC.activateTokens(1.4e18,{from:jurorA})
+        await klerosPOC.activateTokens(1.5e18,{from:jurorC})
         
         await klerosPOC.passPeriod({from:other}) // Pass twice to go to vote.
         await klerosPOC.passPeriod({from:other})
@@ -546,13 +546,13 @@ contract('KlerosPOC', function(accounts) {
         assert.equal((await klerosPOC.jurors(jurorC))[1].toNumber(), 0, "The amount of token at stake for juror C is incorrect.")
         let stakePerWeight = (await klerosPOC.minActivatedToken())*(await klerosPOC.alpha())/(1e4)
         if (drawAAppeal.length>drawCAppeal.length) { // Payer wins. So juror A is coherant.
-            assert.equal((await klerosPOC.jurors(jurorA))[0].toNumber(), 0.4e18+(drawCAppeal.length+drawBInitial.length)*stakePerWeight, "The balance of juror A has not been updated correctly.")
-            assert.equal((await klerosPOC.jurors(jurorB))[0].toNumber(), 0.6e18-drawBInitial.length*stakePerWeight, "The balance of juror B has not been updated correctly.")
-            assert.equal((await klerosPOC.jurors(jurorC))[0].toNumber(), 0.5e18-drawCAppeal.length*stakePerWeight, "The balance of juror C has not been updated correctly.")
+            assert.equal((await klerosPOC.jurors(jurorA))[0].toNumber(), 1.4e18+(drawCAppeal.length+drawBInitial.length)*stakePerWeight, "The balance of juror A has not been updated correctly.")
+            assert.equal((await klerosPOC.jurors(jurorB))[0].toNumber(), 1.6e18-drawBInitial.length*stakePerWeight, "The balance of juror B has not been updated correctly.")
+            assert.equal((await klerosPOC.jurors(jurorC))[0].toNumber(), 1.5e18-drawCAppeal.length*stakePerWeight, "The balance of juror C has not been updated correctly.")
         } else { // Payee wins. So juror B and C are coherant.
-            assert.equal((await klerosPOC.jurors(jurorA))[0].toNumber(), 0.4e18-(drawAAppeal.length+drawAInitial.length)*stakePerWeight, "The balance of juror A has not been updated correctly.")
-            assert.equal((await klerosPOC.jurors(jurorB))[0].toNumber(), 0.6e18+(drawBInitial.length>0)*drawAInitial.length*stakePerWeight, "The balance of juror B has not been updated correctly.")
-            assert.equal((await klerosPOC.jurors(jurorC))[0].toNumber(), 0.5e18+(drawCAppeal.length>0)*drawAAppeal.length*stakePerWeight, "The balance of juror C has not been updated correctly.")
+            assert.equal((await klerosPOC.jurors(jurorA))[0].toNumber(), 1.4e18-(drawAAppeal.length+drawAInitial.length)*stakePerWeight, "The balance of juror A has not been updated correctly.")
+            assert.equal((await klerosPOC.jurors(jurorB))[0].toNumber(), 1.6e18+(drawBInitial.length>0)*drawAInitial.length*stakePerWeight, "The balance of juror B has not been updated correctly.")
+            assert.equal((await klerosPOC.jurors(jurorC))[0].toNumber(), 1.5e18+(drawCAppeal.length>0)*drawAAppeal.length*stakePerWeight, "The balance of juror C has not been updated correctly.")
         } 
     })
     
