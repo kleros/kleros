@@ -8,5 +8,5 @@ We'll reimplement there hackathonPOC smart contracts to cope with the change and
 
 Note that we need kleros-interaction:
 ```
-npm install kleros-interaction
+yarn add kleros-interaction
 ```
