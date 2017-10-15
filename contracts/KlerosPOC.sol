@@ -226,7 +226,7 @@ contract KlerosPOC is Arbitrator {
         if (voteCounter.winningCount<voteCounter.voteCount[_ruling]) {
             voteCounter.winningCount=voteCounter.voteCount[_ruling];
             voteCounter.winningChoice=_ruling;
-        } else if (voteCounter.winningCount==voteCounter.voteCount[_ruling]) {
+        } else if (voteCounter.winningCount==voteCounter.voteCount[_ruling] && _draws.length!=0) {
             voteCounter.winningChoice=0; // It's currently a tie.
         }
         for (uint i=0;i<_draws.length;++i) {
