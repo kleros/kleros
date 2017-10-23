@@ -1,6 +1,7 @@
 /**
  *  @title Kleros POC
  *  @author Clément Lesaege - <clement@lesaege.com>
+ *  This code implements a simple version of Kleros.
  *  Bug Bounties: This code hasn't undertaken a bug bounty program yet.
  */
 
