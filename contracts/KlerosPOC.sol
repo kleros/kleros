@@ -94,20 +94,20 @@ contract KlerosPOC is Arbitrator {
      *  @param _period The new period.
      */
     event NewPeriod(Period _period);
-	
-	/** @dev Emitted when a juror wins or loses tokens.
-	  * @param _account The juror affected.
-	  * @param _disputeID The ID of the dispute.
-	  * @param _amount The amount of parts of token which was won. Can be negative for lost amounts.
-	  */
-	event TokenShift(address indexed _account, uint _disputeID, int _amount);
-	
-	/** @dev Emited when a juror wins arbitration fees.
-	  * @param _account The account affected.
-	  * @param _disputeID The ID of the dispute.
-	  * @param _amount The amount of weis which was won.
-	  */
-	event ArbitrationReward(address indexed _account, uint _disputeID, uint _amount);
+    
+    /** @dev Emitted when a juror wins or loses tokens.
+      * @param _account The juror affected.
+      * @param _disputeID The ID of the dispute.
+      * @param _amount The amount of parts of token which was won. Can be negative for lost amounts.
+      */
+    event TokenShift(address indexed _account, uint _disputeID, int _amount);
+    
+    /** @dev Emited when a juror wins arbitration fees.
+      * @param _account The account affected.
+      * @param _disputeID The ID of the dispute.
+      * @param _amount The amount of weis which was won.
+      */
+    event ArbitrationReward(address indexed _account, uint _disputeID, uint _amount);
     
     // **************************** //
     // *         Modifiers        * //
@@ -252,9 +252,9 @@ contract KlerosPOC is Arbitrator {
         }
         
         juror.atStake+=_draws.length*(alpha*minActivatedToken)/ALPHA_DIVISOR;
-		uint feeToPay = _draws.length*dispute.arbitrationFeePerJuror;
+        uint feeToPay = _draws.length*dispute.arbitrationFeePerJuror;
         msg.sender.transfer(feeToPay);
-		ArbitrationReward(msg.sender,_disputeID,feeToPay);
+        ArbitrationReward(msg.sender,_disputeID,feeToPay);
     }
     
     /** @dev Steal part of the tokens of a juror who failed to vote.
@@ -306,7 +306,7 @@ contract KlerosPOC is Arbitrator {
                         Juror storage juror = jurors[vote.account];
                         uint penalty=amountShift<juror.balance ? amountShift : juror.balance;
                         juror.balance-=penalty;
-						TokenShift(vote.account,_disputeID,int(-penalty));
+                        TokenShift(vote.account,_disputeID,int(-penalty));
                         totalToRedistibute+=penalty;
                     } else {
                         ++nbCoherant;
@@ -322,7 +322,7 @@ contract KlerosPOC is Arbitrator {
                         if (vote.ruling==winningChoice) {
                             juror = jurors[vote.account];
                             juror.balance+=toRedistribute;
-							TokenShift(vote.account,_disputeID,int(toRedistribute));
+                            TokenShift(vote.account,_disputeID,int(toRedistribute));
                         }
                     }
                 }
