@@ -70,13 +70,13 @@ contract KlerosPOC is Arbitrator {
         Open,       // The dispute is opened but not outcome is available yet (this include when jurors voted but appeal is still possible).
         Resolving,  // The token repartition has started. Note that if it's done in just one call, this state is skipped.
         Executable, // The arbitrated contract can be called to enforce the decision.
-        Executed    // Everything has been done and the dispute can't be intercted with anymore.
+        Executed    // Everything has been done and the dispute can't be interacted with anymore.
     }
     struct Dispute {
         Arbitrable arbitrated;       // Contract to be arbitrated.
         uint session;                // First session the dispute was schedule.
         uint appeals;                // Number of appeals.
-        uint choices;                // The number of choices availables to the jurors.
+        uint choices;                // The number of choices available to the jurors.
         uint16 initialNumberJurors;  // The initial number of jurors.
         uint arbitrationFeePerJuror; // The fee which will be paid to each juror.
         DisputeState state;          // The state of the dispute.
@@ -222,7 +222,7 @@ contract KlerosPOC is Arbitrator {
     
     /** @dev Vote a ruling. Juror must input the draw ID he was drawn.
      *  Note that the complexity is O(d), where d is amount of times the juror was drawn.
-     *  Since being drawn multiple time is a rare occurence and that a juror can always vote with less weight than it has, it is not a problem.
+     *  Since being drawn multiple time is a rare occurrence and that a juror can always vote with less weight than it has, it is not a problem.
      *  @param _disputeID The ID of the dispute the juror was drawn.
      *  @param _ruling The ruling given.
      *  @param _draws The list of draws the juror was drawn. It draw numbering starts at 1 and the numbers should be increasing.
@@ -298,7 +298,7 @@ contract KlerosPOC is Arbitrator {
             // If the result is not a tie, some parties are incoherent. Note that 0 (refuse to arbitrate) winning is not a tie.
             if (winningChoice!=0 || (dispute.voteCounter[dispute.appeals].voteCount[0] == dispute.voteCounter[dispute.appeals].winningCount)) {
                 uint totalToRedistibute=0;
-                uint nbCoherant=0;
+                uint nbcoherent=0;
                 // First loop to penalize the incoherent votes.
                 for (uint j=0;j<dispute.votes[i].length;++j) {
                     Vote storage vote = dispute.votes[i][j];
@@ -309,14 +309,14 @@ contract KlerosPOC is Arbitrator {
                         TokenShift(vote.account,_disputeID,int(-penalty));
                         totalToRedistibute+=penalty;
                     } else {
-                        ++nbCoherant;
+                        ++nbcoherent;
                     }
                 }
-                if (nbCoherant==0) { // No one was coherant at this stage. Take the tokens.
+                if (nbcoherent==0) { // No one was coherent at this stage. Take the tokens.
                     jurors[this].balance+=totalToRedistibute;
                 } else { // otherwise, redistribute them.
-                    uint toRedistribute = totalToRedistibute/nbCoherant; // Note that few fractions of tokens can be lost but due to the high amount of decimals we don't care.
-                    // Second loop to redistibute.
+                    uint toRedistribute = totalToRedistibute/nbcoherent; // Note that few fractions of tokens can be lost but due to the high amount of decimals we don't care.
+                    // Second loop to redistribute.
                     for (j=0;j<dispute.votes[i].length;++j) {
                         vote = dispute.votes[i][j];
                         if (vote.ruling==winningChoice) {
@@ -357,7 +357,7 @@ contract KlerosPOC is Arbitrator {
     
     /** @dev Must be used to prove that a juror has been draw at least _draws.length times.
      *  We have to require the user to specify the draws that lead the juror to be drawn.
-     *  Because doing otherwise (looping throught all draws) could consume too much gas.
+     *  Because doing otherwise (looping through all draws) could consume too much gas.
      *  @param _jurorAddress Address of the juror we want to prove was drawn.
      *  @param _disputeID The ID of the dispute the juror was drawn.
      *  @param _draws The list of draws the juror was drawn. It draw numbering starts at 1 and the numbers should be increasing.
@@ -405,11 +405,11 @@ contract KlerosPOC is Arbitrator {
         dispute.arbitrated = Arbitrable(msg.sender);
         if (period < Period.Draw) // If drawing did not start schedule it for the current session.
             dispute.session = session;
-        else // Otherwize schedule it for the next one.
+        else // Otherwise schedule it for the next one.
             dispute.session = session+1;
         dispute.choices = _choices;
         dispute.initialNumberJurors = nbJurors;
-        dispute.arbitrationFeePerJuror = arbitrationFeePerJuror; // We story it as it will be able to be changed throught the governance mecanism.
+        dispute.arbitrationFeePerJuror = arbitrationFeePerJuror; // We story it as it will be able to be changed through the governance mechanism.
         dispute.votes.length++;
         dispute.voteCounter.length++;
         
@@ -449,7 +449,7 @@ contract KlerosPOC is Arbitrator {
     // *    Constant and pure     * //
     // **************************** //
     
-    /** @dev Compute the cost of arbitration. It is recommended not to increase it often, as it can be higly time and gas consuming for the arbitrated contracts to cope with fee augmentation.
+    /** @dev Compute the cost of arbitration. It is recommended not to increase it often, as it can be highly time and gas consuming for the arbitrated contracts to cope with fee augmentation.
      *  @param _extraData Null for the default number. Other first 16 bytes will be used to return the number of jurors.
      *  @return fee Amount to be paid.
      */
@@ -457,7 +457,7 @@ contract KlerosPOC is Arbitrator {
         return extraDataToNbJurors(_extraData) * arbitrationFeePerJuror;
     }
     
-    /** @dev Compute the cost of appeal. It is recommended not to increase it often, as it can be higly time and gas consuming for the arbitrated contracts to cope with fee augmentation.
+    /** @dev Compute the cost of appeal. It is recommended not to increase it often, as it can be highly time and gas consuming for the arbitrated contracts to cope with fee augmentation.
      *  @param _disputeID ID of the dispute to be appealed.
      *  @param _extraData Is not used there.
      *  @return fee Amount to be paid.
@@ -544,7 +544,7 @@ contract KlerosPOC is Arbitrator {
      *  @param _disputeID ID of the dispute.
      *  @param _juror The juror.
      *  @param _draw The draw. Note that it starts at 1.
-     *  @return drawn True if the juror is drawn, false otherwize.
+     *  @return drawn True if the juror is drawn, false otherwise.
      */
     function isDrawn(uint _disputeID, address _juror, uint _draw) public constant returns(bool drawn) {
         Dispute storage dispute = disputes[_disputeID];
@@ -564,7 +564,7 @@ contract KlerosPOC is Arbitrator {
         
     }
     
-    /** @dev Return the current ruling of a dispute. This is usefull for parties to know if they should appeal.
+    /** @dev Return the current ruling of a dispute. This is useful for parties to know if they should appeal.
      *  @param _disputeID ID of the dispute.
      *  @return ruling The current ruling which will be given if there is no appeal. If it is not available, return 0.
      */
