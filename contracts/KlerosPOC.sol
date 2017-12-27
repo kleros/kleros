@@ -202,10 +202,10 @@ contract KlerosPOC is Arbitrator {
         lastPeriodChange=now;
     }
 
-    /** @dev Boolean Callback to be used to determine if 3rd party should move contract to next period
-    * @param _data Can be used to pass additional data to Boolean Callback
-    * @return shouldCall If contract is ready to have pass period called
-    */
+    /** @dev Boolean Callback to be used to determine if 3rd party should move contract to next period.
+     *  @param _data Can be used to pass additional data to Boolean Callback.
+     *  @return shouldCall If contract is ready to have pass period called.
+     */
     function should_pass_period(bytes _data) public constant returns(bool shouldCall) {
       return now-lastPeriodChange>=timePerPeriod[uint8(period)];
     }
