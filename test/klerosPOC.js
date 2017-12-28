@@ -655,11 +655,15 @@ contract('KlerosPOC', function (accounts) {
     assert.equal(shouldCall, false)
     await klerosPOC.passPeriod({from: other}) // Pass twice to go to execution.
     await klerosPOC.passPeriod({from: other})
+    shouldCall = await klerosPOC.should_execute_ruling(disputeIdBytes)
+    assert.equal(shouldCall, false)
     await expectThrow(klerosPOC.executeRuling(0, {from: other})) // Should not be executable before.
     shouldCall = await klerosPOC.should_repartition_tokens(disputeIdBytes)
     assert.equal(shouldCall, true)
     await klerosPOC.oneShotTokenRepartition(0, {from: other})
     let payerBalanceBeforeExecution = web3.eth.getBalance(payer)
+    shouldCall = await klerosPOC.should_execute_ruling(disputeIdBytes)
+    assert.equal(shouldCall, true)
     await klerosPOC.executeRuling(0, {from: other})
     let payerBalanceAfterExecution = web3.eth.getBalance(payer)
     await expectThrow(klerosPOC.executeRuling(0, {from: other})) // Should not be executable multiple times.
