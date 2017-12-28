@@ -207,7 +207,7 @@ contract KlerosPOC is Arbitrator {
      *  @return shouldCall If contract is ready to have pass period called.
      */
     function should_pass_period(bytes _data) public constant returns(bool shouldCall) {
-      return now-lastPeriodChange>=timePerPeriod[uint8(period)];
+        return now-lastPeriodChange>=timePerPeriod[uint8(period)];
     }
 
 
@@ -350,11 +350,11 @@ contract KlerosPOC is Arbitrator {
      *  @return shouldCall If contract is ready to repartition tokens.
      */
     function should_repartition_tokens(bytes _data) public constant returns(bool _shouldCall) {
-      uint _disputeID = bytes_to_uint(_data, 0);
+        uint _disputeID = bytes_to_uint(_data, 0);
 
-      // check conditions
-      Dispute storage dispute = disputes[_disputeID];
-      return (period==Period.Execution && dispute.state==DisputeState.Open && dispute.session+dispute.appeals==session);
+        // check conditions
+        Dispute storage dispute = disputes[_disputeID];
+        return (period==Period.Execution && dispute.state==DisputeState.Open && dispute.session+dispute.appeals==session);
     }
 
     // TODO: Multiple TX token repartition.
@@ -470,10 +470,10 @@ contract KlerosPOC is Arbitrator {
      *  @return shouldCall If contract is ready to execute contract.
      */
     function should_execute_ruling(bytes _data) public constant returns(bool) {
-      uint disputeID = bytes_to_uint(_data, 0);
+        uint disputeID = bytes_to_uint(_data, 0);
 
-      Dispute storage dispute = disputes[disputeID];
-      return (dispute.state==DisputeState.Executable);
+        Dispute storage dispute = disputes[disputeID];
+        return (dispute.state==DisputeState.Executable);
     }
 
     // **************************** //
@@ -618,12 +618,12 @@ contract KlerosPOC is Arbitrator {
      *  @return uint representation of the 32 byte segment
      */
     function bytes_to_uint(bytes _data, uint offset) internal constant returns(uint) {
-      bytes32 chunk;
-      for (uint i = 0; i < 32; i++) {
-          chunk ^= bytes32(_data[offset + i]) >> (i * 8); // copy byte from _data into bytes32
-      }
+        bytes32 chunk;
+        for (uint i = 0; i < 32; i++) {
+            chunk ^= bytes32(_data[offset + i]) >> (i * 8); // copy byte from _data into bytes32
+        }
 
-      return uint(chunk); // cast to int
+        return uint(chunk); // cast to int
     }
 
     /** @dev takes a uint and returns a byte string representation of it
@@ -631,12 +631,12 @@ contract KlerosPOC is Arbitrator {
      *  @return data bytes representation of input
      */
     function uint_to_bytes(uint number) internal constant returns(bytes data) {
-     data = new bytes(32);
-     for (uint i = 0; i < 32; i++) {
-        data[i] = byte(uint8(number / (2**(8*(31 - i)))));
-     }
+       data = new bytes(32);
+       for (uint i = 0; i < 32; i++) {
+          data[i] = byte(uint8(number / (2**(8*(31 - i)))));
+       }
 
-     return data;
+       return data;
     }
 
 
