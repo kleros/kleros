@@ -176,7 +176,7 @@ contract KlerosPOC is Arbitrator {
     /** @dev To call to go to a new period. TRUSTED.
      */
     function passPeriod() public {
-        require(should_pass_period('0x'));
+        require(should_pass_period(''));
 
         if (period==Period.Activation) {
             rnBlock=block.number+1;
