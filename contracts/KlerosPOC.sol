@@ -10,7 +10,7 @@ pragma solidity ^0.4.15;
 import "kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
 import "./PinakionPOC.sol";
 import "kleros-interaction/contracts/standard/rng/RNG.sol";
-
+import "kleros-helpers/BytesHelpers.sol";
 
 
 contract KlerosPOC is Arbitrator {
@@ -295,7 +295,7 @@ contract KlerosPOC is Arbitrator {
      *  @param _disputeID ID of the dispute.
      */
     function oneShotTokenRepartition(uint _disputeID) public onlyDuring(Period.Execution) {
-        bytes memory disputeIdBytes = uint_to_bytes(_disputeID);
+        bytes memory disputeIdBytes = BytesHelpers.uint_to_bytes(_disputeID);
         require(should_repartition_tokens(disputeIdBytes));
 
         Dispute storage dispute = disputes[_disputeID];
@@ -350,7 +350,7 @@ contract KlerosPOC is Arbitrator {
      *  @return shouldCall If contract is ready to repartition tokens.
      */
     function should_repartition_tokens(bytes _data) public constant returns(bool _shouldCall) {
-        uint _disputeID = bytes_to_uint(_data, 0);
+        uint _disputeID = BytesHelpers.bytes_to_uint(_data, 0);
 
         // check conditions
         Dispute storage dispute = disputes[_disputeID];
@@ -457,7 +457,7 @@ contract KlerosPOC is Arbitrator {
      *  @param disputeID ID of the dispute to execute the ruling.
      */
     function executeRuling(uint disputeID) public {
-        bytes memory disputeIdBytes = uint_to_bytes(disputeID);
+        bytes memory disputeIdBytes = BytesHelpers.uint_to_bytes(disputeID);
         require(should_execute_ruling(disputeIdBytes));
 
         Dispute storage dispute = disputes[disputeID];
@@ -470,7 +470,7 @@ contract KlerosPOC is Arbitrator {
      *  @return shouldCall If contract is ready to execute contract.
      */
     function should_execute_ruling(bytes _data) public constant returns(bool) {
-        uint disputeID = bytes_to_uint(_data, 0);
+        uint disputeID = BytesHelpers.bytes_to_uint(_data, 0);
 
         Dispute storage dispute = disputes[disputeID];
         return (dispute.state==DisputeState.Executable);
@@ -606,38 +606,4 @@ contract KlerosPOC is Arbitrator {
 
         return dispute.voteCounter[dispute.appeals].winningChoice;
     }
-
-
-    // **************************** //
-    // *       bytes helpers      * //
-    // **************************** //
-
-    /** @dev takes an arbitrary length byte string _data and returns a byte32 chunk based on offset
-     *  @param _data Bytes
-     *  @param offset number of bytes from the start where 32 bytes should be taken from
-     *  @return uint representation of the 32 byte segment
-     */
-    function bytes_to_uint(bytes _data, uint offset) internal constant returns(uint) {
-        bytes32 chunk;
-        for (uint i = 0; i < 32; i++) {
-            chunk ^= bytes32(_data[offset + i]) >> (i * 8); // copy byte from _data into bytes32
-        }
-
-        return uint(chunk); // cast to int
-    }
-
-    /** @dev takes a uint and returns a byte string representation of it
-     *  @param number integer to convert
-     *  @return data bytes representation of input
-     */
-    function uint_to_bytes(uint number) internal constant returns(bytes data) {
-       data = new bytes(32);
-       for (uint i = 0; i < 32; i++) {
-          data[i] = byte(uint8(number / (2**(8*(31 - i)))));
-       }
-
-       return data;
-    }
-
-
 }
