@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */ // Avoid the linter considering truffle elements as undef.
-const { expectThrow, increaseTime, mineBlock } = require('kleros-interaction/helpers/utils')
+const { expectThrow, increaseTime } = require('kleros-interaction/helpers/utils')
 const KlerosPOC = artifacts.require('./KlerosPOC.sol')
 const Pinakion = artifacts.require('./PinakionPOC.sol')
 const ArbitrableTransaction = artifacts.require('kleros-interaction/ArbitrableTransaction.sol')
@@ -96,55 +96,29 @@ contract('KlerosPOC', function (accounts) {
     assert.equal(await klerosPOC.period(), 0)
 
     increaseTime(10)
-    mineBlock()
-    let shouldCall = await klerosPOC.should_pass_period('')
-    assert.equal(shouldCall, false)
     await expectThrow(klerosPOC.passPeriod({from: other}))
-    increaseTime(21)
-    mineBlock()
-    shouldCall = await klerosPOC.should_pass_period('')
-    assert.equal(shouldCall, true)
+    increaseTime(11)
     await klerosPOC.passPeriod({from: other})
     assert.equal(await klerosPOC.period(), 1)
 
-    shouldCall = await klerosPOC.should_pass_period('')
-    assert.equal(shouldCall, true)
     await klerosPOC.passPeriod({from: other})
     assert.equal(await klerosPOC.period(), 2)
 
     increaseTime(10)
-    mineBlock()
-    shouldCall = await klerosPOC.should_pass_period('')
-    assert.equal(shouldCall, false)
     await expectThrow(klerosPOC.passPeriod({from: other}))
     increaseTime(71)
-    mineBlock()
-    shouldCall = await klerosPOC.should_pass_period('')
-    assert.equal(shouldCall, true)
     await klerosPOC.passPeriod({from: other})
     assert.equal(await klerosPOC.period(), 3)
 
     increaseTime(10)
-    mineBlock()
-    shouldCall = await klerosPOC.should_pass_period('')
-    assert.equal(shouldCall, false)
     await expectThrow(klerosPOC.passPeriod({from: other}))
     increaseTime(11)
-    mineBlock()
-    shouldCall = await klerosPOC.should_pass_period('')
-    assert.equal(shouldCall, true)
     await klerosPOC.passPeriod({from: other})
     assert.equal(await klerosPOC.period(), 4)
 
     increaseTime(10)
-    mineBlock()
-    shouldCall = await klerosPOC.should_pass_period('')
-    assert.equal(shouldCall, false)
     await expectThrow(klerosPOC.passPeriod({from: other}))
     increaseTime(41)
-    mineBlock()
-    shouldCall = await klerosPOC.should_pass_period('')
-    assert.equal(shouldCall, true)
     await klerosPOC.passPeriod({from: other})
     assert.equal(await klerosPOC.period(), 0)
     assert.equal(await klerosPOC.session(), 2)
@@ -245,7 +219,7 @@ contract('KlerosPOC', function (accounts) {
     let tx = await klerosPOC.voteRuling(0, 1, [1, 2, 3], {from: jurorA, gasPrice: gasPrice})
     let txFee = tx.receipt.gasUsed * gasPrice
     let jurorABalanceAfterVote = web3.eth.getBalance(jurorA)
-
+    
 
     assert.equal((jurorABalanceBeforeVote.toNumber() + arbitrationFee.toNumber() - txFee), jurorABalanceAfterVote.toNumber(), 'The juror has not been paid correctly')
     let stakePerWeight = (await klerosPOC.minActivatedToken()) * (await klerosPOC.alpha()) / (1e4)
@@ -650,20 +624,11 @@ contract('KlerosPOC', function (accounts) {
     await klerosPOC.voteRuling(0, 1, drawA, {from: jurorA})
     await klerosPOC.voteRuling(0, 1, drawB, {from: jurorB})
 
-    const disputeIdBytes = "0x0000000000000000000000000000000000000000000000000000000000000000"
-    let shouldCall = await klerosPOC.should_repartition_tokens(disputeIdBytes)
-    assert.equal(shouldCall, false)
     await klerosPOC.passPeriod({from: other}) // Pass twice to go to execution.
     await klerosPOC.passPeriod({from: other})
-    shouldCall = await klerosPOC.should_execute_ruling(disputeIdBytes)
-    assert.equal(shouldCall, false)
     await expectThrow(klerosPOC.executeRuling(0, {from: other})) // Should not be executable before.
-    shouldCall = await klerosPOC.should_repartition_tokens(disputeIdBytes)
-    assert.equal(shouldCall, true)
     await klerosPOC.oneShotTokenRepartition(0, {from: other})
     let payerBalanceBeforeExecution = web3.eth.getBalance(payer)
-    shouldCall = await klerosPOC.should_execute_ruling(disputeIdBytes)
-    assert.equal(shouldCall, true)
     await klerosPOC.executeRuling(0, {from: other})
     let payerBalanceAfterExecution = web3.eth.getBalance(payer)
     await expectThrow(klerosPOC.executeRuling(0, {from: other})) // Should not be executable multiple times.
