@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/kleros/kleros#readme",
   "devDependencies": {
-    "truffle": "^3.4.11",
+    "truffle": "^4.0.4",
     "web3": "^1.0.0-beta.22"
   },
   "dependencies": {
