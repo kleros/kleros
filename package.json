@@ -29,7 +29,6 @@
   },
   "dependencies": {
     "kleros-interaction": "0.0.9",
-    "kleros-helpers": "0.0.1",
     "zeppelin-solidity": "^1.4.0"
   }
 }
