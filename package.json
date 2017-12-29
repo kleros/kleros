@@ -24,11 +24,11 @@
   },
   "homepage": "https://github.com/kleros/kleros#readme",
   "devDependencies": {
-    "truffle": "^3.4.9",
+    "truffle": "^3.4.11",
     "web3": "^1.0.0-beta.22"
   },
   "dependencies": {
-    "kleros-interaction": "0.0.9",
-    "zeppelin-solidity": "^1.4.0"
+    "kleros-interaction": "0.0.13",
+    "zeppelin-solidity": "^1.5.0"
   }
 }
