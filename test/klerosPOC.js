@@ -97,12 +97,11 @@ contract('KlerosPOC', function (accounts) {
 
     increaseTime(10)
     mineBlock()
-    let shouldCall = await klerosPOC.should_pass_period('')
-    assert.equal(shouldCall, false)
+    await expectThrow(klerosPOC.should_pass_period(''))
     await expectThrow(klerosPOC.passPeriod({from: other}))
     increaseTime(11)
     mineBlock()
-    shouldCall = await klerosPOC.should_pass_period('')
+    let shouldCall = await klerosPOC.should_pass_period('')
     assert.equal(shouldCall, true)
     await klerosPOC.passPeriod({from: other})
     assert.equal(await klerosPOC.period(), 1)
@@ -114,8 +113,7 @@ contract('KlerosPOC', function (accounts) {
 
     increaseTime(10)
     mineBlock()
-    shouldCall = await klerosPOC.should_pass_period('')
-    assert.equal(shouldCall, false)
+    await expectThrow(klerosPOC.should_pass_period(''))
     await expectThrow(klerosPOC.passPeriod({from: other}))
     increaseTime(71)
     mineBlock()
@@ -126,8 +124,7 @@ contract('KlerosPOC', function (accounts) {
 
     increaseTime(10)
     mineBlock()
-    shouldCall = await klerosPOC.should_pass_period('')
-    assert.equal(shouldCall, false)
+    await expectThrow(klerosPOC.should_pass_period(''))
     await expectThrow(klerosPOC.passPeriod({from: other}))
     increaseTime(11)
     mineBlock()
@@ -138,8 +135,7 @@ contract('KlerosPOC', function (accounts) {
 
     increaseTime(10)
     mineBlock()
-    shouldCall = await klerosPOC.should_pass_period('')
-    assert.equal(shouldCall, false)
+    await expectThrow(klerosPOC.should_pass_period(''))
     await expectThrow(klerosPOC.passPeriod({from: other}))
     increaseTime(41)
     mineBlock()
@@ -651,14 +647,12 @@ contract('KlerosPOC', function (accounts) {
     await klerosPOC.voteRuling(0, 1, drawB, {from: jurorB})
 
     const disputeIdBytes = "0x0000000000000000000000000000000000000000000000000000000000000000"
-    let shouldCall = await klerosPOC.should_repartition_tokens(disputeIdBytes)
-    assert.equal(shouldCall, false)
+    await expectThrow(klerosPOC.should_repartition_tokens(disputeIdBytes))
     await klerosPOC.passPeriod({from: other}) // Pass twice to go to execution.
     await klerosPOC.passPeriod({from: other})
-    shouldCall = await klerosPOC.should_execute_ruling(disputeIdBytes)
-    assert.equal(shouldCall, false)
+    await expectThrow(klerosPOC.should_execute_ruling(disputeIdBytes))
     await expectThrow(klerosPOC.executeRuling(0, {from: other})) // Should not be executable before.
-    shouldCall = await klerosPOC.should_repartition_tokens(disputeIdBytes)
+    let shouldCall = await klerosPOC.should_repartition_tokens(disputeIdBytes)
     assert.equal(shouldCall, true)
     await klerosPOC.oneShotTokenRepartition(0, {from: other})
     let payerBalanceBeforeExecution = web3.eth.getBalance(payer)

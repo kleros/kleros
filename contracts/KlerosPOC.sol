@@ -176,7 +176,7 @@ contract KlerosPOC is Arbitrator {
     /** @dev To call to go to a new period. TRUSTED.
      */
     function passPeriod() public {
-        require(now-lastPeriodChange>=timePerPeriod[uint8(period)]);
+        require(should_pass_period(''));
 
         if (period==Period.Activation) {
             rnBlock=block.number+1;
@@ -204,11 +204,16 @@ contract KlerosPOC is Arbitrator {
     }
 
     /** @dev Action Indicator to be used to determine if 3rd party should move contract to next period.
-     *  @param _data Can be used to pass additional data to Boolean Callback.
+     *  @param _data Can be used to pass additional data to callback.
      *  @return shouldCall If contract is ready to have pass period called.
      */
     function should_pass_period(bytes _data) public constant returns(bool shouldCall) {
-        return now-lastPeriodChange>=timePerPeriod[uint8(period)];
+        shouldCall = (now-lastPeriodChange>=timePerPeriod[uint8(period)]);
+        if (!shouldCall) {
+            throw;
+        }
+
+        return shouldCall;
     }
 
 
@@ -350,12 +355,17 @@ contract KlerosPOC is Arbitrator {
      *  @param _data Used to pass disputeID (first 32 bytes).
      *  @return shouldCall If contract is ready to repartition tokens.
      */
-    function should_repartition_tokens(bytes _data) public constant returns(bool _shouldCall) {
+    function should_repartition_tokens(bytes _data) public constant returns(bool shouldCall) {
         uint _disputeID = BytesHelpers.bytes_to_uint(_data, 0);
 
         // check conditions
         Dispute storage dispute = disputes[_disputeID];
-        return (period==Period.Execution && dispute.state==DisputeState.Open && dispute.session+dispute.appeals==session);
+        shouldCall = (period==Period.Execution && dispute.state==DisputeState.Open && dispute.session+dispute.appeals==session);
+        if (!shouldCall) {
+          throw;
+        }
+
+        return shouldCall;
     }
 
     // TODO: Multiple TX token repartition.
@@ -470,11 +480,16 @@ contract KlerosPOC is Arbitrator {
      *  @param _data Used to pass uint disputeID (first 32 bytes).
      *  @return shouldCall If contract is ready to execute contract.
      */
-    function should_execute_ruling(bytes _data) public constant returns(bool) {
+    function should_execute_ruling(bytes _data) public constant returns(bool shouldCall) {
         uint disputeID = BytesHelpers.bytes_to_uint(_data, 0);
 
         Dispute storage dispute = disputes[disputeID];
-        return (dispute.state==DisputeState.Executable);
+        shouldCall = (dispute.state==DisputeState.Executable);
+        if (!shouldCall) {
+          throw;
+        }
+
+        return shouldCall;
     }
 
     // **************************** //
