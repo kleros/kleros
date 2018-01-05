@@ -290,8 +290,8 @@ contract KlerosPOC is Arbitrator {
     function oneShotTokenRepartition(uint _disputeID) public onlyDuring(Period.Execution) {
         Dispute storage dispute = disputes[_disputeID];
         require(dispute.state==DisputeState.Open);
-        require(dispute.session+dispute.appeals==session);
-        
+        require(dispute.session+dispute.appeals<=session);
+
         uint winningChoice=dispute.voteCounter[dispute.appeals].winningChoice;
         uint amountShift=(alpha*minActivatedToken)/ALPHA_DIVISOR;
         for (uint i=0;i<=dispute.appeals;++i) {
