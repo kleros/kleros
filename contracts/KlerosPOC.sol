@@ -14,14 +14,14 @@ import "kleros-interaction/contracts/standard/rng/RNG.sol";
 
 
 contract KlerosPOC is Arbitrator {
-    
+
     // **************************** //
     // *    Contract variables    * //
     // **************************** //
-    
+
     // Variables which should not change after initialization.
     PinakionPOC public pinakion;
-    
+
     // Variables which will subject to the governance mechanism.
     // Note they will only be able to be changed during the activation period (because a session assumes they don't change after it).
     RNG public rng; // Random Number Generator used to draw jurors.
@@ -31,14 +31,14 @@ contract KlerosPOC is Arbitrator {
     uint[5] public timePerPeriod; // The minimum time each period lasts.
     uint public alpha = 2000; // alpha in ‱.
     uint constant ALPHA_DIVISOR = 1e4; // Amount we need to dived alpha in ‱ to get the float value of alpha.
-    
+
     // Variables changing during day to day interaction.
     uint public session = 1;      // Current session of the court.
     uint public lastPeriodChange; // The last time time we changed of period.
     uint public segmentSize;      // Size of the segment of activated tokens.
     uint public rnBlock;          // The block linked with the RN which is requested.
     uint public randomNumber;     // Random number of the session.
-    
+
     enum Period {
         Activation, // When juror can activate their tokens and parties give evidences.
         Draw,       // When jurors are drawn at random, note that this period is fast.
@@ -47,7 +47,7 @@ contract KlerosPOC is Arbitrator {
         Execution   // When where token redistribution occurs and Kleros call the arbitrated contracts.
     }
     Period public period;
-    
+
     struct Juror {
         uint balance;      // The amount of token the contract holds for this juror.
         uint atStake;      // Total number of tokens the juror can loose in disputes he is drawn in. Those tokens are locked. Note that we can have atStake>balance but it should be statistically unlikely and does not pose issues.
@@ -56,7 +56,7 @@ contract KlerosPOC is Arbitrator {
         uint segmentEnd;   // End of the segment of activated tokens.
     }
     mapping (address => Juror) public jurors;
-    
+
     struct Vote {
         address account; // The juror who casted the vote.
         uint ruling;     // The ruling which was given.
@@ -83,40 +83,48 @@ contract KlerosPOC is Arbitrator {
         Vote[][] votes;              // The votes in the form vote[appeals][voteID].
         VoteCounter[] voteCounter;   // The vote counters in the form voteCounter[appeals].
         mapping (address => uint) lastSessionVote; // Last session a juror has voted on this dispute. Is 0 if he never did.
+        uint lastAppealRepartitioned: // last appeal that was fully repartitioned
+        AppealsRepartitioned[] appealsRepartitioned; // track a partially repartitioned appeal in the form AppealsRepartitioned[appeal]
     }
+    struct AppealsRepartitioned {
+      uint totalToRedistibute; // total amount of tokens we have to redistribute
+      uint nbcoherent; // number of coherent jurors for session
+      uint lastVoteReparitioned; // last vote we have counted
+    }
+
     Dispute[] public disputes;
-    
+
     // **************************** //
     // *          Events          * //
     // **************************** //
-    
+
     /** @dev Emitted when we pass to a new period.
      *  @param _period The new period.
      */
     event NewPeriod(Period _period);
-    
+
     /** @dev Emitted when a juror wins or loses tokens.
       * @param _account The juror affected.
       * @param _disputeID The ID of the dispute.
       * @param _amount The amount of parts of token which was won. Can be negative for lost amounts.
       */
     event TokenShift(address indexed _account, uint _disputeID, int _amount);
-    
+
     /** @dev Emited when a juror wins arbitration fees.
       * @param _account The account affected.
       * @param _disputeID The ID of the dispute.
       * @param _amount The amount of weis which was won.
       */
     event ArbitrationReward(address indexed _account, uint _disputeID, uint _amount);
-    
+
     // **************************** //
     // *         Modifiers        * //
-    // **************************** //    
+    // **************************** //
     modifier onlyBy(address _account) { require(msg.sender==_account); _; }
     modifier onlyDuring(Period _period) { require(period==_period); _;}
-    
-    
-    
+
+
+
     /** @dev Constructor.
      *  @param _pinakion The address of the pinakion contract.
      *  @param _rng The random number generator which will be used.
@@ -128,23 +136,23 @@ contract KlerosPOC is Arbitrator {
         lastPeriodChange=now;
         timePerPeriod=_timePerPeriod;
     }
-    
-    
+
+
     // **************************** //
     // *  Functions interacting   * //
     // *  with Pinakion contract  * //
     // **************************** //
-    
+
     /** @dev Deposit pinakions of a juror in the contract. Should be call by the pinakion contract. TRUSTED.
      *  @param _from The address making the deposit.
      *  @param _value Amount of fractions of token to deposit.
      */
     function deposit(address _from, uint _value) public onlyBy(pinakion) {
         require(pinakion.transferFrom(_from,this,_value));
-        
+
         jurors[_from].balance+=_value;
     }
-    
+
     /** @dev Withdraw tokens. Note that we can't withdraw the tokens which are still atStake. Jurors can't withdraw their tokens if they have activated some during Draw and Vote.
      *  This is to prevent jurors from withdrawing tokens they could loose.
      *  @param _value The amount to withdraw.
@@ -154,11 +162,11 @@ contract KlerosPOC is Arbitrator {
         require(juror.atStake<=juror.balance); // Make sure that there is no more at stake than owned to avoid overflow.
         require(_value<=juror.balance-juror.atStake);
         require(juror.lastSession!=session);
-            
+
         juror.balance-=_value;
         require(pinakion.transfer(msg.sender,_value));
     }
-    
+
     /** @dev Give Pinakions at the rate 1 ETH = 1 PNK.
      *  Note that in the real Kleros, the token supply will be fixed but for the proof of concept, we prefer to allow users to get some easily to try it.
      */
@@ -167,17 +175,17 @@ contract KlerosPOC is Arbitrator {
         juror.balance+=msg.value;
         pinakion.mint(this,msg.value);
     }
-    
+
     // **************************** //
     // *      Court functions     * //
     // *    Modifying the state   * //
     // **************************** //
-    
+
     /** @dev To call to go to a new period. TRUSTED.
      */
     function passPeriod() public {
         require(now-lastPeriodChange>=timePerPeriod[uint8(period)]);
-        
+
         if (period==Period.Activation) {
             rnBlock=block.number+1;
             rng.requestRN(rnBlock);
@@ -197,13 +205,13 @@ contract KlerosPOC is Arbitrator {
             rnBlock=0;
             randomNumber=0;
         }
-        
-        
+
+
         lastPeriodChange=now;
         NewPeriod(period);
     }
-  
-  
+
+
     /** @dev Activate tokens in order to have chances of being drawn. Note that once tokens are activated, there is no possibility of activating more.
      *  @param _value Amount of fractions of token to activate.
      */
@@ -212,14 +220,14 @@ contract KlerosPOC is Arbitrator {
         require(_value<=juror.balance);
         require(_value>=minActivatedToken);
         require(juror.lastSession!=session); // Verify that tokens were not already activated for this session.
-        
+
         juror.lastSession=session;
         juror.segmentStart=segmentSize;
         segmentSize+=_value;
         juror.segmentEnd=segmentSize;
-        
+
     }
-    
+
     /** @dev Vote a ruling. Juror must input the draw ID he was drawn.
      *  Note that the complexity is O(d), where d is amount of times the juror was drawn.
      *  Since being drawn multiple time is a rare occurrence and that a juror can always vote with less weight than it has, it is not a problem.
@@ -235,7 +243,7 @@ contract KlerosPOC is Arbitrator {
         require(_ruling<=dispute.choices);
         // Note that it throws if the draws are incorrect.
         require(validDraws(msg.sender,_disputeID,_draws));
-        
+
         dispute.lastSessionVote[msg.sender]=session;
         voteCounter.voteCount[_ruling]+=_draws.length;
         if (voteCounter.winningCount<voteCounter.voteCount[_ruling]) {
@@ -250,13 +258,13 @@ contract KlerosPOC is Arbitrator {
                 ruling:_ruling
             }));
         }
-        
+
         juror.atStake+=_draws.length*(alpha*minActivatedToken)/ALPHA_DIVISOR;
         uint feeToPay = _draws.length*dispute.arbitrationFeePerJuror;
         msg.sender.transfer(feeToPay);
         ArbitrationReward(msg.sender,_disputeID,feeToPay);
     }
-    
+
     /** @dev Steal part of the tokens of a juror who failed to vote.
      *  Note that a juror who voted but without all his weight can't be penalized.
      *  @param _jurorAddress Address of the juror to steal tokens from.
@@ -271,20 +279,18 @@ contract KlerosPOC is Arbitrator {
         dispute.lastSessionVote[_jurorAddress]=session;
         require(validDraws(_jurorAddress,_disputeID,_draws));
         uint penality = _draws.length * minActivatedToken * 2 * alpha / ALPHA_DIVISOR;
-        
+
         penality = (penality<inactiveJuror.balance-inactiveJuror.atStake) ? penality : inactiveJuror.balance-inactiveJuror.atStake; // Make sure the penality is not higher than what the juror can lose.
         inactiveJuror.balance-=penality;
         jurors[msg.sender].balance+=penality/2; // Give half of the penalty to the caller.
         jurors[this].balance+=penality/2; // The other half to Kleros.
-        
+
         msg.sender.transfer(_draws.length*dispute.arbitrationFeePerJuror);
     }
-    
+
     /** @dev Execute all the token repartition.
      *  Note that this function could consume to much gas if there is too much votes. It is O(v), where v is the number of votes for this dispute.
      *  In the next version, there will also be a function to execute it in multiple calls (but note that one shot execution, if possible, is less expensive).
-     *  Note that if no one calls this function during the execution step, the tokens at stake will be locked for ever.
-     *  In next versions Ethereum Alarm Clock or a similar system will be used to make sure the function is called.
      *  @param _disputeID ID of the dispute.
      */
     function oneShotTokenRepartition(uint _disputeID) public onlyDuring(Period.Execution) {
@@ -294,7 +300,7 @@ contract KlerosPOC is Arbitrator {
 
         uint winningChoice=dispute.voteCounter[dispute.appeals].winningChoice;
         uint amountShift=(alpha*minActivatedToken)/ALPHA_DIVISOR;
-        for (uint i=0;i<=dispute.appeals;++i) {
+        for (uint i=dispute.lastAppealRepartitioned;i<=dispute.appeals;++i) {
             // If the result is not a tie, some parties are incoherent. Note that 0 (refuse to arbitrate) winning is not a tie.
             if (winningChoice!=0 || (dispute.voteCounter[dispute.appeals].voteCount[0] == dispute.voteCounter[dispute.appeals].winningCount)) {
                 uint totalToRedistibute=0;
@@ -336,14 +342,93 @@ contract KlerosPOC is Arbitrator {
         }
         dispute.state=DisputeState.Executable; // Since it was solved in one shot, go directly to the executable step.
     }
-    
-    // TODO: Multiple TX token repartition.
-    
+
+    /* Things we need to have happen
+    * - For dispute, determine how many appeals we can handle (user inputs how many?)
+    * - remember how many votes we have gone through
+    * - Store totalToRedistibute and nbcoherent globally in dispute
+    * IDEA read event for token shift to know where we left off?
+    * - We have to be able to disallow redistributing tokens multiple times for segments of voters
+    *  @param _disputeId ID of the dispute.
+    *  @param _numberOfAppeals amount of appeals to iterate through
+    *  @param _maxVotes the maxium number of votes to consider in this iteration
+    */
+    function multipleShotTokenRepartition(uint _disputeId, uint _maxVotes) public onlyDuring(Period.Execution) {
+      Dispute storage dispute = disputes[_disputeID];
+      require(dispute.state<=DisputeState.Resolving);
+      require(dispute.session+dispute.appeals<=session);
+
+      // mark as resolving so oneShotTokenRepartition cannot be called on dispute
+      dispute.state=DisputeState.Resolving
+      uint winningChoice=dispute.voteCounter[dispute.appeals].winningChoice;
+      uint amountShift=(alpha*minActivatedToken)/ALPHA_DIVISOR;
+
+      uint votesRepartitioned=0; // total votes we have repartitioned this iteration
+      bool repartitionComplete=true; // if we do not count _maxVotes then the dispute is fully repartitioned
+      for (uint i=dispute.lastAppealRepartitioned+1;i<=dispute.appeals;++i) {
+          if (votesRepartitioned >= _maxVotes) {
+            repartitionComplete=false;
+            break;
+          }
+          // If the result is not a tie, some parties are incoherent. Note that 0 (refuse to arbitrate) winning is not a tie.
+          if (winningChoice!=0 || (dispute.voteCounter[dispute.appeals].voteCount[0] == dispute.voteCounter[dispute.appeals].winningCount)) {
+              // First loop to penalize the incoherent votes.
+              for (uint j=dispute.appealsRepartitioned[i].lastVoteReparitioned;j<=dispute.votes[i].length;++j) {
+                  if (votesRepartitioned >= _maxVotes) {
+                    break;
+                  }
+                  Vote storage vote = dispute.votes[i][j];
+                  if (vote.ruling!=winningChoice) {
+                      Juror storage juror = jurors[vote.account];
+                      uint penalty=amountShift<juror.balance ? amountShift : juror.balance;
+                      juror.balance-=penalty;
+                      TokenShift(vote.account,_disputeID,int(-penalty));
+                      dispute.appealsRepartitioned[i].totalToRedistibute+=penalty;
+                  } else {
+                      ++dispute.appealsRepartitioned[i].nbcoherent;
+                  }
+
+                  dispute.appealsRepartitioned[i].lastVoteReparitioned = j;
+                  ++votesRepartitioned;
+              }
+              // if we have counted all of the votes for the session
+              if (dispute.appealsRepartitioned[i].lastVoteReparitioned==dispute.votes[i].length-1) {
+                  if (dispute.appealsRepartitioned[i].nbcoherent==0) { // No one was coherent at this stage. Take the tokens.
+                      jurors[this].balance+=dispute.appealsRepartitioned[i].totalToRedistibute;
+                  } else { // otherwise, redistribute them.
+                      uint toRedistribute = dispute.appealsRepartitioned[i].totalToRedistibute/dispute.appealsRepartitioned[i].nbcoherent; // Note that few fractions of tokens can be lost but due to the high amount of decimals we don't care.
+                      // Second loop to redistribute.
+                      for (j=0;j<dispute.votes[i].length;++j) {
+                          vote = dispute.votes[i][j];
+                          if (vote.ruling==winningChoice) {
+                              juror = jurors[vote.account];
+                              juror.balance+=toRedistribute;
+                              TokenShift(vote.account,_disputeID,int(toRedistribute));
+                          }
+                      }
+                  }
+                  // Third loop to lower the atStake in order to unlock tokens.
+                  for (j=0;j<dispute.votes[i].length;++j) {
+                      vote = dispute.votes[i][j];
+                      juror = jurors[vote.account];
+                      juror.atStake -= amountShift; // Note that it can't underflow due to amountShift not changing between vote and redistribution.
+                  }
+
+                  dispute.lastAppealRepartitioned = i;
+              }
+          }
+      }
+
+      if (repartitionComplete) {
+        dispute.state=DisputeState.Executable;
+      }
+    }
+
     // **************************** //
     // *      Court functions     * //
     // *     Constant and Pure    * //
-    // **************************** //  
-    
+    // **************************** //
+
     /** @dev Return the amount of jurors which are or will be drawn in the dispute.
      *  The number of jurors is doubled and 1 is added at each appeal. We have proven the formula by recurrence.
      *  This avoid having a variable number of jurors which would be updated in order to save gas.
@@ -354,7 +439,7 @@ contract KlerosPOC is Arbitrator {
         Dispute storage dispute = disputes[_disputeID];
         return (dispute.initialNumberJurors+1) * 2**dispute.appeals - 1;
     }
-    
+
     /** @dev Must be used to prove that a juror has been draw at least _draws.length times.
      *  We have to require the user to specify the draws that lead the juror to be drawn.
      *  Because doing otherwise (looping through all draws) could consume too much gas.
@@ -369,7 +454,7 @@ contract KlerosPOC is Arbitrator {
         Juror storage juror = jurors[_jurorAddress];
         Dispute storage dispute = disputes[_disputeID];
         uint nbJurors = amountJurors(_disputeID);
-        
+
         if (juror.lastSession!=session) return false; // Make sure that the tokens were activated for this session.
         if (dispute.session+dispute.appeals != session) return false; // Make sure this currently a dispute.
         if (period<=Period.Draw) return false; // Make sure that it's already drawn.
@@ -381,15 +466,15 @@ contract KlerosPOC is Arbitrator {
             require(position>=juror.segmentStart);
             require(position<juror.segmentEnd);
         }
-        
+
         return true;
     }
-    
+
     // **************************** //
     // *   Arbitrator functions   * //
     // *   Modifying the state    * //
     // **************************** //
-    
+
     /** @dev Create a dispute. Must be called by the arbitrable contract.
      *  Must be paid at least arbitrationCost().
      *  @param _choices Amount of choices the arbitrator can make in this dispute.
@@ -399,7 +484,7 @@ contract KlerosPOC is Arbitrator {
     function createDispute(uint _choices, bytes _extraData) public payable returns(uint disputeID) {
         uint16 nbJurors = extraDataToNbJurors(_extraData);
         require(msg.value >= arbitrationCost(_extraData));
-        
+
         disputeID = disputes.length++;
         Dispute storage dispute = disputes[disputeID];
         dispute.arbitrated = Arbitrable(msg.sender);
@@ -412,11 +497,11 @@ contract KlerosPOC is Arbitrator {
         dispute.arbitrationFeePerJuror = arbitrationFeePerJuror; // We story it as it will be able to be changed through the governance mechanism.
         dispute.votes.length++;
         dispute.voteCounter.length++;
-        
+
         DisputeCreation(disputeID, Arbitrable(msg.sender));
         return disputeID;
     }
-    
+
     /** @dev Appeal a ruling. Note that it has to be called before the arbitrator contract calls rule.
      *  @param _disputeID ID of the dispute to be appealed.
      *  @param _extraData Standard but not used by this contract.
@@ -426,29 +511,29 @@ contract KlerosPOC is Arbitrator {
         Dispute storage dispute = disputes[_disputeID];
         require(msg.value >= appealCost(_disputeID,_extraData));
         require(dispute.session+dispute.appeals == session); // Dispute of the current session.
-        
+
         dispute.appeals++;
         dispute.votes.length++;
         dispute.voteCounter.length++;
-        
+
     }
-    
+
     /** @dev Execute the ruling of a dispute which is in the state executable. UNTRUSTED.
      *  @param disputeID ID of the dispute to execute the ruling.
      */
     function executeRuling(uint disputeID) public {
         Dispute storage dispute = disputes[disputeID];
         require(dispute.state==DisputeState.Executable);
-        
+
         dispute.state=DisputeState.Executed;
         dispute.arbitrated.rule(disputeID,dispute.voteCounter[dispute.appeals].winningChoice);
     }
-    
+
     // **************************** //
     // *   Arbitrator functions   * //
     // *    Constant and pure     * //
     // **************************** //
-    
+
     /** @dev Compute the cost of arbitration. It is recommended not to increase it often, as it can be highly time and gas consuming for the arbitrated contracts to cope with fee augmentation.
      *  @param _extraData Null for the default number. Other first 16 bytes will be used to return the number of jurors.
      *  @return fee Amount to be paid.
@@ -456,7 +541,7 @@ contract KlerosPOC is Arbitrator {
     function arbitrationCost(bytes _extraData) public constant returns(uint fee) {
         return extraDataToNbJurors(_extraData) * arbitrationFeePerJuror;
     }
-    
+
     /** @dev Compute the cost of appeal. It is recommended not to increase it often, as it can be highly time and gas consuming for the arbitrated contracts to cope with fee augmentation.
      *  @param _disputeID ID of the dispute to be appealed.
      *  @param _extraData Is not used there.
@@ -466,7 +551,7 @@ contract KlerosPOC is Arbitrator {
         Dispute storage dispute = disputes[_disputeID];
         return (2*amountJurors(_disputeID) + 1) * dispute.arbitrationFeePerJuror;
     }
-    
+
     /** @dev Compute the amount of jurors to be drawn.
      *  @param _extraData Null for the default number. Other first 16 bytes will be used to return the number of jurors.
      *  Note that it does not check that the number of jurors is odd, but users are advised to choose a odd number of jurors.
@@ -477,12 +562,12 @@ contract KlerosPOC is Arbitrator {
         else
             return (uint16(_extraData[0])<<8) + uint16(_extraData[1]);
     }
-    
-    
+
+
     // **************************** //
     // *     Constant getters     * //
     // **************************** //
-    
+
     /** @dev Getter for account in Vote.
      *  @param _disputeID ID of the dispute.
      *  @param _appeals Which appeal (or 0 for the initial session).
@@ -492,7 +577,7 @@ contract KlerosPOC is Arbitrator {
     function getVoteAccount(uint _disputeID, uint _appeals, uint _voteID) public constant returns(address account) {
         return disputes[_disputeID].votes[_appeals][_voteID].account;
     }
-    
+
     /** @dev Getter for ruling in Vote.
      *  @param _disputeID ID of the dispute.
      *  @param _appeals Which appeal (or 0 for the initial session).
@@ -502,7 +587,7 @@ contract KlerosPOC is Arbitrator {
     function getVoteRuling(uint _disputeID, uint _appeals, uint _voteID) public constant returns(uint ruling) {
         return disputes[_disputeID].votes[_appeals][_voteID].ruling;
     }
-    
+
     /** @dev Getter for winningChoice in VoteCounter.
      *  @param _disputeID ID of the dispute.
      *  @param _appeals Which appeal (or 0 for the initial session).
@@ -511,7 +596,7 @@ contract KlerosPOC is Arbitrator {
     function getWinningChoice(uint _disputeID, uint _appeals) public constant returns(uint winningChoice) {
         return disputes[_disputeID].voteCounter[_appeals].winningChoice;
     }
-    
+
     /** @dev Getter for winningCount in VoteCounter.
      *  @param _disputeID ID of the dispute.
      *  @param _appeals Which appeal (or 0 for the initial session).
@@ -520,7 +605,7 @@ contract KlerosPOC is Arbitrator {
     function getWinningCount(uint _disputeID, uint _appeals) public constant returns(uint winningCount) {
         return disputes[_disputeID].voteCounter[_appeals].winningCount;
     }
-    
+
     /** @dev Getter for voteCount in VoteCounter.
      *  @param _disputeID ID of the dispute.
      *  @param _appeals Which appeal (or 0 for the initial session).
@@ -530,7 +615,7 @@ contract KlerosPOC is Arbitrator {
     function getVoteCount(uint _disputeID, uint _appeals, uint _choice) public constant returns(uint voteCount) {
         return disputes[_disputeID].voteCounter[_appeals].voteCount[_choice];
     }
-    
+
     /** @dev Getter for lastSessionVote in Dispute.
      *  @param _disputeID ID of the dispute.
      *  @param _juror The juror we want to get the last session he voted.
@@ -539,7 +624,7 @@ contract KlerosPOC is Arbitrator {
     function getLastSessionVote(uint _disputeID, address _juror) public constant returns(uint lastSessionVote) {
         return disputes[_disputeID].lastSessionVote[_juror];
     }
-    
+
     /** @dev Is the juror drawn in the draw of the dispute.
      *  @param _disputeID ID of the dispute.
      *  @param _juror The juror.
@@ -549,7 +634,7 @@ contract KlerosPOC is Arbitrator {
     function isDrawn(uint _disputeID, address _juror, uint _draw) public constant returns(bool drawn) {
         Dispute storage dispute = disputes[_disputeID];
         Juror storage juror = jurors[_juror];
-        if (juror.lastSession!=session 
+        if (juror.lastSession!=session
         || (dispute.session+dispute.appeals != session)
         || period<=Period.Draw
         || _draw > amountJurors(_disputeID)
@@ -561,9 +646,9 @@ contract KlerosPOC is Arbitrator {
             uint position = uint(keccak256(randomNumber,_disputeID,_draw)) % segmentSize;
             return (position>=juror.segmentStart) && (position<juror.segmentEnd);
         }
-        
+
     }
-    
+
     /** @dev Return the current ruling of a dispute. This is useful for parties to know if they should appeal.
      *  @param _disputeID ID of the dispute.
      *  @return ruling The current ruling which will be given if there is no appeal. If it is not available, return 0.
@@ -572,7 +657,7 @@ contract KlerosPOC is Arbitrator {
         Dispute storage dispute = disputes[_disputeID];
         return dispute.voteCounter[dispute.appeals].winningChoice;
     }
-    
+
     /** @dev Return the status of a dispute.
      *  @param _disputeID ID of the dispute to rule.
      *  @return status The status of the dispute.
@@ -591,5 +676,5 @@ contract KlerosPOC is Arbitrator {
             } else return DisputeStatus.Solved;
         } else return DisputeStatus.Waiting; // Dispute for future session.
     }
-    
+
 }
