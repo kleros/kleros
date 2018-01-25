@@ -446,11 +446,16 @@ contract('KlerosPOC', function (accounts) {
 
     await klerosPOC.passPeriod({from: other}) // Pass twice to go to execution.
     await klerosPOC.passPeriod({from: other})
-    // there are 3 votes. Do two now and 1 later
+    // there are 3 votes = 9 iterations. Do 2, 3, 3, 1 so we stop in the middle of each stage
     assert.equal((await klerosPOC.disputes(0))[6].toNumber(), 0) // dispute starts in Open state
-    await klerosPOC.multipleShotTokenRepartition(0, 2, {from: other})
+    await klerosPOC.multipleShotTokenRepartition(0, 2, {from: other}) // stop in the middle of Incoherent
+    await expectThrow(klerosPOC.oneShotTokenRepartition(0, {from: other})) // oneShotTokenRepartition should fail
     assert.equal((await klerosPOC.disputes(0))[6].toNumber(), 1) // dispute should be in Resolving state
-    await klerosPOC.multipleShotTokenRepartition(0, 1, {from: other})
+    await klerosPOC.multipleShotTokenRepartition(0, 3, {from: other}) // stop in the middle of Coherent
+    assert.equal((await klerosPOC.disputes(0))[6].toNumber(), 1) // dispute should be in Resolving state
+    await klerosPOC.multipleShotTokenRepartition(0, 3, {from: other}) // stop in the middle of AtStake
+    assert.equal((await klerosPOC.disputes(0))[6].toNumber(), 1) // dispute should be in Resolving state
+    await klerosPOC.multipleShotTokenRepartition(0, 1, {from: other}) // finish it off
     assert.equal((await klerosPOC.disputes(0))[6].toNumber(), 2) // dispute should be in Executable state
 
     let stakePerWeight = (await klerosPOC.minActivatedToken()) * (await klerosPOC.alpha()) / (1e4)
