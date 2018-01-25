@@ -83,13 +83,13 @@ contract KlerosPOC is Arbitrator {
         Vote[][] votes;              // The votes in the form vote[appeals][voteID].
         VoteCounter[] voteCounter;   // The vote counters in the form voteCounter[appeals].
         mapping (address => uint) lastSessionVote; // Last session a juror has voted on this dispute. Is 0 if he never did.
-        uint lastAppealRepartitioned: // last appeal that was fully repartitioned
+        uint currentAppealToRepartition; // current appeal we are repartitioning
         AppealsRepartitioned[] appealsRepartitioned; // track a partially repartitioned appeal in the form AppealsRepartitioned[appeal]
     }
     struct AppealsRepartitioned {
       uint totalToRedistibute; // total amount of tokens we have to redistribute
       uint nbcoherent; // number of coherent jurors for session
-      uint lastVoteReparitioned; // last vote we have counted
+      uint currentVoteToRepartition; // current vote we need to count
     }
 
     Dispute[] public disputes;
@@ -300,7 +300,7 @@ contract KlerosPOC is Arbitrator {
 
         uint winningChoice=dispute.voteCounter[dispute.appeals].winningChoice;
         uint amountShift=(alpha*minActivatedToken)/ALPHA_DIVISOR;
-        for (uint i=dispute.lastAppealRepartitioned;i<=dispute.appeals;++i) {
+        for (uint i=0;i<=dispute.appeals;++i) {
             // If the result is not a tie, some parties are incoherent. Note that 0 (refuse to arbitrate) winning is not a tie.
             if (winningChoice!=0 || (dispute.voteCounter[dispute.appeals].voteCount[0] == dispute.voteCounter[dispute.appeals].winningCount)) {
                 uint totalToRedistibute=0;
@@ -343,56 +343,58 @@ contract KlerosPOC is Arbitrator {
         dispute.state=DisputeState.Executable; // Since it was solved in one shot, go directly to the executable step.
     }
 
-    /* Things we need to have happen
-    * - For dispute, determine how many appeals we can handle (user inputs how many?)
-    * - remember how many votes we have gone through
-    * - Store totalToRedistibute and nbcoherent globally in dispute
-    * IDEA read event for token shift to know where we left off?
-    * - We have to be able to disallow redistributing tokens multiple times for segments of voters
+    /* @dev Execute token repartition on a dispute for a specific number of votes.
+    *  This should only be called if oneShotTokenRepartition will throw because there are too many votes (will use too much gas).
     *  @param _disputeId ID of the dispute.
-    *  @param _numberOfAppeals amount of appeals to iterate through
-    *  @param _maxVotes the maxium number of votes to consider in this iteration
+    *  @param _maxVotes the maxium number of votes to repartition in this iteration
     */
     function multipleShotTokenRepartition(uint _disputeId, uint _maxVotes) public onlyDuring(Period.Execution) {
-      Dispute storage dispute = disputes[_disputeID];
+      Dispute storage dispute = disputes[_disputeId];
       require(dispute.state<=DisputeState.Resolving);
       require(dispute.session+dispute.appeals<=session);
+      dispute.state=DisputeState.Resolving; // mark as resolving so oneShotTokenRepartition cannot be called on dispute
 
-      // mark as resolving so oneShotTokenRepartition cannot be called on dispute
-      dispute.state=DisputeState.Resolving
       uint winningChoice=dispute.voteCounter[dispute.appeals].winningChoice;
       uint amountShift=(alpha*minActivatedToken)/ALPHA_DIVISOR;
-
       uint votesRepartitioned=0; // total votes we have repartitioned this iteration
-      bool repartitionComplete=true; // if we do not count _maxVotes then the dispute is fully repartitioned
-      for (uint i=dispute.lastAppealRepartitioned+1;i<=dispute.appeals;++i) {
+      bool repartitionComplete=true; // flag to indicate if we have counted > _maxVotes
+      for (uint i=dispute.currentAppealToRepartition;i<=dispute.appeals;++i) {
           if (votesRepartitioned >= _maxVotes) {
-            repartitionComplete=false;
+            repartitionComplete=false; // we have done max votes but appeals remain
             break;
           }
+
+          // make new AppealsRepartitioned
+          if (dispute.appealsRepartitioned.length < i+1) {
+            dispute.appealsRepartitioned.length++;
+          }
+
           // If the result is not a tie, some parties are incoherent. Note that 0 (refuse to arbitrate) winning is not a tie.
           if (winningChoice!=0 || (dispute.voteCounter[dispute.appeals].voteCount[0] == dispute.voteCounter[dispute.appeals].winningCount)) {
               // First loop to penalize the incoherent votes.
-              for (uint j=dispute.appealsRepartitioned[i].lastVoteReparitioned;j<=dispute.votes[i].length;++j) {
+              for (uint j=dispute.appealsRepartitioned[i].currentVoteToRepartition;j<dispute.votes[i].length;++j) {
                   if (votesRepartitioned >= _maxVotes) {
+                    repartitionComplete=false; // we have done max votes but votes remain
                     break;
                   }
+
                   Vote storage vote = dispute.votes[i][j];
                   if (vote.ruling!=winningChoice) {
                       Juror storage juror = jurors[vote.account];
                       uint penalty=amountShift<juror.balance ? amountShift : juror.balance;
                       juror.balance-=penalty;
-                      TokenShift(vote.account,_disputeID,int(-penalty));
+                      TokenShift(vote.account,_disputeId,int(-penalty));
                       dispute.appealsRepartitioned[i].totalToRedistibute+=penalty;
                   } else {
                       ++dispute.appealsRepartitioned[i].nbcoherent;
                   }
 
-                  dispute.appealsRepartitioned[i].lastVoteReparitioned = j;
+                  ++dispute.appealsRepartitioned[i].currentVoteToRepartition;
                   ++votesRepartitioned;
               }
+
               // if we have counted all of the votes for the session
-              if (dispute.appealsRepartitioned[i].lastVoteReparitioned==dispute.votes[i].length-1) {
+              if (repartitionComplete) {
                   if (dispute.appealsRepartitioned[i].nbcoherent==0) { // No one was coherent at this stage. Take the tokens.
                       jurors[this].balance+=dispute.appealsRepartitioned[i].totalToRedistibute;
                   } else { // otherwise, redistribute them.
@@ -403,10 +405,11 @@ contract KlerosPOC is Arbitrator {
                           if (vote.ruling==winningChoice) {
                               juror = jurors[vote.account];
                               juror.balance+=toRedistribute;
-                              TokenShift(vote.account,_disputeID,int(toRedistribute));
+                              TokenShift(vote.account,_disputeId,int(toRedistribute));
                           }
                       }
                   }
+
                   // Third loop to lower the atStake in order to unlock tokens.
                   for (j=0;j<dispute.votes[i].length;++j) {
                       vote = dispute.votes[i][j];
@@ -414,7 +417,7 @@ contract KlerosPOC is Arbitrator {
                       juror.atStake -= amountShift; // Note that it can't underflow due to amountShift not changing between vote and redistribution.
                   }
 
-                  dispute.lastAppealRepartitioned = i;
+                  ++dispute.currentAppealToRepartition;
               }
           }
       }
