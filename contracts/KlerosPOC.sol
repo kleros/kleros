@@ -311,7 +311,9 @@ contract KlerosPOC is Arbitrator {
         uint amountShift=(alpha*minActivatedToken)/ALPHA_DIVISOR;
         for (uint i=0;i<=dispute.appeals;++i) {
             // If the result is not a tie, some parties are incoherent. Note that 0 (refuse to arbitrate) winning is not a tie.
-            if (winningChoice!=0 || (dispute.voteCounter[dispute.appeals].voteCount[0] != dispute.voteCounter[dispute.appeals].winningCount)) {
+            // Result is a tie if the winningChoice is 0 (refuse to arbitrate) and the choice 0 is not the most voted choice.
+            // Note that in case of a "tie" among some choices including 0, parties who did not vote 0 are considered incoherent.
+            if (winningChoice!=0 || (dispute.voteCounter[dispute.appeals].voteCount[0] == dispute.voteCounter[dispute.appeals].winningCount)) {
                 uint totalToRedistibute=0;
                 uint nbcoherent=0;
                 // First loop to penalize the incoherent votes.
