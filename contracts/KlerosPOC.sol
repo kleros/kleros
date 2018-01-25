@@ -376,7 +376,7 @@ contract KlerosPOC is Arbitrator {
             }
 
             // If the result is a tie, no parties are incoherent and no need to move tokens. Note that 0 (refuse to arbitrate) winning is not a tie.
-            if (winningChoice==0 || (dispute.voteCounter[dispute.appeals].voteCount[0] == dispute.voteCounter[dispute.appeals].winningCount)) {
+            if (winningChoice==0 && (dispute.voteCounter[dispute.appeals].voteCount[0] != dispute.voteCounter[dispute.appeals].winningCount)) {
               // if ruling is a tie we can skip to at stake
               dispute.appealsRepartitioned[i].stage = RepartitionStage.AtStake;
             }
