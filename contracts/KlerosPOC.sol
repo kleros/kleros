@@ -93,7 +93,7 @@ contract KlerosPOC is Arbitrator {
       Complete
     }
     struct AppealsRepartitioned {
-      uint totalToRedistibute; // total amount of tokens we have to redistribute
+      uint totalToRedistribute; // total amount of tokens we have to redistribute
       uint nbcoherent; // number of coherent jurors for session
       uint currentIncoherentVote; // current vote for the incoherent loop
       uint currentCoherentVote; // current vote we need to count
@@ -315,7 +315,7 @@ contract KlerosPOC is Arbitrator {
             // Result is a tie if the winningChoice is 0 (refuse to arbitrate) and the choice 0 is not the most voted choice.
             // Note that in case of a "tie" among some choices including 0, parties who did not vote 0 are considered incoherent.
             if (winningChoice!=0 || (dispute.voteCounter[dispute.appeals].voteCount[0] == dispute.voteCounter[dispute.appeals].winningCount)) {
-                dispute.appealsRepartitioned[i].totalToRedistibute=0;
+                dispute.appealsRepartitioned[i].totalToRedistribute=0;
                 dispute.appealsRepartitioned[i].nbcoherent=0;
                 // First loop to penalize the incoherent votes.
                 for (uint j=0;j<dispute.votes[i].length;++j) {
@@ -325,15 +325,15 @@ contract KlerosPOC is Arbitrator {
                         uint penalty=amountShift<juror.balance ? amountShift : juror.balance;
                         juror.balance-=penalty;
                         TokenShift(vote.account,_disputeID,int(-penalty));
-                        dispute.appealsRepartitioned[i].totalToRedistibute+=penalty;
+                        dispute.appealsRepartitioned[i].totalToRedistribute+=penalty;
                     } else {
                         ++dispute.appealsRepartitioned[i].nbcoherent;
                     }
                 }
                 if (dispute.appealsRepartitioned[i].nbcoherent==0) { // No one was coherent at this stage. Take the tokens.
-                    jurors[this].balance+=dispute.appealsRepartitioned[i].totalToRedistibute;
+                    jurors[this].balance+=dispute.appealsRepartitioned[i].totalToRedistribute;
                 } else { // otherwise, redistribute them.
-                    uint toRedistribute = dispute.appealsRepartitioned[i].totalToRedistibute/dispute.appealsRepartitioned[i].nbcoherent; // Note that few fractions of tokens can be lost but due to the high amount of decimals we don't care.
+                    uint toRedistribute = dispute.appealsRepartitioned[i].totalToRedistribute/dispute.appealsRepartitioned[i].nbcoherent; // Note that few fractions of tokens can be lost but due to the high amount of decimals we don't care.
                     // Second loop to redistribute.
                     for (j=0;j<dispute.votes[i].length;++j) {
                         vote = dispute.votes[i][j];
@@ -394,7 +394,7 @@ contract KlerosPOC is Arbitrator {
                         uint penalty=amountShift<juror.balance ? amountShift : juror.balance;
                         juror.balance-=penalty;
                         TokenShift(vote.account,_disputeId,int(-penalty));
-                        dispute.appealsRepartitioned[i].totalToRedistibute+=penalty;
+                        dispute.appealsRepartitioned[i].totalToRedistribute+=penalty;
                     } else {
                         ++dispute.appealsRepartitioned[i].nbcoherent;
                     }
@@ -409,10 +409,10 @@ contract KlerosPOC is Arbitrator {
             // Second loop to reward coherent voters
             if (dispute.appealsRepartitioned[i].stage == RepartitionStage.Coherent) {
                 if (dispute.appealsRepartitioned[i].nbcoherent==0) { // No one was coherent at this stage. Take the tokens.
-                    jurors[this].balance+=dispute.appealsRepartitioned[i].totalToRedistibute;
+                    jurors[this].balance+=dispute.appealsRepartitioned[i].totalToRedistribute;
                     dispute.appealsRepartitioned[i].stage = RepartitionStage.AtStake;
                 } else { // otherwise, redistribute them.
-                    uint toRedistribute = dispute.appealsRepartitioned[i].totalToRedistibute/dispute.appealsRepartitioned[i].nbcoherent; // Note that few fractions of tokens can be lost but due to the high amount of decimals we don't care.
+                    uint toRedistribute = dispute.appealsRepartitioned[i].totalToRedistribute/dispute.appealsRepartitioned[i].nbcoherent; // Note that few fractions of tokens can be lost but due to the high amount of decimals we don't care.
                     // Second loop to redistribute.
                     for (j=dispute.appealsRepartitioned[i].currentCoherentVote;j<dispute.votes[i].length;++j) {
                         if (currentIterations >= _maxIterations) {
@@ -690,6 +690,22 @@ contract KlerosPOC is Arbitrator {
     function currentRuling(uint _disputeID) constant returns(uint ruling) {
         Dispute storage dispute = disputes[_disputeID];
         return dispute.voteCounter[dispute.appeals].winningChoice;
+    }
+
+    /** @dev Return the repartitioned token amount for a juror in a specific appeal.
+     *  @param _disputeID ID of the dispute.
+     *  @param _appeal The appeal of the dispute.
+     *  @param _ruling The ruling of the juror.
+     *  @return repartitionedPNK The amount of PNK lost or won through the repartition.
+     */
+    function repartitionedPNK(uint _disputeID, uint _appeal, uint _ruling) public constant returns(uint repartitionedPNK) {
+        Dispute storage dispute = disputes[_disputeID];
+        return _ruling == currentRuling(_disputeID) ?
+            // Total / Coherent Jurors
+            dispute.appealsRepartitioned[_appeal].totalToRedistribute / dispute.appealsRepartitioned[_appeal].nbcoherent
+        :
+            // Total / (All Jurors - Coherent Jurors)
+            - (dispute.appealsRepartitioned[_appeal].totalToRedistribute / (amountJurors(_disputeID) - dispute.appealsRepartitioned[_appeal].nbcoherent));
     }
 
     /** @dev Return the status of a dispute.
