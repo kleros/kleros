@@ -686,7 +686,7 @@ contract KlerosPOC is Arbitrator {
      *  @param _disputeID ID of the dispute.
      *  @return ruling The current ruling which will be given if there is no appeal. If it is not available, return 0.
      */
-    function currentRuling(uint _disputeID) constant returns(uint ruling) {
+    function currentRuling(uint _disputeID) public constant returns(uint ruling) {
         Dispute storage dispute = disputes[_disputeID];
         return dispute.voteCounter[dispute.appeals].winningChoice;
     }
