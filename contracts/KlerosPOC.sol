@@ -658,6 +658,16 @@ contract KlerosPOC is Arbitrator {
         return disputes[_disputeID].lastSessionVote[_juror];
     }
 
+     /** @dev Getter for PNK at stake by a juror in a dispute.
+     *  @param _jurorAddress The address of the juror we want to get stake of.
+     *  @return _atStake Number of PNC at stake by a juror.
+     */    
+     function getAtStake(address _jurorAddress) constant returns(uint _atStake){
+        _atStake = jurors[_jurorAddress].atStake;
+        return;
+    }
+
+    
     /** @dev Is the juror drawn in the draw of the dispute.
      *  @param _disputeID ID of the dispute.
      *  @param _juror The juror.
