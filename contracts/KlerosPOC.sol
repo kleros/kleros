@@ -303,7 +303,7 @@ contract KlerosPOC is Arbitrator {
      */
     function getPinakionsAtStake(address _jurorAddress, uint _disputeID, uint[] _draws) public returns(uint atStake) {
         require(validDraws(_jurorAddress,_disputeID,_draws));
-        uint atStake = draws.length * getMinActivatedPinakions();
+        uint atStake = _draws.length * getMinActivatedPinakions();
         return atStake;
     }
 
