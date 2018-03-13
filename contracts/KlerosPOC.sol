@@ -268,7 +268,7 @@ contract KlerosPOC is Arbitrator {
             }));
         }
 
-        juror.atStake+=_draws.length*(alpha*minActivatedToken)/ALPHA_DIVISOR;
+        juror.atStake += getPinakionsAtStake(msg.sender, _disputeID, _draws);
         uint feeToPay = _draws.length*dispute.arbitrationFeePerJuror;
         msg.sender.transfer(feeToPay);
         ArbitrationReward(msg.sender,_disputeID,feeToPay);
@@ -288,13 +288,23 @@ contract KlerosPOC is Arbitrator {
         dispute.lastSessionVote[_jurorAddress]=session;
         require(validDraws(_jurorAddress,_disputeID,_draws));
         uint penality = _draws.length * minActivatedToken * 2 * alpha / ALPHA_DIVISOR;
-
         penality = (penality<inactiveJuror.balance-inactiveJuror.atStake) ? penality : inactiveJuror.balance-inactiveJuror.atStake; // Make sure the penality is not higher than what the juror can lose.
         inactiveJuror.balance-=penality;
         jurors[msg.sender].balance+=penality/2; // Give half of the penalty to the caller.
         jurors[this].balance+=penality/2; // The other half to Kleros.
 
         msg.sender.transfer(_draws.length*dispute.arbitrationFeePerJuror);
+    }
+
+    /** @dev The pinakions at stake for a dispute.
+     *  @param _jurorAddress Address of the juror to steal tokens from.
+     *  @param _disputeID The ID of the dispute the juror was drawn.
+     *  @param _draws The list of draws the juror was drawn. It draw numbering starts at 1 and the numbers should be increasing.
+     */
+    function getPinakionsAtStake(address _jurorAddress, uint _disputeID, uint[] _draws) public returns(uint atStake) {
+        require(validDraws(_jurorAddress,_disputeID,_draws));
+        uint atStake = draws.length * getMinActivatedPinakions();
+        return atStake;
     }
 
     /** @dev Execute all the token repartition.
@@ -308,7 +318,7 @@ contract KlerosPOC is Arbitrator {
         require(dispute.session+dispute.appeals<=session);
 
         uint winningChoice=dispute.voteCounter[dispute.appeals].winningChoice;
-        uint amountShift=(alpha*minActivatedToken)/ALPHA_DIVISOR;
+        uint amountShift = getMinActivatedPinakions();
         for (uint i=0;i<=dispute.appeals;++i) {
             // If the result is not a tie, some parties are incoherent. Note that 0 (refuse to arbitrate) winning is not a tie.
             // Result is a tie if the winningChoice is 0 (refuse to arbitrate) and the choice 0 is not the most voted choice.
@@ -367,7 +377,7 @@ contract KlerosPOC is Arbitrator {
         dispute.state=DisputeState.Resolving; // mark as resolving so oneShotTokenRepartition cannot be called on dispute
 
         uint winningChoice=dispute.voteCounter[dispute.appeals].winningChoice;
-        uint amountShift=(alpha*minActivatedToken)/ALPHA_DIVISOR;
+        uint amountShift = getMinActivatedPinakions();
         uint currentIterations=0; // total votes we have repartitioned this iteration
         for (uint i=dispute.currentAppealToRepartition;i<=dispute.appeals;++i) {
             // make new AppealsRepartitioned
@@ -594,6 +604,14 @@ contract KlerosPOC is Arbitrator {
             return defaultNumberJuror;
         else
             return (uint16(_extraData[0])<<8) + uint16(_extraData[1]);
+    }
+
+    /** @dev Compute the minimum activated pinakions in the alpha divisor.
+     * Note there may be multiple draws for a single user on a single dispute.
+     * Use getPinakionsAtStake() to get the total at stake on an individual dispute.
+    */
+    function getMinActivatedPinakions() internal constant returns (uint minActivatedToken) {
+        return (alpha*minActivatedToken)/ALPHA_DIVISOR;
     }
 
 
