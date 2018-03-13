@@ -609,7 +609,7 @@ contract KlerosPOC is Arbitrator {
      * Note there may be multiple draws for a single user on a single dispute.
      * Use getPinakionsAtStakeForDispute() to get the total at stake on an individual dispute.
     */
-    function getMinActivatedToken() internal view returns (uint minActivatedTokenInAlpha) {
+    function getMinActivatedToken() internal constant returns (uint minActivatedTokenInAlpha) {
         return (alpha*minActivatedToken)/ALPHA_DIVISOR;
     }
 
