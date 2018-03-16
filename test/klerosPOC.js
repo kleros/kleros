@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */ // Avoid the linter considering truffle elements as undef.
 const { expectThrow, increaseTime } = require('kleros-interaction/helpers/utils')
 const KlerosPOC = artifacts.require('./KlerosPOC.sol')
-const Pinakion = artifacts.require('./PinakionPOC.sol')
+const Pinakion = artifacts.require('MiniMeTokenERC20')
 const ArbitrableTransaction = artifacts.require('kleros-interaction/ArbitrableTransaction.sol')
 const ConstantRandom = artifacts.require('kleros-interaction/ConstantNG.sol')
 
@@ -17,11 +17,10 @@ contract('KlerosPOC', function (accounts) {
 
   // Constructor
   it('Should create the contract with the initial values', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let rng = await ConstantRandom.new(10, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [2, 4, 8, 2, 5], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
 
     assert.equal(await klerosPOC.pinakion(), pinakion.address, 'The PNK address did not setup properly.')
     assert.equal(await klerosPOC.rng(), rng.address, 'The RNG address did not setup properly.')
@@ -34,14 +33,13 @@ contract('KlerosPOC', function (accounts) {
   // **************************** //
 
   // deposit
-  it('Should deposit tokens to the contract', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+  it('Should deposit tokens to the Kleros contract', async () => {
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, 0x0, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 1e18})
     await klerosPOC.withdraw(0.8e18, {from: jurorA})
-    await pinakion.deposit(0.4e18, {from: jurorA})
+    await pinakion.approveAndCall(klerosPOC.address, 0.4e18, '', {from: jurorA})
 
     assert.equal((await klerosPOC.jurors(jurorA))[0].toNumber(), 0.6e18, "The juror don't have the correct amount of PNK in Kleros.")
     assert.equal((await pinakion.balanceOf(jurorA)).toNumber(), 0.4e18, "The juror don't have the correct amount of PNK in the token contract.")
@@ -49,10 +47,9 @@ contract('KlerosPOC', function (accounts) {
 
   // withdraw
   it('Should decrease the balance in the kleros contract and increase it in the pinakion contract', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, 0x0, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 1e18})
     await klerosPOC.withdraw(0.8e18, {from: jurorA})
 
@@ -61,10 +58,9 @@ contract('KlerosPOC', function (accounts) {
   })
 
   it('Should not be possible to withdraw more than what we have', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, 0x0, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 1e18})
 
     await expectThrow(klerosPOC.withdraw(1.8e18, {from: jurorA}))
@@ -72,10 +68,9 @@ contract('KlerosPOC', function (accounts) {
 
   // buyPinakion
   it('Should increase the balance of the juror', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, 0x0, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 1e18})
 
     assert.equal((await klerosPOC.jurors(jurorA))[0], 1e18, "The juror don't have the correct amount of PNK in Kleros.")
@@ -87,11 +82,10 @@ contract('KlerosPOC', function (accounts) {
 
   // passPeriod
   it('Should be able to pass all periods when the time has passed but not before', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let rng = await ConstantRandom.new(10, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [20, 0, 80, 20, 50], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
 
     assert.equal(await klerosPOC.period(), 0)
 
@@ -126,10 +120,9 @@ contract('KlerosPOC', function (accounts) {
 
   // activateTokens
   it('Should activate the tokens and compute the segments correctly', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, 0x0, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 1.2e18})
     await klerosPOC.buyPinakion({from: jurorB, value: 1.4e18})
     await klerosPOC.activateTokens(1.2e18, {from: jurorA})
@@ -144,11 +137,10 @@ contract('KlerosPOC', function (accounts) {
   })
 
   it('Should activate the tokens and compute the segments correctly at the second session', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let rng = await ConstantRandom.new(10, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 1.2e18})
     await klerosPOC.buyPinakion({from: jurorB, value: 1.4e18})
     await klerosPOC.activateTokens(1.2e18, {from: jurorA})
@@ -167,32 +159,29 @@ contract('KlerosPOC', function (accounts) {
   })
 
   it('Should not be possible to activate too much', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let rng = await ConstantRandom.new(10, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 1.2e18})
     await expectThrow(klerosPOC.activateTokens(1.3e18, {from: jurorA}))
   })
 
   it('Should not be possible to activate outside activation period', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let rng = await ConstantRandom.new(10, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 1.2e18})
     await klerosPOC.passPeriod({from: other})
     await expectThrow(klerosPOC.activateTokens(1.2e18, {from: jurorA}))
   })
 
   it('Should not be possible to activate multiple times', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let rng = await ConstantRandom.new(10, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 1.2e18})
     await klerosPOC.activateTokens(1.2e18, {from: jurorA})
     await expectThrow(klerosPOC.activateTokens(1.2e18, {from: jurorA}))
@@ -200,11 +189,10 @@ contract('KlerosPOC', function (accounts) {
 
   // voteRuling
   it('Should be able to vote and update the state accordingly (single juror)', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let rng = await ConstantRandom.new(10, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 0.2e18})
     await klerosPOC.activateTokens(0.2e18, {from: jurorA})
     let arbitrableTransaction = await ArbitrableTransaction.new(klerosPOC.address, 0x0, 0, payee, 0x0, {from: payer, value: 0.1e18})
@@ -232,11 +220,10 @@ contract('KlerosPOC', function (accounts) {
   })
 
   it('Should not be possible to vote with extra weight', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let rng = await ConstantRandom.new(10, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 0.2e18})
     await klerosPOC.activateTokens(0.2e18, {from: jurorA})
     let arbitrableTransaction = await ArbitrableTransaction.new(klerosPOC.address, 0x0, 0, payee, 0x0, {from: payer, value: 0.1e18})
@@ -252,11 +239,10 @@ contract('KlerosPOC', function (accounts) {
   })
 
   it('Should not be possible to vote before draws', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let rng = await ConstantRandom.new(10, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 0.2e18})
     await klerosPOC.activateTokens(0.2e18, {from: jurorA})
     let arbitrableTransaction = await ArbitrableTransaction.new(klerosPOC.address, 0x0, 0, payee, 0x0, {from: payer, value: 0.1e18})
@@ -271,11 +257,10 @@ contract('KlerosPOC', function (accounts) {
   })
 
   it('Should be able to vote and update the state accordingly (multiple jurors)', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let rng = await ConstantRandom.new(10, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 0.4e18})
     await klerosPOC.activateTokens(0.4e18, {from: jurorA})
     await klerosPOC.buyPinakion({from: jurorB, value: 0.6e18})
@@ -308,11 +293,10 @@ contract('KlerosPOC', function (accounts) {
 
   // penalizeInactiveJuror
   it('Should be possible to penalize a juror who did not vote after votes but not before', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let rng = await ConstantRandom.new(10, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 0.8e18})
     await klerosPOC.activateTokens(0.8e18, {from: jurorA})
     let arbitrableTransaction = await ArbitrableTransaction.new(klerosPOC.address, 0x0, 0, payee, 0x0, {from: payer, value: 0.1e18})
@@ -332,11 +316,10 @@ contract('KlerosPOC', function (accounts) {
   })
 
   it('Should take all the balance if the balance is too low, in case of penalization', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let rng = await ConstantRandom.new(10, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 0.1e18})
     await klerosPOC.activateTokens(0.1e18, {from: jurorA})
     let arbitrableTransaction = await ArbitrableTransaction.new(klerosPOC.address, 0x0, 0, payee, 0x0, {from: payer, value: 0.1e18})
@@ -352,11 +335,10 @@ contract('KlerosPOC', function (accounts) {
   })
 
   it('Should not be possible to penalize a juror who voted', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let rng = await ConstantRandom.new(10, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 0.2e18})
     await klerosPOC.activateTokens(0.2e18, {from: jurorA})
     let arbitrableTransaction = await ArbitrableTransaction.new(klerosPOC.address, 0x0, 0, payee, 0x0, {from: payer, value: 0.1e18})
@@ -373,11 +355,10 @@ contract('KlerosPOC', function (accounts) {
 
   // oneShotTokenRepartition
   it('Should realocate tokens correctly', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let rng = await ConstantRandom.new(10, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 0.4e18})
     await klerosPOC.activateTokens(0.4e18, {from: jurorA})
     await klerosPOC.buyPinakion({from: jurorB, value: 0.6e18})
@@ -418,11 +399,10 @@ contract('KlerosPOC', function (accounts) {
 
   // multipleShotTokenRepartition
   it('Should realocate tokens correctly multi shot', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let rng = await ConstantRandom.new(10, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 0.4e18})
     await klerosPOC.activateTokens(0.4e18, {from: jurorA})
     await klerosPOC.buyPinakion({from: jurorB, value: 0.6e18})
@@ -472,11 +452,10 @@ contract('KlerosPOC', function (accounts) {
   })
 
   it('Should not be possible to call execution before or do it multiple times', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let rng = await ConstantRandom.new(10, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 0.4e18})
     await klerosPOC.activateTokens(0.4e18, {from: jurorA})
     await klerosPOC.buyPinakion({from: jurorB, value: 0.6e18})
@@ -513,11 +492,10 @@ contract('KlerosPOC', function (accounts) {
 
   it('Should realocate tokens correctly (when appeal)', async () => {
     for (let i=0;i<10;++i) {
-      let pinakion = await Pinakion.new({from: creator})
+      let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
       let rng = await ConstantRandom.new(10, {from: creator})
       let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [0, 0, 0, 0, 0], {from: creator})
-      await pinakion.setKleros(klerosPOC.address, {from: creator})
-      await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+      await pinakion.changeController(klerosPOC.address, {from: creator})
       await klerosPOC.buyPinakion({from: jurorA, value: 1.4e18})
       await klerosPOC.activateTokens(1.4e18, {from: jurorA})
       await klerosPOC.buyPinakion({from: jurorB, value: 1.6e18})
@@ -587,11 +565,10 @@ contract('KlerosPOC', function (accounts) {
 
   // createDispute
   it('Should schedule disputes correctly', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let rng = await ConstantRandom.new(10, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 0.4e18})
     await klerosPOC.activateTokens(0.4e18, {from: jurorA})
     await klerosPOC.buyPinakion({from: jurorB, value: 0.6e18})
@@ -614,11 +591,10 @@ contract('KlerosPOC', function (accounts) {
 
   // appeal
   it('Should be possible to appeal during the appeal period but not outside or without paying the fee', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let rng = await ConstantRandom.new(10, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 0.4e18})
     await klerosPOC.activateTokens(0.4e18, {from: jurorA})
     await klerosPOC.buyPinakion({from: jurorB, value: 0.6e18})
@@ -653,11 +629,10 @@ contract('KlerosPOC', function (accounts) {
 
   // executeRuling
   it('Should refund the payer', async () => {
-    let pinakion = await Pinakion.new({from: creator})
+    let pinakion = await Pinakion.new(0x0, 0x0, 0, 'Pinakion', 18, 'PNK', true, {from: creator})
     let rng = await ConstantRandom.new(10, {from: creator})
     let klerosPOC = await KlerosPOC.new(pinakion.address, rng.address, [0, 0, 0, 0, 0], {from: creator})
-    await pinakion.setKleros(klerosPOC.address, {from: creator})
-    await pinakion.transferOwnership(klerosPOC.address, {from: creator})
+    await pinakion.changeController(klerosPOC.address, {from: creator})
     await klerosPOC.buyPinakion({from: jurorA, value: 0.4e18})
     await klerosPOC.activateTokens(0.4e18, {from: jurorA})
     await klerosPOC.buyPinakion({from: jurorB, value: 0.6e18})

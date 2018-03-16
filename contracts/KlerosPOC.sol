@@ -8,19 +8,21 @@
 pragma solidity ^0.4.15;
 
 import "kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
-import "./PinakionPOC.sol";
+import {MiniMeTokenERC20 as Pinakion} from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
 import "kleros-interaction/contracts/standard/rng/RNG.sol";
+import {ApproveAndCallFallBack} from "minimetoken/contracts/MiniMeToken.sol";
+import "minimetoken/contracts/TokenController.sol";
 
 
 
-contract KlerosPOC is Arbitrator {
+contract KlerosPOC is Arbitrator, ApproveAndCallFallBack, TokenController {
 
     // **************************** //
     // *    Contract variables    * //
     // **************************** //
 
     // Variables which should not change after initialization.
-    PinakionPOC public pinakion;
+    Pinakion public pinakion;
 
     // Variables which will subject to the governance mechanism.
     // Note they will only be able to be changed during the activation period (because a session assumes they don't change after it).
@@ -139,24 +141,56 @@ contract KlerosPOC is Arbitrator {
      *  @param _rng The random number generator which will be used.
      *  @param _timePerPeriod The minimal time for each period.
      */
-    function KlerosPOC(PinakionPOC _pinakion, RNG _rng, uint[5] _timePerPeriod) public {
+    function KlerosPOC(Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod) public {
         pinakion=_pinakion;
         rng=_rng;
         lastPeriodChange=now;
         timePerPeriod=_timePerPeriod;
     }
 
+    // **************************** //
+    // *    Functions required    * //
+    // *    for TokenController   * //
+    // **************************** //
+
+    /** @notice Called when `_owner` sends ether to the Pinakion contract
+     *  @param _owner The address that sent the ether to create tokens
+     *  @return True if the ether is accepted, false if it throws
+     */
+    function proxyPayment(address _owner) public payable returns(bool) {
+        return false; // don't allow any ether transfers to Pinakion contract
+    }
+
+    /** @notice Notifies the controller about a token transfer allowing the controller to react if desired  
+     *  @param _from The origin of the transfer
+     *  @param _to The destination of the transfer
+     *  @param _amount The amount of the transfer
+     *  @return False if the controller does not authorize the transfer
+     */
+    function onTransfer(address _from, address _to, uint _amount) public returns(bool) {
+        return true; // allow all transfers
+    }
+
+    /** @notice Notifies the controller about an approval allowing the controller to react if desired
+     *  @param _owner The address that calls `approve()`
+     *  @param _spender The spender in the `approve()` call
+     *  @param _amount The amount in the `approve()` call
+     *  @return False if the controller does not authorize the approval
+     */
+    function onApprove(address _owner, address _spender, uint _amount) public returns(bool) {
+        return true; // allow all approvals
+    }
 
     // **************************** //
     // *  Functions interacting   * //
     // *  with Pinakion contract  * //
     // **************************** //
 
-    /** @dev Deposit pinakions of a juror in the contract. Should be call by the pinakion contract. TRUSTED.
+    /** @dev Callback of approveAndCall - deposit pinakions of a juror in the contract. Should be called by the pinakion contract. TRUSTED.
      *  @param _from The address making the deposit.
      *  @param _value Amount of fractions of token to deposit.
      */
-    function deposit(address _from, uint _value) public onlyBy(pinakion) {
+    function receiveApproval(address _from, uint _value, address, bytes) public onlyBy(pinakion) {
         require(pinakion.transferFrom(_from,this,_value));
 
         jurors[_from].balance+=_value;
@@ -182,7 +216,7 @@ contract KlerosPOC is Arbitrator {
     function buyPinakion() public payable {
         Juror storage juror = jurors[msg.sender];
         juror.balance+=msg.value;
-        pinakion.mint(this,msg.value);
+        pinakion.generateTokens(this,msg.value);
     }
 
     // **************************** //
