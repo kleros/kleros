@@ -660,10 +660,13 @@ contract KlerosPOC is Arbitrator {
 
      /** @dev Getter for PNK at stake by a juror in a dispute.
      *  @param _jurorAddress The address of the juror we want to get stake of.
+     *  @param _disputeID ID of the dispute.
+     *  @param _draws The list of draws the juror was drawn. It draw numbering starts at 1 and the numbers should be increasing.
      *  @return _atStake Number of PNC at stake by a juror.
      */    
-     function getAtStake(address _jurorAddress) constant returns(uint _atStake){
-        _atStake = jurors[_jurorAddress].atStake;
+     function getPinakionAtStakeInDispute(address _jurorAddress, uint _disputeID, uint[] _draws) constant returns(uint _atStake){
+        require(validDraws(_jurorAddress, _disputeID, _draws));        
+        _atStake = _draws.length*(alpha*minActivatedToken)/ALPHA_DIVISOR;
         return;
     }
 
