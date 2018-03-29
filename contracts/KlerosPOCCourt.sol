@@ -29,14 +29,20 @@ contract KlerosPOCCourt is ArbitratorCourt, KlerosPOC {
      *  @param _extraData Part of the standard but not used by this contract.
      */
     function appeal(uint256 _disputeID, bytes _extraData) public payable onlyDuring(Period.Appeal) {
-        super.appeal(_disputeID,_extraData);
         Dispute storage dispute = disputes[_disputeID];
-        require(msg.value >= appealCost(_disputeID,_extraData));
-        require(dispute.session+dispute.appeals == session); // Dispute of the current session.
 
+        // Checks
+        require(msg.value >= appealCost(_disputeID, _extraData)); // Enough ETH for appeal
+        require(dispute.appeals == 0); // Not appealed yet
+
+        // Effects
         dispute.appeals++;
         dispute.votes.length++;
         dispute.voteCounter.length++;
+
+        // Interactions
+        super.appeal(_disputeID, _extraData);
+        Arbitrator(parent).createDispute(dispute.choices, _extraData);
     }
 
     /* Public Views */
@@ -46,8 +52,7 @@ contract KlerosPOCCourt is ArbitratorCourt, KlerosPOC {
      *  @param _extraData Part of the standard but not used by this contract.
      *  @return _fee The appeal cost.
      */
-    function appealCost(uint _disputeID, bytes _extraData) public constant returns(uint _fee) {
-        Dispute storage dispute = disputes[_disputeID];
-        return (2*amountJurors(_disputeID) + 1) * dispute.arbitrationFeePerJuror;
+    function appealCost(uint256 _disputeID, bytes _extraData) public constant returns(uint256 _fee) {
+        return Arbitrator(parent).arbitrationCost(_extraData);
     }
 }
