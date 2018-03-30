@@ -15,12 +15,14 @@ contract KlerosPOCCourt is ArbitratorCourt, KlerosPOC {
     /* Constructor */
 
     /**
-     *  @notice Constructs the `KlerosPOCCourt`, forwarding all required parameters to `KlerosPOC`.
+     *  @notice Constructs the `KlerosPOCCourt`, forwarding all required parameters to the base contracts.
+     *  @param _parentName The name of the `parent`.
+     *  @param _parentAddress The address of the `parent`.
      *  @param _pinakion The address of the pinakion contract which will be used.
      *  @param _rng The address of the random number generator contract which will be used.
      *  @param _timePerPeriod The minimal time for each period.
      */
-    function KlerosPOCCourt(PinakionPOC _pinakion, RNG _rng, uint[5] _timePerPeriod) KlerosPOC(_pinakion, _rng, _timePerPeriod) public {}
+    function KlerosPOCCourt(string _parentName, Arbitrator _parentAddress, PinakionPOC _pinakion, RNG _rng, uint[5] _timePerPeriod) ArbitratorCourt(1, _parentName, _parentAddress) KlerosPOC(_pinakion, _rng, _timePerPeriod) public {}
 
     /* Public */
 
@@ -29,20 +31,12 @@ contract KlerosPOCCourt is ArbitratorCourt, KlerosPOC {
      *  @param _extraData Part of the standard but not used by this contract.
      */
     function appeal(uint256 _disputeID, bytes _extraData) public payable onlyDuring(Period.Appeal) {
-        Dispute storage dispute = disputes[_disputeID];
+        super.appeal(_disputeID, _extraData); // Regular appeal
 
-        // Checks
-        require(msg.value >= appealCost(_disputeID, _extraData)); // Enough ETH for appeal
-        require(dispute.appeals == 0); // Not appealed yet
-
-        // Effects
-        dispute.appeals++;
-        dispute.votes.length++;
-        dispute.voteCounter.length++;
-
-        // Interactions
-        super.appeal(_disputeID, _extraData);
-        Arbitrator(parent).createDispute(dispute.choices, _extraData);
+        if (disputes[_disputeID].appeals > maxLocalAppeals) { // Did we max exceed local appeals?
+            disputes[_disputeID].state = DisputeState.Executed; // Terminate dispute
+            parent.createDispute.value(msg.value)(disputes[_disputeID].choices, _extraData); // Create dispute in `parent` court
+        }
     }
 
     /* Public Views */
@@ -53,6 +47,10 @@ contract KlerosPOCCourt is ArbitratorCourt, KlerosPOC {
      *  @return _fee The appeal cost.
      */
     function appealCost(uint256 _disputeID, bytes _extraData) public constant returns(uint256 _fee) {
-        return Arbitrator(parent).arbitrationCost(_extraData);
+        if (disputes[_disputeID].appeals < maxLocalAppeals) { // Will we stay under max local appeals?
+            return super.appealCost(_disputeID, _extraData); // Regular appeal cost
+        }
+
+        return parent.arbitrationCost.value(msg.value)(_extraData); // `parent` arbitration cost
     }
 }
