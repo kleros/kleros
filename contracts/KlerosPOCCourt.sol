@@ -33,7 +33,7 @@ contract KlerosPOCCourt is ArbitratorCourt, KlerosPOC {
     function appeal(uint256 _disputeID, bytes _extraData) public payable onlyDuring(Period.Appeal) {
         super.appeal(_disputeID, _extraData); // Regular appeal
 
-        if (disputes[_disputeID].appeals > maxLocalAppeals) { // Did we max exceed local appeals?
+        if (disputes[_disputeID].appeals > maxLocalAppeals) { // Did we exceed max local appeals?
             disputes[_disputeID].state = DisputeState.Executed; // Terminate dispute
             parent.createDispute.value(msg.value)(disputes[_disputeID].choices, _extraData); // Create dispute in `parent` court
         }
