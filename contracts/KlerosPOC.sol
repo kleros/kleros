@@ -297,7 +297,7 @@ contract KlerosPOC is Arbitrator {
     }
 
     /** @dev The pinakions at stake for a dispute.
-     *  @param _jurorAddress Address of the juror to steal tokens from.
+     *  @param _jurorAddress Address of the juror.
      *  @param _disputeID The ID of the dispute the juror was drawn.
      *  @param _draws The list of draws the juror was drawn. It draw numbering starts at 1 and the numbers should be increasing.
      */
