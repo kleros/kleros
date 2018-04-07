@@ -268,7 +268,7 @@ contract KlerosPOC is Arbitrator {
             }));
         }
 
-        juror.atStake += getPinakionsAtStakeForDispute(msg.sender, _disputeID, _draws);
+        juror.atStake += _draws.length * getStakePerDraw();
         uint feeToPay = _draws.length*dispute.arbitrationFeePerJuror;
         msg.sender.transfer(feeToPay);
         ArbitrationReward(msg.sender,_disputeID,feeToPay);
@@ -294,16 +294,6 @@ contract KlerosPOC is Arbitrator {
         jurors[this].balance+=penality/2; // The other half to Kleros.
 
         msg.sender.transfer(_draws.length*dispute.arbitrationFeePerJuror);
-    }
-
-    /** @dev The pinakions at stake for a dispute.
-     *  @param _jurorAddress Address of the juror.
-     *  @param _disputeID The ID of the dispute the juror was drawn.
-     *  @param _draws The list of draws the juror was drawn. It draw numbering starts at 1 and the numbers should be increasing.
-     */
-    function getPinakionsAtStakeForDispute(address _jurorAddress, uint _disputeID, uint[] _draws) public returns(uint atStake) {
-        require(validDraws(_jurorAddress,_disputeID,_draws));
-        return _draws.length * getStakePerDraw();
     }
 
     /** @dev Execute all the token repartition.
@@ -607,7 +597,6 @@ contract KlerosPOC is Arbitrator {
 
     /** @dev Compute the minimum activated pinakions in alpha.
      * Note there may be multiple draws for a single user on a single dispute.
-     * Use getPinakionsAtStakeForDispute() to get the total at stake on an individual dispute.
     */
     function getStakePerDraw() public constant returns (uint minActivatedTokenInAlpha) {
         return (alpha*minActivatedToken)/ALPHA_DIVISOR;

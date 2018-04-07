@@ -103,25 +103,25 @@
     "absolutePath": "kleros-interaction/contracts/standard/rng/ConstantNG.sol",
     "exportedSymbols": {
       "ConstantNG": [
-        3205
+        3177
       ]
     },
-    "id": 3206,
+    "id": 3178,
     "nodeType": "SourceUnit",
     "nodes": [
       {
         "absolutePath": "kleros-interaction/contracts/standard/rng/RNG.sol",
         "file": "./RNG.sol",
-        "id": 3173,
+        "id": 3145,
         "nodeType": "ImportDirective",
-        "scope": 3206,
-        "sourceUnit": 3259,
+        "scope": 3178,
+        "sourceUnit": 3231,
         "src": "209:19:7",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "id": 3174,
+        "id": 3146,
         "literals": [
           "solidity",
           "^",
@@ -137,41 +137,41 @@
             "arguments": [],
             "baseName": {
               "contractScope": null,
-              "id": 3175,
+              "id": 3147,
               "name": "RNG",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 3258,
+              "referencedDeclaration": 3230,
               "src": "284:3:7",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_RNG_$3258",
+                "typeIdentifier": "t_contract$_RNG_$3230",
                 "typeString": "contract RNG"
               }
             },
-            "id": 3176,
+            "id": 3148,
             "nodeType": "InheritanceSpecifier",
             "src": "284:3:7"
           }
         ],
         "contractDependencies": [
-          3258
+          3230
         ],
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 3205,
+        "id": 3177,
         "linearizedBaseContracts": [
-          3205,
-          3258
+          3177,
+          3230
         ],
         "name": "ConstantNG",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 3178,
+            "id": 3150,
             "name": "number",
             "nodeType": "VariableDeclaration",
-            "scope": 3205,
+            "scope": 3177,
             "src": "296:18:7",
             "stateVariable": true,
             "storageLocation": "default",
@@ -180,7 +180,7 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 3177,
+              "id": 3149,
               "name": "uint",
               "nodeType": "ElementaryTypeName",
               "src": "296:4:7",
@@ -194,25 +194,25 @@
           },
           {
             "body": {
-              "id": 3187,
+              "id": 3159,
               "nodeType": "Block",
               "src": "453:35:7",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3185,
+                    "id": 3157,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 3183,
+                      "id": 3155,
                       "name": "number",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3178,
+                      "referencedDeclaration": 3150,
                       "src": "464:6:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -223,11 +223,11 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 3184,
+                      "id": 3156,
                       "name": "_number",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3180,
+                      "referencedDeclaration": 3152,
                       "src": "473:7:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -240,13 +240,13 @@
                       "typeString": "uint256"
                     }
                   },
-                  "id": 3186,
+                  "id": 3158,
                   "nodeType": "ExpressionStatement",
                   "src": "464:16:7"
                 }
               ]
             },
-            "id": 3188,
+            "id": 3160,
             "implemented": true,
             "isConstructor": true,
             "isDeclaredConst": false,
@@ -254,15 +254,15 @@
             "name": "ConstantNG",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3181,
+              "id": 3153,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3180,
+                  "id": 3152,
                   "name": "_number",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3188,
+                  "scope": 3160,
                   "src": "432:12:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -271,7 +271,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3179,
+                    "id": 3151,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "432:4:7",
@@ -288,12 +288,12 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 3182,
+              "id": 3154,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "453:0:7"
             },
-            "scope": 3205,
+            "scope": 3177,
             "src": "412:76:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -301,12 +301,12 @@
           },
           {
             "body": {
-              "id": 3193,
+              "id": 3165,
               "nodeType": "Block",
               "src": "707:2:7",
               "statements": []
             },
-            "id": 3194,
+            "id": 3166,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -314,15 +314,15 @@
             "name": "contribute",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3191,
+              "id": 3163,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3190,
+                  "id": 3162,
                   "name": "_block",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3194,
+                  "scope": 3166,
                   "src": "679:11:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -331,7 +331,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3189,
+                    "id": 3161,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "679:4:7",
@@ -348,45 +348,45 @@
             },
             "payable": true,
             "returnParameters": {
-              "id": 3192,
+              "id": 3164,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "707:0:7"
             },
-            "scope": 3205,
+            "scope": 3177,
             "src": "659:50:7",
             "stateMutability": "payable",
-            "superFunction": 3212,
+            "superFunction": 3184,
             "visibility": "public"
           },
           {
             "body": {
-              "id": 3203,
+              "id": 3175,
               "nodeType": "Block",
               "src": "1015:32:7",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3201,
+                    "id": 3173,
                     "name": "number",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 3178,
+                    "referencedDeclaration": 3150,
                     "src": "1033:6:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "functionReturnParameters": 3200,
-                  "id": 3202,
+                  "functionReturnParameters": 3172,
+                  "id": 3174,
                   "nodeType": "Return",
                   "src": "1026:13:7"
                 }
               ]
             },
-            "id": 3204,
+            "id": 3176,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -394,15 +394,15 @@
             "name": "getRN",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3197,
+              "id": 3169,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3196,
+                  "id": 3168,
                   "name": "_block",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3204,
+                  "scope": 3176,
                   "src": "968:11:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -411,7 +411,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3195,
+                    "id": 3167,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "968:4:7",
@@ -428,15 +428,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 3200,
+              "id": 3172,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3199,
+                  "id": 3171,
                   "name": "RN",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3204,
+                  "scope": 3176,
                   "src": "1006:7:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -445,7 +445,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3198,
+                    "id": 3170,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "1006:4:7",
@@ -460,14 +460,14 @@
               ],
               "src": "1005:9:7"
             },
-            "scope": 3205,
+            "scope": 3177,
             "src": "953:94:7",
             "stateMutability": "view",
-            "superFunction": 3229,
+            "superFunction": 3201,
             "visibility": "public"
           }
         ],
-        "scope": 3206,
+        "scope": 3178,
         "src": "261:794:7"
       }
     ],
@@ -477,25 +477,25 @@
     "absolutePath": "kleros-interaction/contracts/standard/rng/ConstantNG.sol",
     "exportedSymbols": {
       "ConstantNG": [
-        3205
+        3177
       ]
     },
-    "id": 3206,
+    "id": 3178,
     "nodeType": "SourceUnit",
     "nodes": [
       {
         "absolutePath": "kleros-interaction/contracts/standard/rng/RNG.sol",
         "file": "./RNG.sol",
-        "id": 3173,
+        "id": 3145,
         "nodeType": "ImportDirective",
-        "scope": 3206,
-        "sourceUnit": 3259,
+        "scope": 3178,
+        "sourceUnit": 3231,
         "src": "209:19:7",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "id": 3174,
+        "id": 3146,
         "literals": [
           "solidity",
           "^",
@@ -511,41 +511,41 @@
             "arguments": [],
             "baseName": {
               "contractScope": null,
-              "id": 3175,
+              "id": 3147,
               "name": "RNG",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 3258,
+              "referencedDeclaration": 3230,
               "src": "284:3:7",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_RNG_$3258",
+                "typeIdentifier": "t_contract$_RNG_$3230",
                 "typeString": "contract RNG"
               }
             },
-            "id": 3176,
+            "id": 3148,
             "nodeType": "InheritanceSpecifier",
             "src": "284:3:7"
           }
         ],
         "contractDependencies": [
-          3258
+          3230
         ],
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 3205,
+        "id": 3177,
         "linearizedBaseContracts": [
-          3205,
-          3258
+          3177,
+          3230
         ],
         "name": "ConstantNG",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 3178,
+            "id": 3150,
             "name": "number",
             "nodeType": "VariableDeclaration",
-            "scope": 3205,
+            "scope": 3177,
             "src": "296:18:7",
             "stateVariable": true,
             "storageLocation": "default",
@@ -554,7 +554,7 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 3177,
+              "id": 3149,
               "name": "uint",
               "nodeType": "ElementaryTypeName",
               "src": "296:4:7",
@@ -568,25 +568,25 @@
           },
           {
             "body": {
-              "id": 3187,
+              "id": 3159,
               "nodeType": "Block",
               "src": "453:35:7",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3185,
+                    "id": 3157,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 3183,
+                      "id": 3155,
                       "name": "number",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3178,
+                      "referencedDeclaration": 3150,
                       "src": "464:6:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -597,11 +597,11 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 3184,
+                      "id": 3156,
                       "name": "_number",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3180,
+                      "referencedDeclaration": 3152,
                       "src": "473:7:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -614,13 +614,13 @@
                       "typeString": "uint256"
                     }
                   },
-                  "id": 3186,
+                  "id": 3158,
                   "nodeType": "ExpressionStatement",
                   "src": "464:16:7"
                 }
               ]
             },
-            "id": 3188,
+            "id": 3160,
             "implemented": true,
             "isConstructor": true,
             "isDeclaredConst": false,
@@ -628,15 +628,15 @@
             "name": "ConstantNG",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3181,
+              "id": 3153,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3180,
+                  "id": 3152,
                   "name": "_number",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3188,
+                  "scope": 3160,
                   "src": "432:12:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -645,7 +645,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3179,
+                    "id": 3151,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "432:4:7",
@@ -662,12 +662,12 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 3182,
+              "id": 3154,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "453:0:7"
             },
-            "scope": 3205,
+            "scope": 3177,
             "src": "412:76:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -675,12 +675,12 @@
           },
           {
             "body": {
-              "id": 3193,
+              "id": 3165,
               "nodeType": "Block",
               "src": "707:2:7",
               "statements": []
             },
-            "id": 3194,
+            "id": 3166,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -688,15 +688,15 @@
             "name": "contribute",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3191,
+              "id": 3163,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3190,
+                  "id": 3162,
                   "name": "_block",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3194,
+                  "scope": 3166,
                   "src": "679:11:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -705,7 +705,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3189,
+                    "id": 3161,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "679:4:7",
@@ -722,45 +722,45 @@
             },
             "payable": true,
             "returnParameters": {
-              "id": 3192,
+              "id": 3164,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "707:0:7"
             },
-            "scope": 3205,
+            "scope": 3177,
             "src": "659:50:7",
             "stateMutability": "payable",
-            "superFunction": 3212,
+            "superFunction": 3184,
             "visibility": "public"
           },
           {
             "body": {
-              "id": 3203,
+              "id": 3175,
               "nodeType": "Block",
               "src": "1015:32:7",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3201,
+                    "id": 3173,
                     "name": "number",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 3178,
+                    "referencedDeclaration": 3150,
                     "src": "1033:6:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "functionReturnParameters": 3200,
-                  "id": 3202,
+                  "functionReturnParameters": 3172,
+                  "id": 3174,
                   "nodeType": "Return",
                   "src": "1026:13:7"
                 }
               ]
             },
-            "id": 3204,
+            "id": 3176,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -768,15 +768,15 @@
             "name": "getRN",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3197,
+              "id": 3169,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3196,
+                  "id": 3168,
                   "name": "_block",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3204,
+                  "scope": 3176,
                   "src": "968:11:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -785,7 +785,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3195,
+                    "id": 3167,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "968:4:7",
@@ -802,15 +802,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 3200,
+              "id": 3172,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3199,
+                  "id": 3171,
                   "name": "RN",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3204,
+                  "scope": 3176,
                   "src": "1006:7:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -819,7 +819,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3198,
+                    "id": 3170,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "1006:4:7",
@@ -834,14 +834,14 @@
               ],
               "src": "1005:9:7"
             },
-            "scope": 3205,
+            "scope": 3177,
             "src": "953:94:7",
             "stateMutability": "view",
-            "superFunction": 3229,
+            "superFunction": 3201,
             "visibility": "public"
           }
         ],
-        "scope": 3206,
+        "scope": 3178,
         "src": "261:794:7"
       }
     ],
@@ -853,5 +853,5 @@
   },
   "networks": {},
   "schemaVersion": "2.0.0",
-  "updatedAt": "2018-04-07T18:47:04.179Z"
+  "updatedAt": "2018-04-07T18:56:31.860Z"
 }

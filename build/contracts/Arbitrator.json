@@ -179,14 +179,14 @@
     "absolutePath": "kleros-interaction/contracts/standard/arbitration/Arbitrator.sol",
     "exportedSymbols": {
       "Arbitrator": [
-        2766
+        2738
       ]
     },
-    "id": 2767,
+    "id": 2739,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2648,
+        "id": 2620,
         "literals": [
           "solidity",
           "^",
@@ -199,10 +199,10 @@
       {
         "absolutePath": "kleros-interaction/contracts/standard/arbitration/Arbitrable.sol",
         "file": "./Arbitrable.sol",
-        "id": 2649,
+        "id": 2621,
         "nodeType": "ImportDirective",
-        "scope": 2767,
-        "sourceUnit": 2531,
+        "scope": 2739,
+        "sourceUnit": 2503,
         "src": "190:26:5",
         "symbolAliases": [],
         "unitAlias": ""
@@ -213,31 +213,31 @@
         "contractKind": "contract",
         "documentation": "@title Arbitrator\r\n Arbitrator abstract contract.\r\n When developing arbitrator contracts we need to:\r\n -Define the functions for dispute creation (createDispute) and appeal (appeal). Don't forget to store the arbitrated contract and the disputeID (which should be unique, use nbDisputes).\r\n -Define the functions for cost display (arbitrationCost and appealCost).\r\n -Allow giving rulings. For this a function must call arbitrable.rule(disputeID,ruling).\r",
         "fullyImplemented": false,
-        "id": 2766,
+        "id": 2738,
         "linearizedBaseContracts": [
-          2766
+          2738
         ],
         "name": "Arbitrator",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "canonicalName": "Arbitrator.DisputeStatus",
-            "id": 2653,
+            "id": 2625,
             "members": [
               {
-                "id": 2650,
+                "id": 2622,
                 "name": "Waiting",
                 "nodeType": "EnumValue",
                 "src": "751:7:5"
               },
               {
-                "id": 2651,
+                "id": 2623,
                 "name": "Appealable",
                 "nodeType": "EnumValue",
                 "src": "760:10:5"
               },
               {
-                "id": 2652,
+                "id": 2624,
                 "name": "Solved",
                 "nodeType": "EnumValue",
                 "src": "772:6:5"
@@ -249,7 +249,7 @@
           },
           {
             "body": {
-              "id": 2667,
+              "id": 2639,
               "nodeType": "Block",
               "src": "840:53:5",
               "statements": [
@@ -263,7 +263,7 @@
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
                         },
-                        "id": 2663,
+                        "id": 2635,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -272,18 +272,18 @@
                           "argumentTypes": null,
                           "expression": {
                             "argumentTypes": null,
-                            "id": 2658,
+                            "id": 2630,
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 3936,
+                            "referencedDeclaration": 3908,
                             "src": "849:3:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
                               "typeString": "msg"
                             }
                           },
-                          "id": 2659,
+                          "id": 2631,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -304,11 +304,11 @@
                           "arguments": [
                             {
                               "argumentTypes": null,
-                              "id": 2661,
+                              "id": 2633,
                               "name": "_extraData",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 2655,
+                              "referencedDeclaration": 2627,
                               "src": "876:10:5",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_bytes_memory_ptr",
@@ -323,18 +323,18 @@
                                 "typeString": "bytes memory"
                               }
                             ],
-                            "id": 2660,
+                            "id": 2632,
                             "name": "arbitrationCost",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2722,
+                            "referencedDeclaration": 2694,
                             "src": "860:15:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_internal_view$_t_bytes_memory_ptr_$returns$_t_uint256_$",
                               "typeString": "function (bytes memory) view returns (uint256)"
                             }
                           },
-                          "id": 2662,
+                          "id": 2634,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -362,18 +362,18 @@
                           "typeString": "bool"
                         }
                       ],
-                      "id": 2657,
+                      "id": 2629,
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3939,
+                      "referencedDeclaration": 3911,
                       "src": "841:7:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
                         "typeString": "function (bool) pure"
                       }
                     },
-                    "id": 2664,
+                    "id": 2636,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -387,30 +387,30 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 2665,
+                  "id": 2637,
                   "nodeType": "ExpressionStatement",
                   "src": "841:47:5"
                 },
                 {
-                  "id": 2666,
+                  "id": 2638,
                   "nodeType": "PlaceholderStatement",
                   "src": "890:1:5"
                 }
               ]
             },
-            "id": 2668,
+            "id": 2640,
             "name": "requireArbitrationFee",
             "nodeType": "ModifierDefinition",
             "parameters": {
-              "id": 2656,
+              "id": 2628,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2655,
+                  "id": 2627,
                   "name": "_extraData",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2668,
+                  "scope": 2640,
                   "src": "822:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -419,7 +419,7 @@
                     "typeString": "bytes memory"
                   },
                   "typeName": {
-                    "id": 2654,
+                    "id": 2626,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "822:5:5",
@@ -439,7 +439,7 @@
           },
           {
             "body": {
-              "id": 2685,
+              "id": 2657,
               "nodeType": "Block",
               "src": "960:60:5",
               "statements": [
@@ -453,7 +453,7 @@
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
                         },
-                        "id": 2681,
+                        "id": 2653,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -462,18 +462,18 @@
                           "argumentTypes": null,
                           "expression": {
                             "argumentTypes": null,
-                            "id": 2675,
+                            "id": 2647,
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 3936,
+                            "referencedDeclaration": 3908,
                             "src": "969:3:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
                               "typeString": "msg"
                             }
                           },
-                          "id": 2676,
+                          "id": 2648,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -494,11 +494,11 @@
                           "arguments": [
                             {
                               "argumentTypes": null,
-                              "id": 2678,
+                              "id": 2650,
                               "name": "_disputeID",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 2670,
+                              "referencedDeclaration": 2642,
                               "src": "991:10:5",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
@@ -507,11 +507,11 @@
                             },
                             {
                               "argumentTypes": null,
-                              "id": 2679,
+                              "id": 2651,
                               "name": "_extraData",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 2672,
+                              "referencedDeclaration": 2644,
                               "src": "1003:10:5",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_bytes_memory_ptr",
@@ -530,18 +530,18 @@
                                 "typeString": "bytes memory"
                               }
                             ],
-                            "id": 2677,
+                            "id": 2649,
                             "name": "appealCost",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2751,
+                            "referencedDeclaration": 2723,
                             "src": "980:10:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_internal_view$_t_uint256_$_t_bytes_memory_ptr_$returns$_t_uint256_$",
                               "typeString": "function (uint256,bytes memory) view returns (uint256)"
                             }
                           },
-                          "id": 2680,
+                          "id": 2652,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -569,18 +569,18 @@
                           "typeString": "bool"
                         }
                       ],
-                      "id": 2674,
+                      "id": 2646,
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3939,
+                      "referencedDeclaration": 3911,
                       "src": "961:7:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
                         "typeString": "function (bool) pure"
                       }
                     },
-                    "id": 2682,
+                    "id": 2654,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -594,30 +594,30 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 2683,
+                  "id": 2655,
                   "nodeType": "ExpressionStatement",
                   "src": "961:54:5"
                 },
                 {
-                  "id": 2684,
+                  "id": 2656,
                   "nodeType": "PlaceholderStatement",
                   "src": "1017:1:5"
                 }
               ]
             },
-            "id": 2686,
+            "id": 2658,
             "name": "requireAppealFee",
             "nodeType": "ModifierDefinition",
             "parameters": {
-              "id": 2673,
+              "id": 2645,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2670,
+                  "id": 2642,
                   "name": "_disputeID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2686,
+                  "scope": 2658,
                   "src": "925:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -626,7 +626,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2669,
+                    "id": 2641,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "925:4:5",
@@ -640,10 +640,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2672,
+                  "id": 2644,
                   "name": "_extraData",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2686,
+                  "scope": 2658,
                   "src": "942:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -652,7 +652,7 @@
                     "typeString": "bytes memory"
                   },
                   "typeName": {
-                    "id": 2671,
+                    "id": 2643,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "942:5:5",
@@ -672,20 +672,20 @@
           },
           {
             "anonymous": false,
-            "id": 2690,
+            "id": 2662,
             "name": "AppealPossible",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 2689,
+              "id": 2661,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2688,
+                  "id": 2660,
                   "indexed": false,
                   "name": "_disputeID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2690,
+                  "scope": 2662,
                   "src": "1167:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -694,7 +694,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2687,
+                    "id": 2659,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "1167:4:5",
@@ -713,20 +713,20 @@
           },
           {
             "anonymous": false,
-            "id": 2696,
+            "id": 2668,
             "name": "DisputeCreation",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 2695,
+              "id": 2667,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2692,
+                  "id": 2664,
                   "indexed": true,
                   "name": "_disputeID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2696,
+                  "scope": 2668,
                   "src": "1395:23:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -735,7 +735,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2691,
+                    "id": 2663,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "1395:4:5",
@@ -749,27 +749,27 @@
                 },
                 {
                   "constant": false,
-                  "id": 2694,
+                  "id": 2666,
                   "indexed": false,
                   "name": "_arbitrable",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2696,
+                  "scope": 2668,
                   "src": "1420:22:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_Arbitrable_$2530",
+                    "typeIdentifier": "t_contract$_Arbitrable_$2502",
                     "typeString": "contract Arbitrable"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 2693,
+                    "id": 2665,
                     "name": "Arbitrable",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 2530,
+                    "referencedDeclaration": 2502,
                     "src": "1420:10:5",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_Arbitrable_$2530",
+                      "typeIdentifier": "t_contract$_Arbitrable_$2502",
                       "typeString": "contract Arbitrable"
                     }
                   },
@@ -783,20 +783,20 @@
           },
           {
             "anonymous": false,
-            "id": 2702,
+            "id": 2674,
             "name": "AppealDecision",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 2701,
+              "id": 2673,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2698,
+                  "id": 2670,
                   "indexed": true,
                   "name": "_disputeID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2702,
+                  "scope": 2674,
                   "src": "1664:23:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -805,7 +805,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2697,
+                    "id": 2669,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "1664:4:5",
@@ -819,27 +819,27 @@
                 },
                 {
                   "constant": false,
-                  "id": 2700,
+                  "id": 2672,
                   "indexed": false,
                   "name": "_arbitrable",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2702,
+                  "scope": 2674,
                   "src": "1689:22:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_Arbitrable_$2530",
+                    "typeIdentifier": "t_contract$_Arbitrable_$2502",
                     "typeString": "contract Arbitrable"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 2699,
+                    "id": 2671,
                     "name": "Arbitrable",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 2530,
+                    "referencedDeclaration": 2502,
                     "src": "1689:10:5",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_Arbitrable_$2530",
+                      "typeIdentifier": "t_contract$_Arbitrable_$2502",
                       "typeString": "contract Arbitrable"
                     }
                   },
@@ -853,12 +853,12 @@
           },
           {
             "body": {
-              "id": 2714,
+              "id": 2686,
               "nodeType": "Block",
               "src": "2230:2:5",
               "statements": []
             },
-            "id": 2715,
+            "id": 2687,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -867,11 +867,11 @@
                 "arguments": [
                   {
                     "argumentTypes": null,
-                    "id": 2709,
+                    "id": 2681,
                     "name": "_extraData",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 2706,
+                    "referencedDeclaration": 2678,
                     "src": "2185:10:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes_memory_ptr",
@@ -879,14 +879,14 @@
                     }
                   }
                 ],
-                "id": 2710,
+                "id": 2682,
                 "modifierName": {
                   "argumentTypes": null,
-                  "id": 2708,
+                  "id": 2680,
                   "name": "requireArbitrationFee",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 2668,
+                  "referencedDeclaration": 2640,
                   "src": "2163:21:5",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$_t_bytes_memory_ptr_$",
@@ -900,15 +900,15 @@
             "name": "createDispute",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2707,
+              "id": 2679,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2704,
+                  "id": 2676,
                   "name": "_choices",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2715,
+                  "scope": 2687,
                   "src": "2123:13:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -917,7 +917,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2703,
+                    "id": 2675,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "2123:4:5",
@@ -931,10 +931,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2706,
+                  "id": 2678,
                   "name": "_extraData",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2715,
+                  "scope": 2687,
                   "src": "2138:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -943,7 +943,7 @@
                     "typeString": "bytes memory"
                   },
                   "typeName": {
-                    "id": 2705,
+                    "id": 2677,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "2138:5:5",
@@ -960,15 +960,15 @@
             },
             "payable": true,
             "returnParameters": {
-              "id": 2713,
+              "id": 2685,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2712,
+                  "id": 2684,
                   "name": "disputeID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2715,
+                  "scope": 2687,
                   "src": "2213:14:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -977,7 +977,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2711,
+                    "id": 2683,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "2213:4:5",
@@ -992,7 +992,7 @@
               ],
               "src": "2212:16:5"
             },
-            "scope": 2766,
+            "scope": 2738,
             "src": "2100:132:5",
             "stateMutability": "payable",
             "superFunction": null,
@@ -1000,7 +1000,7 @@
           },
           {
             "body": null,
-            "id": 2722,
+            "id": 2694,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -1008,15 +1008,15 @@
             "name": "arbitrationCost",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2718,
+              "id": 2690,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2717,
+                  "id": 2689,
                   "name": "_extraData",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2722,
+                  "scope": 2694,
                   "src": "2605:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1025,7 +1025,7 @@
                     "typeString": "bytes memory"
                   },
                   "typeName": {
-                    "id": 2716,
+                    "id": 2688,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "2605:5:5",
@@ -1042,15 +1042,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 2721,
+              "id": 2693,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2720,
+                  "id": 2692,
                   "name": "fee",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2722,
+                  "scope": 2694,
                   "src": "2647:8:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1059,7 +1059,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2719,
+                    "id": 2691,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "2647:4:5",
@@ -1074,7 +1074,7 @@
               ],
               "src": "2646:10:5"
             },
-            "scope": 2766,
+            "scope": 2738,
             "src": "2580:77:5",
             "stateMutability": "view",
             "superFunction": null,
@@ -1082,7 +1082,7 @@
           },
           {
             "body": {
-              "id": 2741,
+              "id": 2713,
               "nodeType": "Block",
               "src": "3022:69:5",
               "statements": [
@@ -1092,11 +1092,11 @@
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 2734,
+                        "id": 2706,
                         "name": "_disputeID",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2724,
+                        "referencedDeclaration": 2696,
                         "src": "3048:10:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -1110,18 +1110,18 @@
                             "argumentTypes": null,
                             "expression": {
                               "argumentTypes": null,
-                              "id": 2736,
+                              "id": 2708,
                               "name": "msg",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 3936,
+                              "referencedDeclaration": 3908,
                               "src": "3071:3:5",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_magic_message",
                                 "typeString": "msg"
                               }
                             },
-                            "id": 2737,
+                            "id": 2709,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": false,
@@ -1143,18 +1143,18 @@
                               "typeString": "address"
                             }
                           ],
-                          "id": 2735,
+                          "id": 2707,
                           "name": "Arbitrable",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 2530,
+                          "referencedDeclaration": 2502,
                           "src": "3060:10:5",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_type$_t_contract$_Arbitrable_$2530_$",
+                            "typeIdentifier": "t_type$_t_contract$_Arbitrable_$2502_$",
                             "typeString": "type(contract Arbitrable)"
                           }
                         },
-                        "id": 2738,
+                        "id": 2710,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -1164,7 +1164,7 @@
                         "nodeType": "FunctionCall",
                         "src": "3060:22:5",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_Arbitrable_$2530",
+                          "typeIdentifier": "t_contract$_Arbitrable_$2502",
                           "typeString": "contract Arbitrable"
                         }
                       }
@@ -1176,22 +1176,22 @@
                           "typeString": "uint256"
                         },
                         {
-                          "typeIdentifier": "t_contract$_Arbitrable_$2530",
+                          "typeIdentifier": "t_contract$_Arbitrable_$2502",
                           "typeString": "contract Arbitrable"
                         }
                       ],
-                      "id": 2733,
+                      "id": 2705,
                       "name": "AppealDecision",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2702,
+                      "referencedDeclaration": 2674,
                       "src": "3033:14:5",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$_t_contract$_Arbitrable_$2530_$returns$__$",
+                        "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$_t_contract$_Arbitrable_$2502_$returns$__$",
                         "typeString": "function (uint256,contract Arbitrable)"
                       }
                     },
-                    "id": 2739,
+                    "id": 2711,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1205,13 +1205,13 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 2740,
+                  "id": 2712,
                   "nodeType": "ExpressionStatement",
                   "src": "3033:50:5"
                 }
               ]
             },
-            "id": 2742,
+            "id": 2714,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1220,11 +1220,11 @@
                 "arguments": [
                   {
                     "argumentTypes": null,
-                    "id": 2729,
+                    "id": 2701,
                     "name": "_disputeID",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 2724,
+                    "referencedDeclaration": 2696,
                     "src": "2991:10:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
@@ -1233,11 +1233,11 @@
                   },
                   {
                     "argumentTypes": null,
-                    "id": 2730,
+                    "id": 2702,
                     "name": "_extraData",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 2726,
+                    "referencedDeclaration": 2698,
                     "src": "3002:10:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes_memory_ptr",
@@ -1245,14 +1245,14 @@
                     }
                   }
                 ],
-                "id": 2731,
+                "id": 2703,
                 "modifierName": {
                   "argumentTypes": null,
-                  "id": 2728,
+                  "id": 2700,
                   "name": "requireAppealFee",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 2686,
+                  "referencedDeclaration": 2658,
                   "src": "2974:16:5",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$_t_uint256_$_t_bytes_memory_ptr_$",
@@ -1266,15 +1266,15 @@
             "name": "appeal",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2727,
+              "id": 2699,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2724,
+                  "id": 2696,
                   "name": "_disputeID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2742,
+                  "scope": 2714,
                   "src": "2932:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1283,7 +1283,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2723,
+                    "id": 2695,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "2932:4:5",
@@ -1297,10 +1297,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2726,
+                  "id": 2698,
                   "name": "_extraData",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2742,
+                  "scope": 2714,
                   "src": "2949:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1309,7 +1309,7 @@
                     "typeString": "bytes memory"
                   },
                   "typeName": {
-                    "id": 2725,
+                    "id": 2697,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "2949:5:5",
@@ -1326,12 +1326,12 @@
             },
             "payable": true,
             "returnParameters": {
-              "id": 2732,
+              "id": 2704,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "3022:0:5"
             },
-            "scope": 2766,
+            "scope": 2738,
             "src": "2916:175:5",
             "stateMutability": "payable",
             "superFunction": null,
@@ -1339,7 +1339,7 @@
           },
           {
             "body": null,
-            "id": 2751,
+            "id": 2723,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -1347,15 +1347,15 @@
             "name": "appealCost",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2747,
+              "id": 2719,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2744,
+                  "id": 2716,
                   "name": "_disputeID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2751,
+                  "scope": 2723,
                   "src": "3514:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1364,7 +1364,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2743,
+                    "id": 2715,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "3514:4:5",
@@ -1378,10 +1378,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2746,
+                  "id": 2718,
                   "name": "_extraData",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2751,
+                  "scope": 2723,
                   "src": "3531:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1390,7 +1390,7 @@
                     "typeString": "bytes memory"
                   },
                   "typeName": {
-                    "id": 2745,
+                    "id": 2717,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "3531:5:5",
@@ -1407,15 +1407,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 2750,
+              "id": 2722,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2749,
+                  "id": 2721,
                   "name": "fee",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2751,
+                  "scope": 2723,
                   "src": "3573:8:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1424,7 +1424,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2748,
+                    "id": 2720,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "3573:4:5",
@@ -1439,7 +1439,7 @@
               ],
               "src": "3572:10:5"
             },
-            "scope": 2766,
+            "scope": 2738,
             "src": "3494:89:5",
             "stateMutability": "view",
             "superFunction": null,
@@ -1447,7 +1447,7 @@
           },
           {
             "body": null,
-            "id": 2758,
+            "id": 2730,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -1455,15 +1455,15 @@
             "name": "disputeStatus",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2754,
+              "id": 2726,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2753,
+                  "id": 2725,
                   "name": "_disputeID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2758,
+                  "scope": 2730,
                   "src": "3778:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1472,7 +1472,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2752,
+                    "id": 2724,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "3778:4:5",
@@ -1489,31 +1489,31 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 2757,
+              "id": 2729,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2756,
+                  "id": 2728,
                   "name": "status",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2758,
+                  "scope": 2730,
                   "src": "3819:20:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_DisputeStatus_$2653",
+                    "typeIdentifier": "t_enum$_DisputeStatus_$2625",
                     "typeString": "enum Arbitrator.DisputeStatus"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 2755,
+                    "id": 2727,
                     "name": "DisputeStatus",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 2653,
+                    "referencedDeclaration": 2625,
                     "src": "3819:13:5",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_enum$_DisputeStatus_$2653",
+                      "typeIdentifier": "t_enum$_DisputeStatus_$2625",
                       "typeString": "enum Arbitrator.DisputeStatus"
                     }
                   },
@@ -1523,7 +1523,7 @@
               ],
               "src": "3818:22:5"
             },
-            "scope": 2766,
+            "scope": 2738,
             "src": "3755:86:5",
             "stateMutability": "view",
             "superFunction": null,
@@ -1531,7 +1531,7 @@
           },
           {
             "body": null,
-            "id": 2765,
+            "id": 2737,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -1539,15 +1539,15 @@
             "name": "currentRuling",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2761,
+              "id": 2733,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2760,
+                  "id": 2732,
                   "name": "_disputeID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2765,
+                  "scope": 2737,
                   "src": "4153:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1556,7 +1556,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2759,
+                    "id": 2731,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "4153:4:5",
@@ -1573,15 +1573,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 2764,
+              "id": 2736,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2763,
+                  "id": 2735,
                   "name": "ruling",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2765,
+                  "scope": 2737,
                   "src": "4194:11:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1590,7 +1590,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2762,
+                    "id": 2734,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "4194:4:5",
@@ -1605,14 +1605,14 @@
               ],
               "src": "4193:13:5"
             },
-            "scope": 2766,
+            "scope": 2738,
             "src": "4130:77:5",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 2767,
+        "scope": 2739,
         "src": "699:3518:5"
       }
     ],
@@ -1622,14 +1622,14 @@
     "absolutePath": "kleros-interaction/contracts/standard/arbitration/Arbitrator.sol",
     "exportedSymbols": {
       "Arbitrator": [
-        2766
+        2738
       ]
     },
-    "id": 2767,
+    "id": 2739,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2648,
+        "id": 2620,
         "literals": [
           "solidity",
           "^",
@@ -1642,10 +1642,10 @@
       {
         "absolutePath": "kleros-interaction/contracts/standard/arbitration/Arbitrable.sol",
         "file": "./Arbitrable.sol",
-        "id": 2649,
+        "id": 2621,
         "nodeType": "ImportDirective",
-        "scope": 2767,
-        "sourceUnit": 2531,
+        "scope": 2739,
+        "sourceUnit": 2503,
         "src": "190:26:5",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1656,31 +1656,31 @@
         "contractKind": "contract",
         "documentation": "@title Arbitrator\r\n Arbitrator abstract contract.\r\n When developing arbitrator contracts we need to:\r\n -Define the functions for dispute creation (createDispute) and appeal (appeal). Don't forget to store the arbitrated contract and the disputeID (which should be unique, use nbDisputes).\r\n -Define the functions for cost display (arbitrationCost and appealCost).\r\n -Allow giving rulings. For this a function must call arbitrable.rule(disputeID,ruling).\r",
         "fullyImplemented": false,
-        "id": 2766,
+        "id": 2738,
         "linearizedBaseContracts": [
-          2766
+          2738
         ],
         "name": "Arbitrator",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "canonicalName": "Arbitrator.DisputeStatus",
-            "id": 2653,
+            "id": 2625,
             "members": [
               {
-                "id": 2650,
+                "id": 2622,
                 "name": "Waiting",
                 "nodeType": "EnumValue",
                 "src": "751:7:5"
               },
               {
-                "id": 2651,
+                "id": 2623,
                 "name": "Appealable",
                 "nodeType": "EnumValue",
                 "src": "760:10:5"
               },
               {
-                "id": 2652,
+                "id": 2624,
                 "name": "Solved",
                 "nodeType": "EnumValue",
                 "src": "772:6:5"
@@ -1692,7 +1692,7 @@
           },
           {
             "body": {
-              "id": 2667,
+              "id": 2639,
               "nodeType": "Block",
               "src": "840:53:5",
               "statements": [
@@ -1706,7 +1706,7 @@
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
                         },
-                        "id": 2663,
+                        "id": 2635,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -1715,18 +1715,18 @@
                           "argumentTypes": null,
                           "expression": {
                             "argumentTypes": null,
-                            "id": 2658,
+                            "id": 2630,
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 3936,
+                            "referencedDeclaration": 3908,
                             "src": "849:3:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
                               "typeString": "msg"
                             }
                           },
-                          "id": 2659,
+                          "id": 2631,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -1747,11 +1747,11 @@
                           "arguments": [
                             {
                               "argumentTypes": null,
-                              "id": 2661,
+                              "id": 2633,
                               "name": "_extraData",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 2655,
+                              "referencedDeclaration": 2627,
                               "src": "876:10:5",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_bytes_memory_ptr",
@@ -1766,18 +1766,18 @@
                                 "typeString": "bytes memory"
                               }
                             ],
-                            "id": 2660,
+                            "id": 2632,
                             "name": "arbitrationCost",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2722,
+                            "referencedDeclaration": 2694,
                             "src": "860:15:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_internal_view$_t_bytes_memory_ptr_$returns$_t_uint256_$",
                               "typeString": "function (bytes memory) view returns (uint256)"
                             }
                           },
-                          "id": 2662,
+                          "id": 2634,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -1805,18 +1805,18 @@
                           "typeString": "bool"
                         }
                       ],
-                      "id": 2657,
+                      "id": 2629,
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3939,
+                      "referencedDeclaration": 3911,
                       "src": "841:7:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
                         "typeString": "function (bool) pure"
                       }
                     },
-                    "id": 2664,
+                    "id": 2636,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1830,30 +1830,30 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 2665,
+                  "id": 2637,
                   "nodeType": "ExpressionStatement",
                   "src": "841:47:5"
                 },
                 {
-                  "id": 2666,
+                  "id": 2638,
                   "nodeType": "PlaceholderStatement",
                   "src": "890:1:5"
                 }
               ]
             },
-            "id": 2668,
+            "id": 2640,
             "name": "requireArbitrationFee",
             "nodeType": "ModifierDefinition",
             "parameters": {
-              "id": 2656,
+              "id": 2628,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2655,
+                  "id": 2627,
                   "name": "_extraData",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2668,
+                  "scope": 2640,
                   "src": "822:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1862,7 +1862,7 @@
                     "typeString": "bytes memory"
                   },
                   "typeName": {
-                    "id": 2654,
+                    "id": 2626,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "822:5:5",
@@ -1882,7 +1882,7 @@
           },
           {
             "body": {
-              "id": 2685,
+              "id": 2657,
               "nodeType": "Block",
               "src": "960:60:5",
               "statements": [
@@ -1896,7 +1896,7 @@
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
                         },
-                        "id": 2681,
+                        "id": 2653,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -1905,18 +1905,18 @@
                           "argumentTypes": null,
                           "expression": {
                             "argumentTypes": null,
-                            "id": 2675,
+                            "id": 2647,
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 3936,
+                            "referencedDeclaration": 3908,
                             "src": "969:3:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
                               "typeString": "msg"
                             }
                           },
-                          "id": 2676,
+                          "id": 2648,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -1937,11 +1937,11 @@
                           "arguments": [
                             {
                               "argumentTypes": null,
-                              "id": 2678,
+                              "id": 2650,
                               "name": "_disputeID",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 2670,
+                              "referencedDeclaration": 2642,
                               "src": "991:10:5",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
@@ -1950,11 +1950,11 @@
                             },
                             {
                               "argumentTypes": null,
-                              "id": 2679,
+                              "id": 2651,
                               "name": "_extraData",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 2672,
+                              "referencedDeclaration": 2644,
                               "src": "1003:10:5",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_bytes_memory_ptr",
@@ -1973,18 +1973,18 @@
                                 "typeString": "bytes memory"
                               }
                             ],
-                            "id": 2677,
+                            "id": 2649,
                             "name": "appealCost",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2751,
+                            "referencedDeclaration": 2723,
                             "src": "980:10:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_internal_view$_t_uint256_$_t_bytes_memory_ptr_$returns$_t_uint256_$",
                               "typeString": "function (uint256,bytes memory) view returns (uint256)"
                             }
                           },
-                          "id": 2680,
+                          "id": 2652,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -2012,18 +2012,18 @@
                           "typeString": "bool"
                         }
                       ],
-                      "id": 2674,
+                      "id": 2646,
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3939,
+                      "referencedDeclaration": 3911,
                       "src": "961:7:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
                         "typeString": "function (bool) pure"
                       }
                     },
-                    "id": 2682,
+                    "id": 2654,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2037,30 +2037,30 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 2683,
+                  "id": 2655,
                   "nodeType": "ExpressionStatement",
                   "src": "961:54:5"
                 },
                 {
-                  "id": 2684,
+                  "id": 2656,
                   "nodeType": "PlaceholderStatement",
                   "src": "1017:1:5"
                 }
               ]
             },
-            "id": 2686,
+            "id": 2658,
             "name": "requireAppealFee",
             "nodeType": "ModifierDefinition",
             "parameters": {
-              "id": 2673,
+              "id": 2645,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2670,
+                  "id": 2642,
                   "name": "_disputeID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2686,
+                  "scope": 2658,
                   "src": "925:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2069,7 +2069,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2669,
+                    "id": 2641,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "925:4:5",
@@ -2083,10 +2083,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2672,
+                  "id": 2644,
                   "name": "_extraData",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2686,
+                  "scope": 2658,
                   "src": "942:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2095,7 +2095,7 @@
                     "typeString": "bytes memory"
                   },
                   "typeName": {
-                    "id": 2671,
+                    "id": 2643,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "942:5:5",
@@ -2115,20 +2115,20 @@
           },
           {
             "anonymous": false,
-            "id": 2690,
+            "id": 2662,
             "name": "AppealPossible",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 2689,
+              "id": 2661,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2688,
+                  "id": 2660,
                   "indexed": false,
                   "name": "_disputeID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2690,
+                  "scope": 2662,
                   "src": "1167:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2137,7 +2137,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2687,
+                    "id": 2659,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "1167:4:5",
@@ -2156,20 +2156,20 @@
           },
           {
             "anonymous": false,
-            "id": 2696,
+            "id": 2668,
             "name": "DisputeCreation",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 2695,
+              "id": 2667,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2692,
+                  "id": 2664,
                   "indexed": true,
                   "name": "_disputeID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2696,
+                  "scope": 2668,
                   "src": "1395:23:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2178,7 +2178,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2691,
+                    "id": 2663,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "1395:4:5",
@@ -2192,27 +2192,27 @@
                 },
                 {
                   "constant": false,
-                  "id": 2694,
+                  "id": 2666,
                   "indexed": false,
                   "name": "_arbitrable",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2696,
+                  "scope": 2668,
                   "src": "1420:22:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_Arbitrable_$2530",
+                    "typeIdentifier": "t_contract$_Arbitrable_$2502",
                     "typeString": "contract Arbitrable"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 2693,
+                    "id": 2665,
                     "name": "Arbitrable",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 2530,
+                    "referencedDeclaration": 2502,
                     "src": "1420:10:5",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_Arbitrable_$2530",
+                      "typeIdentifier": "t_contract$_Arbitrable_$2502",
                       "typeString": "contract Arbitrable"
                     }
                   },
@@ -2226,20 +2226,20 @@
           },
           {
             "anonymous": false,
-            "id": 2702,
+            "id": 2674,
             "name": "AppealDecision",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 2701,
+              "id": 2673,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2698,
+                  "id": 2670,
                   "indexed": true,
                   "name": "_disputeID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2702,
+                  "scope": 2674,
                   "src": "1664:23:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2248,7 +2248,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2697,
+                    "id": 2669,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "1664:4:5",
@@ -2262,27 +2262,27 @@
                 },
                 {
                   "constant": false,
-                  "id": 2700,
+                  "id": 2672,
                   "indexed": false,
                   "name": "_arbitrable",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2702,
+                  "scope": 2674,
                   "src": "1689:22:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_Arbitrable_$2530",
+                    "typeIdentifier": "t_contract$_Arbitrable_$2502",
                     "typeString": "contract Arbitrable"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 2699,
+                    "id": 2671,
                     "name": "Arbitrable",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 2530,
+                    "referencedDeclaration": 2502,
                     "src": "1689:10:5",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_Arbitrable_$2530",
+                      "typeIdentifier": "t_contract$_Arbitrable_$2502",
                       "typeString": "contract Arbitrable"
                     }
                   },
@@ -2296,12 +2296,12 @@
           },
           {
             "body": {
-              "id": 2714,
+              "id": 2686,
               "nodeType": "Block",
               "src": "2230:2:5",
               "statements": []
             },
-            "id": 2715,
+            "id": 2687,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -2310,11 +2310,11 @@
                 "arguments": [
                   {
                     "argumentTypes": null,
-                    "id": 2709,
+                    "id": 2681,
                     "name": "_extraData",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 2706,
+                    "referencedDeclaration": 2678,
                     "src": "2185:10:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes_memory_ptr",
@@ -2322,14 +2322,14 @@
                     }
                   }
                 ],
-                "id": 2710,
+                "id": 2682,
                 "modifierName": {
                   "argumentTypes": null,
-                  "id": 2708,
+                  "id": 2680,
                   "name": "requireArbitrationFee",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 2668,
+                  "referencedDeclaration": 2640,
                   "src": "2163:21:5",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$_t_bytes_memory_ptr_$",
@@ -2343,15 +2343,15 @@
             "name": "createDispute",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2707,
+              "id": 2679,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2704,
+                  "id": 2676,
                   "name": "_choices",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2715,
+                  "scope": 2687,
                   "src": "2123:13:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2360,7 +2360,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2703,
+                    "id": 2675,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "2123:4:5",
@@ -2374,10 +2374,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2706,
+                  "id": 2678,
                   "name": "_extraData",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2715,
+                  "scope": 2687,
                   "src": "2138:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2386,7 +2386,7 @@
                     "typeString": "bytes memory"
                   },
                   "typeName": {
-                    "id": 2705,
+                    "id": 2677,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "2138:5:5",
@@ -2403,15 +2403,15 @@
             },
             "payable": true,
             "returnParameters": {
-              "id": 2713,
+              "id": 2685,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2712,
+                  "id": 2684,
                   "name": "disputeID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2715,
+                  "scope": 2687,
                   "src": "2213:14:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2420,7 +2420,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2711,
+                    "id": 2683,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "2213:4:5",
@@ -2435,7 +2435,7 @@
               ],
               "src": "2212:16:5"
             },
-            "scope": 2766,
+            "scope": 2738,
             "src": "2100:132:5",
             "stateMutability": "payable",
             "superFunction": null,
@@ -2443,7 +2443,7 @@
           },
           {
             "body": null,
-            "id": 2722,
+            "id": 2694,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -2451,15 +2451,15 @@
             "name": "arbitrationCost",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2718,
+              "id": 2690,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2717,
+                  "id": 2689,
                   "name": "_extraData",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2722,
+                  "scope": 2694,
                   "src": "2605:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2468,7 +2468,7 @@
                     "typeString": "bytes memory"
                   },
                   "typeName": {
-                    "id": 2716,
+                    "id": 2688,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "2605:5:5",
@@ -2485,15 +2485,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 2721,
+              "id": 2693,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2720,
+                  "id": 2692,
                   "name": "fee",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2722,
+                  "scope": 2694,
                   "src": "2647:8:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2502,7 +2502,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2719,
+                    "id": 2691,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "2647:4:5",
@@ -2517,7 +2517,7 @@
               ],
               "src": "2646:10:5"
             },
-            "scope": 2766,
+            "scope": 2738,
             "src": "2580:77:5",
             "stateMutability": "view",
             "superFunction": null,
@@ -2525,7 +2525,7 @@
           },
           {
             "body": {
-              "id": 2741,
+              "id": 2713,
               "nodeType": "Block",
               "src": "3022:69:5",
               "statements": [
@@ -2535,11 +2535,11 @@
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 2734,
+                        "id": 2706,
                         "name": "_disputeID",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2724,
+                        "referencedDeclaration": 2696,
                         "src": "3048:10:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -2553,18 +2553,18 @@
                             "argumentTypes": null,
                             "expression": {
                               "argumentTypes": null,
-                              "id": 2736,
+                              "id": 2708,
                               "name": "msg",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 3936,
+                              "referencedDeclaration": 3908,
                               "src": "3071:3:5",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_magic_message",
                                 "typeString": "msg"
                               }
                             },
-                            "id": 2737,
+                            "id": 2709,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": false,
@@ -2586,18 +2586,18 @@
                               "typeString": "address"
                             }
                           ],
-                          "id": 2735,
+                          "id": 2707,
                           "name": "Arbitrable",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 2530,
+                          "referencedDeclaration": 2502,
                           "src": "3060:10:5",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_type$_t_contract$_Arbitrable_$2530_$",
+                            "typeIdentifier": "t_type$_t_contract$_Arbitrable_$2502_$",
                             "typeString": "type(contract Arbitrable)"
                           }
                         },
-                        "id": 2738,
+                        "id": 2710,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -2607,7 +2607,7 @@
                         "nodeType": "FunctionCall",
                         "src": "3060:22:5",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_Arbitrable_$2530",
+                          "typeIdentifier": "t_contract$_Arbitrable_$2502",
                           "typeString": "contract Arbitrable"
                         }
                       }
@@ -2619,22 +2619,22 @@
                           "typeString": "uint256"
                         },
                         {
-                          "typeIdentifier": "t_contract$_Arbitrable_$2530",
+                          "typeIdentifier": "t_contract$_Arbitrable_$2502",
                           "typeString": "contract Arbitrable"
                         }
                       ],
-                      "id": 2733,
+                      "id": 2705,
                       "name": "AppealDecision",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2702,
+                      "referencedDeclaration": 2674,
                       "src": "3033:14:5",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$_t_contract$_Arbitrable_$2530_$returns$__$",
+                        "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$_t_contract$_Arbitrable_$2502_$returns$__$",
                         "typeString": "function (uint256,contract Arbitrable)"
                       }
                     },
-                    "id": 2739,
+                    "id": 2711,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2648,13 +2648,13 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 2740,
+                  "id": 2712,
                   "nodeType": "ExpressionStatement",
                   "src": "3033:50:5"
                 }
               ]
             },
-            "id": 2742,
+            "id": 2714,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -2663,11 +2663,11 @@
                 "arguments": [
                   {
                     "argumentTypes": null,
-                    "id": 2729,
+                    "id": 2701,
                     "name": "_disputeID",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 2724,
+                    "referencedDeclaration": 2696,
                     "src": "2991:10:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
@@ -2676,11 +2676,11 @@
                   },
                   {
                     "argumentTypes": null,
-                    "id": 2730,
+                    "id": 2702,
                     "name": "_extraData",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 2726,
+                    "referencedDeclaration": 2698,
                     "src": "3002:10:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes_memory_ptr",
@@ -2688,14 +2688,14 @@
                     }
                   }
                 ],
-                "id": 2731,
+                "id": 2703,
                 "modifierName": {
                   "argumentTypes": null,
-                  "id": 2728,
+                  "id": 2700,
                   "name": "requireAppealFee",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 2686,
+                  "referencedDeclaration": 2658,
                   "src": "2974:16:5",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$_t_uint256_$_t_bytes_memory_ptr_$",
@@ -2709,15 +2709,15 @@
             "name": "appeal",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2727,
+              "id": 2699,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2724,
+                  "id": 2696,
                   "name": "_disputeID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2742,
+                  "scope": 2714,
                   "src": "2932:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2726,7 +2726,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2723,
+                    "id": 2695,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "2932:4:5",
@@ -2740,10 +2740,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2726,
+                  "id": 2698,
                   "name": "_extraData",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2742,
+                  "scope": 2714,
                   "src": "2949:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2752,7 +2752,7 @@
                     "typeString": "bytes memory"
                   },
                   "typeName": {
-                    "id": 2725,
+                    "id": 2697,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "2949:5:5",
@@ -2769,12 +2769,12 @@
             },
             "payable": true,
             "returnParameters": {
-              "id": 2732,
+              "id": 2704,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "3022:0:5"
             },
-            "scope": 2766,
+            "scope": 2738,
             "src": "2916:175:5",
             "stateMutability": "payable",
             "superFunction": null,
@@ -2782,7 +2782,7 @@
           },
           {
             "body": null,
-            "id": 2751,
+            "id": 2723,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -2790,15 +2790,15 @@
             "name": "appealCost",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2747,
+              "id": 2719,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2744,
+                  "id": 2716,
                   "name": "_disputeID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2751,
+                  "scope": 2723,
                   "src": "3514:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2807,7 +2807,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2743,
+                    "id": 2715,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "3514:4:5",
@@ -2821,10 +2821,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2746,
+                  "id": 2718,
                   "name": "_extraData",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2751,
+                  "scope": 2723,
                   "src": "3531:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2833,7 +2833,7 @@
                     "typeString": "bytes memory"
                   },
                   "typeName": {
-                    "id": 2745,
+                    "id": 2717,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "3531:5:5",
@@ -2850,15 +2850,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 2750,
+              "id": 2722,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2749,
+                  "id": 2721,
                   "name": "fee",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2751,
+                  "scope": 2723,
                   "src": "3573:8:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2867,7 +2867,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2748,
+                    "id": 2720,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "3573:4:5",
@@ -2882,7 +2882,7 @@
               ],
               "src": "3572:10:5"
             },
-            "scope": 2766,
+            "scope": 2738,
             "src": "3494:89:5",
             "stateMutability": "view",
             "superFunction": null,
@@ -2890,7 +2890,7 @@
           },
           {
             "body": null,
-            "id": 2758,
+            "id": 2730,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -2898,15 +2898,15 @@
             "name": "disputeStatus",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2754,
+              "id": 2726,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2753,
+                  "id": 2725,
                   "name": "_disputeID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2758,
+                  "scope": 2730,
                   "src": "3778:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2915,7 +2915,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2752,
+                    "id": 2724,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "3778:4:5",
@@ -2932,31 +2932,31 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 2757,
+              "id": 2729,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2756,
+                  "id": 2728,
                   "name": "status",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2758,
+                  "scope": 2730,
                   "src": "3819:20:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_DisputeStatus_$2653",
+                    "typeIdentifier": "t_enum$_DisputeStatus_$2625",
                     "typeString": "enum Arbitrator.DisputeStatus"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 2755,
+                    "id": 2727,
                     "name": "DisputeStatus",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 2653,
+                    "referencedDeclaration": 2625,
                     "src": "3819:13:5",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_enum$_DisputeStatus_$2653",
+                      "typeIdentifier": "t_enum$_DisputeStatus_$2625",
                       "typeString": "enum Arbitrator.DisputeStatus"
                     }
                   },
@@ -2966,7 +2966,7 @@
               ],
               "src": "3818:22:5"
             },
-            "scope": 2766,
+            "scope": 2738,
             "src": "3755:86:5",
             "stateMutability": "view",
             "superFunction": null,
@@ -2974,7 +2974,7 @@
           },
           {
             "body": null,
-            "id": 2765,
+            "id": 2737,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -2982,15 +2982,15 @@
             "name": "currentRuling",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2761,
+              "id": 2733,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2760,
+                  "id": 2732,
                   "name": "_disputeID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2765,
+                  "scope": 2737,
                   "src": "4153:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2999,7 +2999,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2759,
+                    "id": 2731,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "4153:4:5",
@@ -3016,15 +3016,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 2764,
+              "id": 2736,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2763,
+                  "id": 2735,
                   "name": "ruling",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2765,
+                  "scope": 2737,
                   "src": "4194:11:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -3033,7 +3033,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2762,
+                    "id": 2734,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "4194:4:5",
@@ -3048,14 +3048,14 @@
               ],
               "src": "4193:13:5"
             },
-            "scope": 2766,
+            "scope": 2738,
             "src": "4130:77:5",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 2767,
+        "scope": 2739,
         "src": "699:3518:5"
       }
     ],
@@ -3067,5 +3067,5 @@
   },
   "networks": {},
   "schemaVersion": "2.0.0",
-  "updatedAt": "2018-04-07T18:47:04.171Z"
+  "updatedAt": "2018-04-07T18:56:31.851Z"
 }
