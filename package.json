@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "kleros-interaction": "^0.0.14",
+    "eth-gas-reporter": "^0.1.1",
     "zeppelin-solidity": "^1.5.0"
   }
 }
