@@ -303,7 +303,7 @@ contract KlerosPOC is Arbitrator {
      */
     function getPinakionsAtStakeForDispute(address _jurorAddress, uint _disputeID, uint[] _draws) public returns(uint atStake) {
         require(validDraws(_jurorAddress,_disputeID,_draws));
-        return _draws.length * getMinActivatedToken();
+        return _draws.length * getStakePerDraw();
     }
 
     /** @dev Execute all the token repartition.
@@ -317,7 +317,7 @@ contract KlerosPOC is Arbitrator {
         require(dispute.session+dispute.appeals<=session);
 
         uint winningChoice=dispute.voteCounter[dispute.appeals].winningChoice;
-        uint amountShift = getMinActivatedToken();
+        uint amountShift = getStakePerDraw();
         for (uint i=0;i<=dispute.appeals;++i) {
             // If the result is not a tie, some parties are incoherent. Note that 0 (refuse to arbitrate) winning is not a tie.
             // Result is a tie if the winningChoice is 0 (refuse to arbitrate) and the choice 0 is not the most voted choice.
@@ -376,7 +376,7 @@ contract KlerosPOC is Arbitrator {
         dispute.state=DisputeState.Resolving; // mark as resolving so oneShotTokenRepartition cannot be called on dispute
 
         uint winningChoice=dispute.voteCounter[dispute.appeals].winningChoice;
-        uint amountShift = getMinActivatedToken();
+        uint amountShift = getStakePerDraw();
         uint currentIterations=0; // total votes we have repartitioned this iteration
         for (uint i=dispute.currentAppealToRepartition;i<=dispute.appeals;++i) {
             // make new AppealsRepartitioned
@@ -609,7 +609,7 @@ contract KlerosPOC is Arbitrator {
      * Note there may be multiple draws for a single user on a single dispute.
      * Use getPinakionsAtStakeForDispute() to get the total at stake on an individual dispute.
     */
-    function getMinActivatedToken() internal constant returns (uint minActivatedTokenInAlpha) {
+    function getStakePerDraw() public constant returns (uint minActivatedTokenInAlpha) {
         return (alpha*minActivatedToken)/ALPHA_DIVISOR;
     }
 
