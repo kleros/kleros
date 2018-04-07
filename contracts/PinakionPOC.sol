@@ -6,7 +6,7 @@
 
 pragma solidity ^0.4.15;
  
-import "zeppelin-solidity/contracts/token/MintableToken.sol";
+import "zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 import "./KlerosPOC.sol";
  
 contract PinakionPOC is MintableToken {

@@ -268,7 +268,7 @@ contract KlerosPOC is Arbitrator {
             }));
         }
 
-        juror.atStake+=_draws.length*(alpha*minActivatedToken)/ALPHA_DIVISOR;
+        juror.atStake += _draws.length * getStakePerDraw();
         uint feeToPay = _draws.length*dispute.arbitrationFeePerJuror;
         msg.sender.transfer(feeToPay);
         ArbitrationReward(msg.sender,_disputeID,feeToPay);
@@ -288,7 +288,6 @@ contract KlerosPOC is Arbitrator {
         dispute.lastSessionVote[_jurorAddress]=session;
         require(validDraws(_jurorAddress,_disputeID,_draws));
         uint penality = _draws.length * minActivatedToken * 2 * alpha / ALPHA_DIVISOR;
-
         penality = (penality<inactiveJuror.balance-inactiveJuror.atStake) ? penality : inactiveJuror.balance-inactiveJuror.atStake; // Make sure the penality is not higher than what the juror can lose.
         inactiveJuror.balance-=penality;
         jurors[msg.sender].balance+=penality/2; // Give half of the penalty to the caller.
@@ -308,7 +307,7 @@ contract KlerosPOC is Arbitrator {
         require(dispute.session+dispute.appeals<=session);
 
         uint winningChoice=dispute.voteCounter[dispute.appeals].winningChoice;
-        uint amountShift=(alpha*minActivatedToken)/ALPHA_DIVISOR;
+        uint amountShift = getStakePerDraw();
         for (uint i=0;i<=dispute.appeals;++i) {
             // If the result is not a tie, some parties are incoherent. Note that 0 (refuse to arbitrate) winning is not a tie.
             // Result is a tie if the winningChoice is 0 (refuse to arbitrate) and the choice 0 is not the most voted choice.
@@ -367,7 +366,7 @@ contract KlerosPOC is Arbitrator {
         dispute.state=DisputeState.Resolving; // mark as resolving so oneShotTokenRepartition cannot be called on dispute
 
         uint winningChoice=dispute.voteCounter[dispute.appeals].winningChoice;
-        uint amountShift=(alpha*minActivatedToken)/ALPHA_DIVISOR;
+        uint amountShift = getStakePerDraw();
         uint currentIterations=0; // total votes we have repartitioned this iteration
         for (uint i=dispute.currentAppealToRepartition;i<=dispute.appeals;++i) {
             // make new AppealsRepartitioned
@@ -596,6 +595,13 @@ contract KlerosPOC is Arbitrator {
             return (uint16(_extraData[0])<<8) + uint16(_extraData[1]);
     }
 
+    /** @dev Compute the minimum activated pinakions in alpha.
+     * Note there may be multiple draws for a single user on a single dispute.
+    */
+    function getStakePerDraw() public constant returns (uint minActivatedTokenInAlpha) {
+        return (alpha*minActivatedToken)/ALPHA_DIVISOR;
+    }
+
 
     // **************************** //
     // *     Constant getters     * //
@@ -686,7 +692,7 @@ contract KlerosPOC is Arbitrator {
      *  @param _disputeID ID of the dispute.
      *  @return ruling The current ruling which will be given if there is no appeal. If it is not available, return 0.
      */
-    function currentRuling(uint _disputeID) constant returns(uint ruling) {
+    function currentRuling(uint _disputeID) public constant returns(uint ruling) {
         Dispute storage dispute = disputes[_disputeID];
         return dispute.voteCounter[dispute.appeals].winningChoice;
     }
