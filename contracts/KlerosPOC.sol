@@ -750,4 +750,13 @@ contract KlerosPOC is Arbitrator, ApproveAndCallFallBack, TokenController {
         } else return DisputeStatus.Waiting; // Dispute for future session.
     }
 
+    /** @dev Return token at stake for juror in dispute.
+     *  @param _jurorAddress Address of the juror to get tokens for.
+     *  @param _disputeID The ID of the dispute the juror is in.
+     *  @return juror's tokens atStake.
+     */
+    function getAtStakeForJurorInDispute(address _jurorAddress, uint _disputeID) public constant returns(uint pnkAtStake) {
+        require(getLastSessionVote(_disputeID, _jurorAddress) != 0);
+        return jurors[_jurorAddress].atStake;
+    }
 }
