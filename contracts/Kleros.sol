@@ -1,5 +1,5 @@
 /**
- *  @title Kleros POC
+ *  @title Kleros
  *  @author Clément Lesaege - <clement@lesaege.com>
  *  This code implements a simple version of Kleros.
  *  Bug Bounties: This code hasn't undertaken a bug bounty program yet.
@@ -11,11 +11,10 @@ import "kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
 import {MiniMeTokenERC20 as Pinakion} from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
 import "kleros-interaction/contracts/standard/rng/RNG.sol";
 import {ApproveAndCallFallBack} from "minimetoken/contracts/MiniMeToken.sol";
-import "minimetoken/contracts/TokenController.sol";
 
 
 
-contract KlerosPOC is Arbitrator, ApproveAndCallFallBack, TokenController {
+contract Kleros is Arbitrator, ApproveAndCallFallBack {
 
     // **************************** //
     // *    Contract variables    * //
@@ -141,44 +140,11 @@ contract KlerosPOC is Arbitrator, ApproveAndCallFallBack, TokenController {
      *  @param _rng The random number generator which will be used.
      *  @param _timePerPeriod The minimal time for each period (seconds).
      */
-    function KlerosPOC(Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod) public {
+    function Kleros(Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod) public {
         pinakion=_pinakion;
         rng=_rng;
         lastPeriodChange=now;
         timePerPeriod=_timePerPeriod;
-    }
-
-    // **************************** //
-    // *    Functions required    * //
-    // *    for TokenController   * //
-    // **************************** //
-
-    /** @notice Called when `_owner` sends ether to the Pinakion contract
-     *  @param _owner The address that sent the ether to create tokens
-     *  @return True if the ether is accepted, false if it throws
-     */
-    function proxyPayment(address _owner) public payable returns(bool) {
-        return false; // don't allow any ether transfers to Pinakion contract
-    }
-
-    /** @notice Notifies the controller about a token transfer allowing the controller to react if desired
-     *  @param _from The origin of the transfer
-     *  @param _to The destination of the transfer
-     *  @param _amount The amount of the transfer
-     *  @return False if the controller does not authorize the transfer
-     */
-    function onTransfer(address _from, address _to, uint _amount) public returns(bool) {
-        return true; // allow all transfers
-    }
-
-    /** @notice Notifies the controller about an approval allowing the controller to react if desired
-     *  @param _owner The address that calls `approve()`
-     *  @param _spender The spender in the `approve()` call
-     *  @param _amount The amount in the `approve()` call
-     *  @return False if the controller does not authorize the approval
-     */
-    function onApprove(address _owner, address _spender, uint _amount) public returns(bool) {
-        return true; // allow all approvals
     }
 
     // **************************** //
@@ -208,15 +174,6 @@ contract KlerosPOC is Arbitrator, ApproveAndCallFallBack, TokenController {
 
         juror.balance-=_value;
         require(pinakion.transfer(msg.sender,_value));
-    }
-
-    /** @dev Give Pinakions at the rate 1 ETH = 1 PNK.
-     *  Note that in the real Kleros, the token supply will be fixed but for the proof of concept, we prefer to allow users to get some easily to try it.
-     */
-    function buyPinakion() public payable {
-        Juror storage juror = jurors[msg.sender];
-        juror.balance+=msg.value;
-        pinakion.generateTokens(this,msg.value);
     }
 
     // **************************** //
