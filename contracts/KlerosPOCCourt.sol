@@ -45,7 +45,7 @@ contract KlerosPOCCourt is ArbitratorCourt, KlerosPOC {
 
             // Interactions
             Arbitrator.appeal(_disputeID, _extraData); // Fire appeal event
-            parent.createDispute.value(msg.value)(disputes[_disputeID].choices, _extraData); // Create dispute in `parent` court
+            parent._address.createDispute.value(msg.value)(disputes[_disputeID].choices, _extraData); // Create dispute in `parent` court
         }
     }
 
@@ -61,6 +61,6 @@ contract KlerosPOCCourt is ArbitratorCourt, KlerosPOC {
             return super.appealCost(_disputeID, _extraData); // Regular appeal cost
         }
 
-        return parent.arbitrationCost(_extraData); // `parent` arbitration cost
+        return parent._address.arbitrationCost(_extraData); // `parent` arbitration cost
     }
 }
