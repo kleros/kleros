@@ -30,13 +30,13 @@ contract KlerosPOC is Arbitrator, ApproveAndCallFallBack, TokenController {
     uint public arbitrationFeePerJuror = 0.05 ether; // The fee which will be paid to each juror.
     uint16 public defaultNumberJuror = 3; // Number of draw juror unless specified otherwise.
     uint public minActivatedToken = 0.1 * 1e18; // Minimum of tokens to be activated (in basic units).
-    uint[5] public timePerPeriod; // The minimum time each period lasts.
+    uint[5] public timePerPeriod; // The minimum time each period lasts (seconds).
     uint public alpha = 2000; // alpha in ‱.
     uint constant ALPHA_DIVISOR = 1e4; // Amount we need to dived alpha in ‱ to get the float value of alpha.
 
     // Variables changing during day to day interaction.
     uint public session = 1;      // Current session of the court.
-    uint public lastPeriodChange; // The last time time we changed of period.
+    uint public lastPeriodChange; // The last time we changed of period (seconds).
     uint public segmentSize;      // Size of the segment of activated tokens.
     uint public rnBlock;          // The block linked with the RN which is requested.
     uint public randomNumber;     // Random number of the session.
@@ -85,8 +85,8 @@ contract KlerosPOC is Arbitrator, ApproveAndCallFallBack, TokenController {
         Vote[][] votes;              // The votes in the form vote[appeals][voteID].
         VoteCounter[] voteCounter;   // The vote counters in the form voteCounter[appeals].
         mapping (address => uint) lastSessionVote; // Last session a juror has voted on this dispute. Is 0 if he never did.
-        uint currentAppealToRepartition; // current appeal we are repartitioning
-        AppealsRepartitioned[] appealsRepartitioned; // track a partially repartitioned appeal in the form AppealsRepartitioned[appeal]
+        uint currentAppealToRepartition; // The current appeal we are repartitioning.
+        AppealsRepartitioned[] appealsRepartitioned; // Track a partially repartitioned appeal in the form AppealsRepartitioned[appeal].
     }
     enum RepartitionStage {
       Incoherent,
@@ -139,7 +139,7 @@ contract KlerosPOC is Arbitrator, ApproveAndCallFallBack, TokenController {
     /** @dev Constructor.
      *  @param _pinakion The address of the pinakion contract.
      *  @param _rng The random number generator which will be used.
-     *  @param _timePerPeriod The minimal time for each period.
+     *  @param _timePerPeriod The minimal time for each period (seconds).
      */
     function KlerosPOC(Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod) public {
         pinakion=_pinakion;
@@ -161,7 +161,7 @@ contract KlerosPOC is Arbitrator, ApproveAndCallFallBack, TokenController {
         return false; // don't allow any ether transfers to Pinakion contract
     }
 
-    /** @notice Notifies the controller about a token transfer allowing the controller to react if desired  
+    /** @notice Notifies the controller about a token transfer allowing the controller to react if desired
      *  @param _from The origin of the transfer
      *  @param _to The destination of the transfer
      *  @param _amount The amount of the transfer
