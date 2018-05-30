@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */ // Avoid the linter considering truffle elements as undef.
 const { expectThrow, increaseTime } = require('kleros-interaction/helpers/utils')
-const KlerosPOC = artifacts.require('./KlerosPOC.sol')
+const KlerosPOC = artifacts.require('./POC/KlerosPOC.sol')
 const Pinakion = artifacts.require('MiniMeTokenERC20')
 const ArbitrableTransaction = artifacts.require('kleros-interaction/ArbitrableTransaction.sol')
 const ConstantRandom = artifacts.require('kleros-interaction/ConstantNG.sol')
