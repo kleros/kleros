@@ -112,7 +112,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      *  @param _period The new period.
      *  @param _session The current session.
      */
-    event NewPeriod(Period _period, uint _session);
+    event NewPeriod(Period _period, uint indexed _session);
 
     /** @dev Emitted when a juror wins or loses tokens.
       * @param _account The juror affected.
