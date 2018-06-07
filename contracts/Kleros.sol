@@ -110,8 +110,9 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
 
     /** @dev Emitted when we pass to a new period.
      *  @param _period The new period.
+     *  @param _session The current session.
      */
-    event NewPeriod(Period _period);
+    event NewPeriod(Period _period, uint _session);
 
     /** @dev Emitted when a juror wins or loses tokens.
       * @param _account The juror affected.
@@ -208,7 +209,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
 
 
         lastPeriodChange=now;
-        NewPeriod(period);
+        NewPeriod(period, session);
     }
 
 
