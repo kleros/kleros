@@ -93,35 +93,35 @@
       "type": "function"
     }
   ],
-  "bytecode": "0x6060604052341561000f57600080fd5b60405160208061024d83398101604052808051906020019091905050806000819055505061020b806100426000396000f30060606040526004361061006d576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680631c73601e146100725780637b9c34e0146100a95780638381f58a146100c1578063c1cbbca7146100ea578063ca4742f114610102575b600080fd5b341561007d57600080fd5b6100936004808035906020019091905050610139565b6040518082815260200191505060405180910390f35b6100bf60048080359060200190919050506101bf565b005b34156100cc57600080fd5b6100d46101cb565b6040518082815260200191505060405180910390f35b61010060048080359060200190919050506101d1565b005b341561010d57600080fd5b61012360048080359060200190919050506101d4565b6040518082815260200191505060405180910390f35b600080610145836101d4565b9050600081141561015957600091506101b9565b3381604051808373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166c010000000000000000000000000281526014018281526020019250505060405180910390206001900491505b50919050565b6101c8816101d1565b50565b60005481565b50565b6000805490509190505600a165627a7a72305820c4e3826d8757f1379e035300b4c769adbbbd4323188c211755d322d9c7c54f130029",
-  "deployedBytecode": "0x60606040526004361061006d576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680631c73601e146100725780637b9c34e0146100a95780638381f58a146100c1578063c1cbbca7146100ea578063ca4742f114610102575b600080fd5b341561007d57600080fd5b6100936004808035906020019091905050610139565b6040518082815260200191505060405180910390f35b6100bf60048080359060200190919050506101bf565b005b34156100cc57600080fd5b6100d46101cb565b6040518082815260200191505060405180910390f35b61010060048080359060200190919050506101d1565b005b341561010d57600080fd5b61012360048080359060200190919050506101d4565b6040518082815260200191505060405180910390f35b600080610145836101d4565b9050600081141561015957600091506101b9565b3381604051808373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166c010000000000000000000000000281526014018281526020019250505060405180910390206001900491505b50919050565b6101c8816101d1565b50565b60005481565b50565b6000805490509190505600a165627a7a72305820c4e3826d8757f1379e035300b4c769adbbbd4323188c211755d322d9c7c54f130029",
-  "sourceMap": "261:794:7:-;;;412:76;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;473:7;464:6;:16;;;;412:76;261:794;;;;;;",
-  "deployedSourceMap": "261:794:7:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1196:235:8;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;456:77;;;;;;;;;;;;;;;;;;296:18:7;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;659:50;;;;;;;;;;;;;;;;;;953:94;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1196:235:8;1261:7;1281:11;1293:13;1299:6;1293:5;:13::i;:::-;1281:25;;1329:1;1321:6;:9;1317:106;;;1352:1;1345:8;;;;1317:106;1404:10;1415:6;1394:28;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1389:34;;;1382:41;;1196:235;;;;;:::o;456:77::-;507:18;518:6;507:10;:18::i;:::-;456:77;:::o;296:18:7:-;;;;:::o;659:50::-;;:::o;953:94::-;1006:7;1033:6;;1026:13;;953:94;;;:::o",
+  "bytecode": "0x608060405234801561001057600080fd5b5060405160208061027b8339810180604052810190808051906020019092919050505080600081905550506102318061004a6000396000f30060806040526004361061006d576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680631c73601e146100725780637b9c34e0146100b35780638381f58a146100d3578063c1cbbca7146100fe578063ca4742f11461011e575b600080fd5b34801561007e57600080fd5b5061009d6004803603810190808035906020019092919050505061015f565b6040518082815260200191505060405180910390f35b6100d1600480360381019080803590602001909291905050506101e5565b005b3480156100df57600080fd5b506100e86101f1565b6040518082815260200191505060405180910390f35b61011c600480360381019080803590602001909291905050506101f7565b005b34801561012a57600080fd5b50610149600480360381019080803590602001909291905050506101fa565b6040518082815260200191505060405180910390f35b60008061016b836101fa565b9050600081141561017f57600091506101df565b3381604051808373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166c010000000000000000000000000281526014018281526020019250505060405180910390206001900491505b50919050565b6101ee816101f7565b50565b60005481565b50565b6000805490509190505600a165627a7a723058205bc299af188828419706540f7b93b3ec46ec9168c61490dcdb52a59b9120d3030029",
+  "deployedBytecode": "0x60806040526004361061006d576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680631c73601e146100725780637b9c34e0146100b35780638381f58a146100d3578063c1cbbca7146100fe578063ca4742f11461011e575b600080fd5b34801561007e57600080fd5b5061009d6004803603810190808035906020019092919050505061015f565b6040518082815260200191505060405180910390f35b6100d1600480360381019080803590602001909291905050506101e5565b005b3480156100df57600080fd5b506100e86101f1565b6040518082815260200191505060405180910390f35b61011c600480360381019080803590602001909291905050506101f7565b005b34801561012a57600080fd5b50610149600480360381019080803590602001909291905050506101fa565b6040518082815260200191505060405180910390f35b60008061016b836101fa565b9050600081141561017f57600091506101df565b3381604051808373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166c010000000000000000000000000281526014018281526020019250505060405180910390206001900491505b50919050565b6101ee816101f7565b50565b60005481565b50565b6000805490509190505600a165627a7a723058205bc299af188828419706540f7b93b3ec46ec9168c61490dcdb52a59b9120d3030029",
+  "sourceMap": "261:794:10:-;;;412:76;8:9:-1;5:2;;;30:1;27;20:12;5:2;412:76:10;;;;;;;;;;;;;;;;;;;;;;;;;;;;;473:7;464:6;:16;;;;412:76;261:794;;;;;;",
+  "deployedSourceMap": "261:794:10:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1196:235:11;;8:9:-1;5:2;;;30:1;27;20:12;5:2;1196:235:11;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;456:77;;;;;;;;;;;;;;;;;;;;;;;;;;296:18:10;;8:9:-1;5:2;;;30:1;27;20:12;5:2;296:18:10;;;;;;;;;;;;;;;;;;;;;;;659:50;;;;;;;;;;;;;;;;;;;;;;;;;;953:94;;8:9:-1;5:2;;;30:1;27;20:12;5:2;953:94:10;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1196:235:11;1261:7;1281:11;1293:13;1299:6;1293:5;:13::i;:::-;1281:25;;1329:1;1321:6;:9;1317:106;;;1352:1;1345:8;;;;1317:106;1404:10;1415:6;1394:28;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1389:34;;;1382:41;;1196:235;;;;;:::o;456:77::-;507:18;518:6;507:10;:18::i;:::-;456:77;:::o;296:18:10:-;;;;:::o;659:50::-;;:::o;953:94::-;1006:7;1033:6;;1026:13;;953:94;;;:::o",
   "source": "/**\r\n *  @title Constant Number Generator\r\n *  @author Clément Lesaege - <clement@lesaege.com>\r\n *  @dev A Random Number Generator which always return the same number. Usefull in order to make tests.\r\n */\r\n\r\nimport \"./RNG.sol\";\r\n\r\npragma solidity ^0.4.15;\r\n\r\n contract ConstantNG is RNG{\r\n\r\n    uint public number;\r\n\r\n    /** @dev Constructor.\r\n     *  @param _number The number to always return.\r\n     */\r\n    function ConstantNG(uint _number) public {\r\n        number = _number;\r\n    }\r\n\r\n    /** @dev Contribute to the reward of a random number. All the ETH will be lost forever.\r\n     *  @param _block Block the random number is linked to.\r\n     */\r\n    function contribute(uint _block) public payable {}\r\n\r\n\r\n    /** @dev Get the \"random number\" (which is always the same).\r\n     *  @param _block Block the random number is linked to.\r\n     *  @return RN Random Number. If the number is not ready or has not been required 0 instead.\r\n     */\r\n    function getRN(uint _block) public constant returns (uint RN) {\r\n        return number;\r\n    }\r\n\r\n\r\n }\r\n",
   "sourcePath": "kleros-interaction/contracts/standard/rng/ConstantNG.sol",
   "ast": {
     "absolutePath": "kleros-interaction/contracts/standard/rng/ConstantNG.sol",
     "exportedSymbols": {
       "ConstantNG": [
-        3177
+        3649
       ]
     },
-    "id": 3178,
+    "id": 3650,
     "nodeType": "SourceUnit",
     "nodes": [
       {
         "absolutePath": "kleros-interaction/contracts/standard/rng/RNG.sol",
         "file": "./RNG.sol",
-        "id": 3145,
+        "id": 3617,
         "nodeType": "ImportDirective",
-        "scope": 3178,
-        "sourceUnit": 3231,
-        "src": "209:19:7",
+        "scope": 3650,
+        "sourceUnit": 3703,
+        "src": "209:19:10",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "id": 3146,
+        "id": 3618,
         "literals": [
           "solidity",
           "^",
@@ -129,50 +129,50 @@
           ".15"
         ],
         "nodeType": "PragmaDirective",
-        "src": "232:24:7"
+        "src": "232:24:10"
       },
       {
         "baseContracts": [
           {
-            "arguments": [],
+            "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 3147,
+              "id": 3619,
               "name": "RNG",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 3230,
-              "src": "284:3:7",
+              "referencedDeclaration": 3702,
+              "src": "284:3:10",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_RNG_$3230",
+                "typeIdentifier": "t_contract$_RNG_$3702",
                 "typeString": "contract RNG"
               }
             },
-            "id": 3148,
+            "id": 3620,
             "nodeType": "InheritanceSpecifier",
-            "src": "284:3:7"
+            "src": "284:3:10"
           }
         ],
         "contractDependencies": [
-          3230
+          3702
         ],
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 3177,
+        "id": 3649,
         "linearizedBaseContracts": [
-          3177,
-          3230
+          3649,
+          3702
         ],
         "name": "ConstantNG",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 3150,
+            "id": 3622,
             "name": "number",
             "nodeType": "VariableDeclaration",
-            "scope": 3177,
-            "src": "296:18:7",
+            "scope": 3649,
+            "src": "296:18:10",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -180,10 +180,10 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 3149,
+              "id": 3621,
               "name": "uint",
               "nodeType": "ElementaryTypeName",
-              "src": "296:4:7",
+              "src": "296:4:10",
               "typeDescriptions": {
                 "typeIdentifier": "t_uint256",
                 "typeString": "uint256"
@@ -194,26 +194,26 @@
           },
           {
             "body": {
-              "id": 3159,
+              "id": 3631,
               "nodeType": "Block",
-              "src": "453:35:7",
+              "src": "453:35:10",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3157,
+                    "id": 3629,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 3155,
+                      "id": 3627,
                       "name": "number",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3150,
-                      "src": "464:6:7",
+                      "referencedDeclaration": 3622,
+                      "src": "464:6:10",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -223,30 +223,31 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 3156,
+                      "id": 3628,
                       "name": "_number",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3152,
-                      "src": "473:7:7",
+                      "referencedDeclaration": 3624,
+                      "src": "473:7:10",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "src": "464:16:7",
+                    "src": "464:16:10",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "id": 3158,
+                  "id": 3630,
                   "nodeType": "ExpressionStatement",
-                  "src": "464:16:7"
+                  "src": "464:16:10"
                 }
               ]
             },
-            "id": 3160,
+            "documentation": "@dev Constructor.\r\n @param _number The number to always return.\r",
+            "id": 3632,
             "implemented": true,
             "isConstructor": true,
             "isDeclaredConst": false,
@@ -254,16 +255,16 @@
             "name": "ConstantNG",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3153,
+              "id": 3625,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3152,
+                  "id": 3624,
                   "name": "_number",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3160,
-                  "src": "432:12:7",
+                  "scope": 3632,
+                  "src": "432:12:10",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -271,10 +272,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3151,
+                    "id": 3623,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "432:4:7",
+                    "src": "432:4:10",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -284,29 +285,30 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "431:14:7"
+              "src": "431:14:10"
             },
             "payable": false,
             "returnParameters": {
-              "id": 3154,
+              "id": 3626,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "453:0:7"
+              "src": "453:0:10"
             },
-            "scope": 3177,
-            "src": "412:76:7",
+            "scope": 3649,
+            "src": "412:76:10",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           },
           {
             "body": {
-              "id": 3165,
+              "id": 3637,
               "nodeType": "Block",
-              "src": "707:2:7",
+              "src": "707:2:10",
               "statements": []
             },
-            "id": 3166,
+            "documentation": "@dev Contribute to the reward of a random number. All the ETH will be lost forever.\r\n @param _block Block the random number is linked to.\r",
+            "id": 3638,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -314,16 +316,16 @@
             "name": "contribute",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3163,
+              "id": 3635,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3162,
+                  "id": 3634,
                   "name": "_block",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3166,
-                  "src": "679:11:7",
+                  "scope": 3638,
+                  "src": "679:11:10",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -331,10 +333,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3161,
+                    "id": 3633,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "679:4:7",
+                    "src": "679:4:10",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -344,49 +346,50 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "678:13:7"
+              "src": "678:13:10"
             },
             "payable": true,
             "returnParameters": {
-              "id": 3164,
+              "id": 3636,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "707:0:7"
+              "src": "707:0:10"
             },
-            "scope": 3177,
-            "src": "659:50:7",
+            "scope": 3649,
+            "src": "659:50:10",
             "stateMutability": "payable",
-            "superFunction": 3184,
+            "superFunction": 3656,
             "visibility": "public"
           },
           {
             "body": {
-              "id": 3175,
+              "id": 3647,
               "nodeType": "Block",
-              "src": "1015:32:7",
+              "src": "1015:32:10",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3173,
+                    "id": 3645,
                     "name": "number",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 3150,
-                    "src": "1033:6:7",
+                    "referencedDeclaration": 3622,
+                    "src": "1033:6:10",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "functionReturnParameters": 3172,
-                  "id": 3174,
+                  "functionReturnParameters": 3644,
+                  "id": 3646,
                   "nodeType": "Return",
-                  "src": "1026:13:7"
+                  "src": "1026:13:10"
                 }
               ]
             },
-            "id": 3176,
+            "documentation": "@dev Get the \"random number\" (which is always the same).\r\n @param _block Block the random number is linked to.\r\n @return RN Random Number. If the number is not ready or has not been required 0 instead.\r",
+            "id": 3648,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -394,16 +397,16 @@
             "name": "getRN",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3169,
+              "id": 3641,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3168,
+                  "id": 3640,
                   "name": "_block",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3176,
-                  "src": "968:11:7",
+                  "scope": 3648,
+                  "src": "968:11:10",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -411,10 +414,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3167,
+                    "id": 3639,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "968:4:7",
+                    "src": "968:4:10",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -424,20 +427,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "967:13:7"
+              "src": "967:13:10"
             },
             "payable": false,
             "returnParameters": {
-              "id": 3172,
+              "id": 3644,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3171,
+                  "id": 3643,
                   "name": "RN",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3176,
-                  "src": "1006:7:7",
+                  "scope": 3648,
+                  "src": "1006:7:10",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -445,10 +448,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3170,
+                    "id": 3642,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1006:4:7",
+                    "src": "1006:4:10",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -458,44 +461,44 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1005:9:7"
+              "src": "1005:9:10"
             },
-            "scope": 3177,
-            "src": "953:94:7",
+            "scope": 3649,
+            "src": "953:94:10",
             "stateMutability": "view",
-            "superFunction": 3201,
+            "superFunction": 3673,
             "visibility": "public"
           }
         ],
-        "scope": 3178,
-        "src": "261:794:7"
+        "scope": 3650,
+        "src": "261:794:10"
       }
     ],
-    "src": "209:848:7"
+    "src": "209:848:10"
   },
   "legacyAST": {
     "absolutePath": "kleros-interaction/contracts/standard/rng/ConstantNG.sol",
     "exportedSymbols": {
       "ConstantNG": [
-        3177
+        3649
       ]
     },
-    "id": 3178,
+    "id": 3650,
     "nodeType": "SourceUnit",
     "nodes": [
       {
         "absolutePath": "kleros-interaction/contracts/standard/rng/RNG.sol",
         "file": "./RNG.sol",
-        "id": 3145,
+        "id": 3617,
         "nodeType": "ImportDirective",
-        "scope": 3178,
-        "sourceUnit": 3231,
-        "src": "209:19:7",
+        "scope": 3650,
+        "sourceUnit": 3703,
+        "src": "209:19:10",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "id": 3146,
+        "id": 3618,
         "literals": [
           "solidity",
           "^",
@@ -503,50 +506,50 @@
           ".15"
         ],
         "nodeType": "PragmaDirective",
-        "src": "232:24:7"
+        "src": "232:24:10"
       },
       {
         "baseContracts": [
           {
-            "arguments": [],
+            "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 3147,
+              "id": 3619,
               "name": "RNG",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 3230,
-              "src": "284:3:7",
+              "referencedDeclaration": 3702,
+              "src": "284:3:10",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_RNG_$3230",
+                "typeIdentifier": "t_contract$_RNG_$3702",
                 "typeString": "contract RNG"
               }
             },
-            "id": 3148,
+            "id": 3620,
             "nodeType": "InheritanceSpecifier",
-            "src": "284:3:7"
+            "src": "284:3:10"
           }
         ],
         "contractDependencies": [
-          3230
+          3702
         ],
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 3177,
+        "id": 3649,
         "linearizedBaseContracts": [
-          3177,
-          3230
+          3649,
+          3702
         ],
         "name": "ConstantNG",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 3150,
+            "id": 3622,
             "name": "number",
             "nodeType": "VariableDeclaration",
-            "scope": 3177,
-            "src": "296:18:7",
+            "scope": 3649,
+            "src": "296:18:10",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -554,10 +557,10 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 3149,
+              "id": 3621,
               "name": "uint",
               "nodeType": "ElementaryTypeName",
-              "src": "296:4:7",
+              "src": "296:4:10",
               "typeDescriptions": {
                 "typeIdentifier": "t_uint256",
                 "typeString": "uint256"
@@ -568,26 +571,26 @@
           },
           {
             "body": {
-              "id": 3159,
+              "id": 3631,
               "nodeType": "Block",
-              "src": "453:35:7",
+              "src": "453:35:10",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3157,
+                    "id": 3629,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 3155,
+                      "id": 3627,
                       "name": "number",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3150,
-                      "src": "464:6:7",
+                      "referencedDeclaration": 3622,
+                      "src": "464:6:10",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -597,30 +600,31 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 3156,
+                      "id": 3628,
                       "name": "_number",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3152,
-                      "src": "473:7:7",
+                      "referencedDeclaration": 3624,
+                      "src": "473:7:10",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "src": "464:16:7",
+                    "src": "464:16:10",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "id": 3158,
+                  "id": 3630,
                   "nodeType": "ExpressionStatement",
-                  "src": "464:16:7"
+                  "src": "464:16:10"
                 }
               ]
             },
-            "id": 3160,
+            "documentation": "@dev Constructor.\r\n @param _number The number to always return.\r",
+            "id": 3632,
             "implemented": true,
             "isConstructor": true,
             "isDeclaredConst": false,
@@ -628,16 +632,16 @@
             "name": "ConstantNG",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3153,
+              "id": 3625,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3152,
+                  "id": 3624,
                   "name": "_number",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3160,
-                  "src": "432:12:7",
+                  "scope": 3632,
+                  "src": "432:12:10",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -645,10 +649,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3151,
+                    "id": 3623,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "432:4:7",
+                    "src": "432:4:10",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -658,29 +662,30 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "431:14:7"
+              "src": "431:14:10"
             },
             "payable": false,
             "returnParameters": {
-              "id": 3154,
+              "id": 3626,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "453:0:7"
+              "src": "453:0:10"
             },
-            "scope": 3177,
-            "src": "412:76:7",
+            "scope": 3649,
+            "src": "412:76:10",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           },
           {
             "body": {
-              "id": 3165,
+              "id": 3637,
               "nodeType": "Block",
-              "src": "707:2:7",
+              "src": "707:2:10",
               "statements": []
             },
-            "id": 3166,
+            "documentation": "@dev Contribute to the reward of a random number. All the ETH will be lost forever.\r\n @param _block Block the random number is linked to.\r",
+            "id": 3638,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -688,16 +693,16 @@
             "name": "contribute",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3163,
+              "id": 3635,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3162,
+                  "id": 3634,
                   "name": "_block",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3166,
-                  "src": "679:11:7",
+                  "scope": 3638,
+                  "src": "679:11:10",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -705,10 +710,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3161,
+                    "id": 3633,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "679:4:7",
+                    "src": "679:4:10",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -718,49 +723,50 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "678:13:7"
+              "src": "678:13:10"
             },
             "payable": true,
             "returnParameters": {
-              "id": 3164,
+              "id": 3636,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "707:0:7"
+              "src": "707:0:10"
             },
-            "scope": 3177,
-            "src": "659:50:7",
+            "scope": 3649,
+            "src": "659:50:10",
             "stateMutability": "payable",
-            "superFunction": 3184,
+            "superFunction": 3656,
             "visibility": "public"
           },
           {
             "body": {
-              "id": 3175,
+              "id": 3647,
               "nodeType": "Block",
-              "src": "1015:32:7",
+              "src": "1015:32:10",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3173,
+                    "id": 3645,
                     "name": "number",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 3150,
-                    "src": "1033:6:7",
+                    "referencedDeclaration": 3622,
+                    "src": "1033:6:10",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "functionReturnParameters": 3172,
-                  "id": 3174,
+                  "functionReturnParameters": 3644,
+                  "id": 3646,
                   "nodeType": "Return",
-                  "src": "1026:13:7"
+                  "src": "1026:13:10"
                 }
               ]
             },
-            "id": 3176,
+            "documentation": "@dev Get the \"random number\" (which is always the same).\r\n @param _block Block the random number is linked to.\r\n @return RN Random Number. If the number is not ready or has not been required 0 instead.\r",
+            "id": 3648,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -768,16 +774,16 @@
             "name": "getRN",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3169,
+              "id": 3641,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3168,
+                  "id": 3640,
                   "name": "_block",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3176,
-                  "src": "968:11:7",
+                  "scope": 3648,
+                  "src": "968:11:10",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -785,10 +791,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3167,
+                    "id": 3639,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "968:4:7",
+                    "src": "968:4:10",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -798,20 +804,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "967:13:7"
+              "src": "967:13:10"
             },
             "payable": false,
             "returnParameters": {
-              "id": 3172,
+              "id": 3644,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3171,
+                  "id": 3643,
                   "name": "RN",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3176,
-                  "src": "1006:7:7",
+                  "scope": 3648,
+                  "src": "1006:7:10",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -819,10 +825,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3170,
+                    "id": 3642,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1006:4:7",
+                    "src": "1006:4:10",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -832,26 +838,26 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1005:9:7"
+              "src": "1005:9:10"
             },
-            "scope": 3177,
-            "src": "953:94:7",
+            "scope": 3649,
+            "src": "953:94:10",
             "stateMutability": "view",
-            "superFunction": 3201,
+            "superFunction": 3673,
             "visibility": "public"
           }
         ],
-        "scope": 3178,
-        "src": "261:794:7"
+        "scope": 3650,
+        "src": "261:794:10"
       }
     ],
-    "src": "209:848:7"
+    "src": "209:848:10"
   },
   "compiler": {
     "name": "solc",
-    "version": "0.4.19+commit.c4cbbb05.Emscripten.clang"
+    "version": "0.4.23+commit.124ca40d.Emscripten.clang"
   },
   "networks": {},
   "schemaVersion": "2.0.0",
-  "updatedAt": "2018-04-07T18:56:31.860Z"
+  "updatedAt": "2018-06-10T03:43:45.357Z"
 }
