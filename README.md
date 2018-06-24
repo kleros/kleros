@@ -4,7 +4,7 @@
 
 Kleros smart contracts
 
-We'll reimplement there hackathonPOC smart contracts to cope with the change and the arbitration standard.
+See [smart contract guidelines.](https://github.com/kleros/kleros/wiki/Guidelines-contracts)
 
 Note that we need kleros-interaction:
 ```
