@@ -35,3 +35,5 @@ Make sure `Ganache` is running on the port specified in `truffle.js`
 ## Contributing
 
 See [smart contract guidelines.](https://github.com/kleros/kleros/wiki/Guidelines-contracts)
+
+You can ask help and questions on [slack](https://slack.kleros.io/).
