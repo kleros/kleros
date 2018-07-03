@@ -5,6 +5,8 @@
 # Kleros Smart Contracts
 
 ## Prerequisites
+Install [yarn](https://yarnpkg.com/lang/en/), [Truffle Suite](https://truffleframework.com/) and [Ganache](https://truffleframework.com/ganache)
+
 * `npm install -g truffle`
 * `npm install -g solc`
 
@@ -21,15 +23,38 @@ Ensure you have Ganache running.
 ### Deploy to Kovan testnet
 * `npm deploy`
 
-Note that we need kleros-interaction:
-```
-yarn add kleros-interaction
-```
+### Running Tests
 
-## Contributing
-Check out [Contributing](CONTRIBUTING.md)
+Install dependencies using `yarn` package manager:
+```
+yarn
+```
+Compile the project using `Truffle` suite
+```
+truffle compile
+```
+Run tests
+```
+truffle test
+```
 
 ## Testing
 `npm test`
 
 We'll reimplement the hackathonPOC smart contracts to cope with the change and the arbitration standard.
+=======
+## Troubleshooting
+> Could not connect to your Ethereum client. Please check that your Ethereum client:
+    - is running
+    - is accepting RPC connections (i.e., "--rpc" option is used in geth)
+    - is accessible over the network
+    - is properly configured in your Truffle configuration file (truffle.js)
+
+Make sure `Ganache` is running on the port specified in `truffle.js`
+
+## Contributing
+Check out [Contributing](CONTRIBUTING.md)
+
+See [smart contract guidelines.](https://github.com/kleros/kleros/wiki/Guidelines-contracts)
+
+You can ask for help on [slack](https://slack.kleros.io/).
