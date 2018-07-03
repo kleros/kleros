@@ -7,8 +7,6 @@ The following is a set of guidelines for contributing to Kleros and its packages
 
 #### Table Of Contents
 
-[Code of Conduct](#code-of-conduct)
-
 [How Can I Contribute?](#how-can-i-contribute)
   * [Reporting Bugs](#reporting-bugs)
   * [Suggesting Enhancements](#suggesting-enhancements)
@@ -20,9 +18,6 @@ The following is a set of guidelines for contributing to Kleros and its packages
   * [Specs Styleguide](#specs-styleguide)
   * [Documentation Styleguide](#documentation-styleguide)
 
-## Code of Conduct
-
-This project and everyone participating in it is governed by the [Kleros Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to [kleros@github.com](mailto:kleros@github.com).
 
 ## I don't want to read this whole thing I just have a question!!!
 

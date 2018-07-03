@@ -27,7 +27,7 @@ yarn add kleros-interaction
 ```
 
 ## Contributing
-Check out [Contributing](Contributing.md)
+Check out [Contributing](CONTRIBUTING.md)
 
 ## Testing
 `npm test`
