@@ -559,7 +559,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     // **************************** //
 
     /** @dev Compute the cost of arbitration. It is recommended not to increase it often, as it can be highly time and gas consuming for the arbitrated contracts to cope with fee augmentation.
-     *  @param _extraData Null for the default number. Other first 16 bytes will be used to return the number of jurors.
+     *  @param _extraData Null for the default number. Other first 16 bits will be used to return the number of jurors.
      *  @return fee Amount to be paid.
      */
     function arbitrationCost(bytes _extraData) public constant returns(uint fee) {
@@ -577,7 +577,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     }
 
     /** @dev Compute the amount of jurors to be drawn.
-     *  @param _extraData Null for the default number. Other first 16 bytes will be used to return the number of jurors.
+     *  @param _extraData Null for the default number. Other first 16 bits will be used to return the number of jurors.
      *  Note that it does not check that the number of jurors is odd, but users are advised to choose a odd number of jurors.
      */
     function extraDataToNbJurors(bytes _extraData) internal constant returns(uint16 nbJurors) {
