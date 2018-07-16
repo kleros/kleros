@@ -1,18 +1,33 @@
-# Kleros Smart Contracts
+# Kleros
 
 [![Join the chat at https://gitter.im/kleros/kleros](https://badges.gitter.im/kleros/kleros.svg)](https://gitter.im/kleros/kleros?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-## Getting Started
+# Kleros Smart Contracts
 
-### Setting Up The Environment
-
+## Prerequisites
 Install [yarn](https://yarnpkg.com/lang/en/), [Truffle Suite](https://truffleframework.com/) and [Ganache](https://truffleframework.com/ganache)
+
+* `npm install -g truffle`
+* `npm install -g solc`
+
+## Get Started
+* `git clone`
+* `cd kleros`
+* `npm install`
+* Make sure you have the MetaMask Chrome extension installed and are logged in.
+
+### Migrate to local blockchain
+Ensure you have Ganache running.
+* `npm migrate`
+
+### Deploy to Kovan testnet
+* `npm deploy`
 
 ### Running Tests
 
 Install dependencies using `yarn` package manager:
 ```
-yarn install
+yarn
 ```
 Compile the project using `Truffle` suite
 ```
@@ -23,6 +38,11 @@ Run tests
 truffle test
 ```
 
+## Testing
+`npm test`
+
+We'll reimplement the hackathonPOC smart contracts to cope with the change and the arbitration standard.
+=======
 ## Troubleshooting
 > Could not connect to your Ethereum client. Please check that your Ethereum client:
     - is running
@@ -33,6 +53,7 @@ truffle test
 Make sure `Ganache` is running on the port specified in `truffle.js`
 
 ## Contributing
+Check out [Contributing](CONTRIBUTING.md)
 
 We follow [GitHub Flow](https://guides.github.com/introduction/flow/) in this repository.
 
