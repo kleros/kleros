@@ -776,4 +776,17 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
       governor = _governor;
     }
 
+    // *********************************************** //
+    // *     General Call Function for Governor      * //
+    // *********************************************** //
+
+    /** @dev General call function where the contract execute an arbitrary call with data and ETH following governor orders.
+     *  @param _data Transaction data.
+     *  @param _value Transaction value.
+     *  @param _target Transaction target.
+     */
+    function executeOrder(bytes32 _data, uint _value, address _target) public onlyGovernor {
+      _target.call.value(_value)(_data);
+    }
+
 }
