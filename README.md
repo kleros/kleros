@@ -38,20 +38,6 @@ Run tests
 truffle test
 ```
 
-## Testing
-`npm test`
-
-We'll reimplement the hackathonPOC smart contracts to cope with the change and the arbitration standard.
-=======
-## Troubleshooting
-> Could not connect to your Ethereum client. Please check that your Ethereum client:
-    - is running
-    - is accepting RPC connections (i.e., "--rpc" option is used in geth)
-    - is accessible over the network
-    - is properly configured in your Truffle configuration file (truffle.js)
-
-Make sure `Ganache` is running on the port specified in `truffle.js`
-
 ## Contributing
 Check out [Contributing](CONTRIBUTING.md)
 
