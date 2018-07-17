@@ -28,7 +28,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     // Note they will only be able to be changed during the activation period (because a session assumes they don't change after it).
     RNG public rng; // Random Number Generator used to draw jurors.
     uint public arbitrationFeePerJuror = 0.05 ether; // The fee which will be paid to each juror.
-    uint16 public defaultNumberJuror = 3; // Number of draw juror unless specified otherwise.
+    uint16 public defaultNumberJuror = 3; // Number of drawn jurors unless specified otherwise.
     uint public minActivatedToken = 0.1 * 1e18; // Minimum of tokens to be activated (in basic units).
     uint[5] public timePerPeriod; // The minimum time each period lasts (seconds).
     uint public alpha = 2000; // alpha in ‱.
@@ -717,10 +717,19 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     }
 
     // **************************** //
-    // *     Governable Setters   * //
+    // *     Governor Functions   * //
     // **************************** //
 
-    /** @dev Setter for rng.
+    /** @dev General call function where the contract execute an arbitrary call with data and ETH following governor orders.
+     *  @param _data Transaction data.
+     *  @param _value Transaction value.
+     *  @param _target Transaction target.
+     */
+    function executeOrder(bytes32 _data, uint _value, address _target) public onlyGovernor {
+      _target.call.value(_value)(_data);
+    }
+    
+        /** @dev Setter for rng.
      *  @param _rng An instance of RNG.
      */
     function setRng(RNG _rng) public onlyGovernor {
@@ -735,7 +744,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     }
 
     /** @dev Setter for defaultNumberJuror.
-     *  @param _defaultNumberJuror Number of draw juror unless specified otherwise.
+     *  @param _defaultNumberJuror Number of drawn jurors unless specified otherwise.
      */
     function setDefaultNumberJuror(uint16 _defaultNumberJuror) public onlyGovernor {
       defaultNumberJuror = _defaultNumberJuror;
@@ -776,17 +785,5 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
       governor = _governor;
     }
 
-    // *********************************************** //
-    // *     General Call Function for Governor      * //
-    // *********************************************** //
-
-    /** @dev General call function where the contract execute an arbitrary call with data and ETH following governor orders.
-     *  @param _data Transaction data.
-     *  @param _value Transaction value.
-     *  @param _target Transaction target.
-     */
-    function executeOrder(bytes32 _data, uint _value, address _target) public onlyGovernor {
-      _target.call.value(_value)(_data);
-    }
 
 }
