@@ -22,6 +22,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
 
     // Variables which should not change after initialization.
     Pinakion public pinakion;
+    uint public constant NON_PAYABLE_AMOUNT = (2**256-2)/2;
 
     // Variables which will subject to the governance mechanism.
     // Note they will only be able to be changed during the activation period (because a session assumes they don't change after it).
@@ -32,6 +33,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     uint[5] public timePerPeriod; // The minimum time each period lasts (seconds).
     uint public alpha = 2000; // alpha in ‱.
     uint constant ALPHA_DIVISOR = 1e4; // Amount we need to dived alpha in ‱ to get the float value of alpha.
+    uint public maxAppeals = 5;
 
     // Variables changing during day to day interaction.
     uint public session = 1;      // Current session of the court.
@@ -573,6 +575,9 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      */
     function appealCost(uint _disputeID, bytes _extraData) public constant returns(uint fee) {
         Dispute storage dispute = disputes[_disputeID];
+
+        if(dispute.appeals >= maxAppeals) return NON_PAYABLE_AMOUNT;
+
         return (2*amountJurors(_disputeID) + 1) * dispute.arbitrationFeePerJuror;
     }
 
