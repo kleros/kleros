@@ -22,16 +22,19 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
 
     // Variables which should not change after initialization.
     Pinakion public pinakion;
+    uint public constant NON_PAYABLE_AMOUNT = (2**256-2)/2; // An astronomic amount, practically can't be paid.
 
     // Variables which will subject to the governance mechanism.
     // Note they will only be able to be changed during the activation period (because a session assumes they don't change after it).
     RNG public rng; // Random Number Generator used to draw jurors.
     uint public arbitrationFeePerJuror = 0.05 ether; // The fee which will be paid to each juror.
-    uint16 public defaultNumberJuror = 3; // Number of draw juror unless specified otherwise.
+    uint16 public defaultNumberJuror = 3; // Number of drawn jurors unless specified otherwise.
     uint public minActivatedToken = 0.1 * 1e18; // Minimum of tokens to be activated (in basic units).
     uint[5] public timePerPeriod; // The minimum time each period lasts (seconds).
     uint public alpha = 2000; // alpha in ‱.
     uint constant ALPHA_DIVISOR = 1e4; // Amount we need to dived alpha in ‱ to get the float value of alpha.
+    uint public maxAppeals = 5; // Number of times a dispute can be appealed. When exceeded appeal cost becomes NON_PAYABLE_AMOUNT.
+    address public governor; // Address of the governor contract.
 
     // Variables changing during day to day interaction.
     uint public session = 1;      // Current session of the court.
@@ -133,19 +136,21 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     // **************************** //
     modifier onlyBy(address _account) { require(msg.sender==_account); _; }
     modifier onlyDuring(Period _period) { require(period==_period); _;}
-
+    modifier onlyGovernor() { require(msg.sender==governor); _; }
 
 
     /** @dev Constructor.
      *  @param _pinakion The address of the pinakion contract.
      *  @param _rng The random number generator which will be used.
      *  @param _timePerPeriod The minimal time for each period (seconds).
+     *  @param _governor Address of the governor contract.
      */
-    function Kleros(Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod) public {
+    function Kleros(Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod, address _governor) public {
         pinakion=_pinakion;
         rng=_rng;
         lastPeriodChange=now;
         timePerPeriod=_timePerPeriod;
+        governor=_governor;
     }
 
     // **************************** //
@@ -573,6 +578,9 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      */
     function appealCost(uint _disputeID, bytes _extraData) public constant returns(uint fee) {
         Dispute storage dispute = disputes[_disputeID];
+
+        if(dispute.appeals >= maxAppeals) return NON_PAYABLE_AMOUNT;
+
         return (2*amountJurors(_disputeID) + 1) * dispute.arbitrationFeePerJuror;
     }
 
@@ -707,5 +715,75 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
             } else return DisputeStatus.Solved;
         } else return DisputeStatus.Waiting; // Dispute for future session.
     }
+
+    // **************************** //
+    // *     Governor Functions   * //
+    // **************************** //
+
+    /** @dev General call function where the contract execute an arbitrary call with data and ETH following governor orders.
+     *  @param _data Transaction data.
+     *  @param _value Transaction value.
+     *  @param _target Transaction target.
+     */
+    function executeOrder(bytes32 _data, uint _value, address _target) public onlyGovernor {
+      _target.call.value(_value)(_data);
+    }
+    
+        /** @dev Setter for rng.
+     *  @param _rng An instance of RNG.
+     */
+    function setRng(RNG _rng) public onlyGovernor {
+      rng = _rng;
+    }
+
+    /** @dev Setter for arbitrationFeePerJuror.
+     *  @param _arbitrationFeePerJuror The fee which will be paid to each juror.
+     */
+    function setArbitrationFeePerJuror(uint _arbitrationFeePerJuror) public onlyGovernor {
+      arbitrationFeePerJuror = _arbitrationFeePerJuror;
+    }
+
+    /** @dev Setter for defaultNumberJuror.
+     *  @param _defaultNumberJuror Number of drawn jurors unless specified otherwise.
+     */
+    function setDefaultNumberJuror(uint16 _defaultNumberJuror) public onlyGovernor {
+      defaultNumberJuror = _defaultNumberJuror;
+    }
+
+    /** @dev Setter for minActivatedToken.
+     *  @param _minActivatedToken Minimum of tokens to be activated (in basic units).
+     */
+    function setMinActivatedToken(uint _minActivatedToken) public onlyGovernor {
+      minActivatedToken = _minActivatedToken;
+    }
+
+    /** @dev Setter for timePerPeriod.
+     *  @param _timePerPeriod The minimum time each period lasts (seconds).
+     */
+    function setTimePerPeriod(uint[5] _timePerPeriod) public onlyGovernor {
+      timePerPeriod = _timePerPeriod;
+    }
+
+    /** @dev Setter for alpha.
+     *  @param _alpha Alpha in ‱.
+     */
+    function setAlpha(uint _alpha) public onlyGovernor {
+      alpha = _alpha;
+    }
+
+    /** @dev Setter for maxAppeals.
+     *  @param _maxAppeals Number of times a dispute can be appealed. When exceeded appeal cost becomes NON_PAYABLE_AMOUNT.
+     */
+    function setMaxAppeals(uint _maxAppeals) public onlyGovernor {
+      maxAppeals = _maxAppeals;
+    }
+
+    /** @dev Setter for governor.
+     *  @param _governor Address of the governor contract.
+     */
+    function setGovernor(address _governor) public onlyGovernor {
+      governor = _governor;
+    }
+
 
 }
