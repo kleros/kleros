@@ -663,6 +663,38 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         return disputes[_disputeID].lastSessionVote[_juror];
     }
 
+    function setRng(RNG _rng) public onlyGovernor {
+      rng = _rng;
+    }
+
+    function setArbitrationFeePerJuror(uint _arbitrationFeePerJuror) public onlyGovernor {
+      arbitrationFeePerJuror = _arbitrationFeePerJuror;
+    }
+
+    function setDefaultNumberJuror(uint16 _defaultNumberJuror) public onlyGovernor {
+      defaultNumberJuror = _defaultNumberJuror;
+    }
+
+    function setMinActivatedToken(uint _minActivatedToken) public onlyGovernor {
+      minActivatedToken = _minActivatedToken;
+    }
+
+    function setTimePerPeriod(uint[5] _timePerPeriod) public onlyGovernor {
+      timePerPeriod = _timePerPeriod;
+    }
+
+    function setAlpha(uint _alpha) public onlyGovernor {
+      alpha = _alpha;
+    }
+
+    function setMaxAppeals(uint _maxAppeals) public onlyGovernor {
+      maxAppeals = _maxAppeals;
+    }
+
+    function setGovernor(address _governor) public onlyGovernor {
+      governor = _governor;
+    }
+
     /** @dev Is the juror drawn in the draw of the dispute.
      *  @param _disputeID ID of the dispute.
      *  @param _juror The juror.
