@@ -34,6 +34,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     uint public alpha = 2000; // alpha in ‱.
     uint constant ALPHA_DIVISOR = 1e4; // Amount we need to dived alpha in ‱ to get the float value of alpha.
     uint public maxAppeals = 5;
+    address public governor;
 
     // Variables changing during day to day interaction.
     uint public session = 1;      // Current session of the court.
@@ -135,7 +136,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     // **************************** //
     modifier onlyBy(address _account) { require(msg.sender==_account); _; }
     modifier onlyDuring(Period _period) { require(period==_period); _;}
-
+    modifier onlyGovernor() { require(msg.sender==governor); _; }
 
 
     /** @dev Constructor.
@@ -143,11 +144,12 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      *  @param _rng The random number generator which will be used.
      *  @param _timePerPeriod The minimal time for each period (seconds).
      */
-    function Kleros(Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod) public {
+    function Kleros(Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod, address _governor) public {
         pinakion=_pinakion;
         rng=_rng;
         lastPeriodChange=now;
         timePerPeriod=_timePerPeriod;
+        governor=_governor;
     }
 
     // **************************** //

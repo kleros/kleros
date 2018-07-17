@@ -17,7 +17,7 @@ contract KlerosPOC is Kleros, TokenController {
      *  @param _rng The random number generator which will be used.
      *  @param _timePerPeriod The minimal time for each period.
      */
-    function KlerosPOC(Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod) Kleros(_pinakion, _rng, _timePerPeriod) public {}
+    function KlerosPOC(Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod, address _governor) Kleros(_pinakion, _rng, _timePerPeriod, _governor) public {}
 
     // **************************** //
     // *    Functions required    * //

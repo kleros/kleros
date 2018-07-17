@@ -22,7 +22,7 @@ contract KlerosPOCCourt is ArbitratorCourt, KlerosPOC {
      *  @param _rng The address of the random number generator contract which will be used.
      *  @param _timePerPeriod The minimal time for each period.
      */
-    function KlerosPOCCourt(string _parentName, Arbitrator _parentAddress, Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod) ArbitratorCourt(1, _parentName, _parentAddress) KlerosPOC(_pinakion, _rng, _timePerPeriod) public {}
+    function KlerosPOCCourt(string _parentName, Arbitrator _parentAddress, Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod, address _governor) ArbitratorCourt(1, _parentName, _parentAddress) KlerosPOC(_pinakion, _rng, _timePerPeriod, _governor) public {}
 
     /* Public */
 
