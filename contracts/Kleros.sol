@@ -34,6 +34,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     uint public alpha = 2000; // alpha in ‱.
     uint constant ALPHA_DIVISOR = 1e4; // Amount we need to dived alpha in ‱ to get the float value of alpha.
     uint public maxAppeals = 5; // Number of times a dispute can be appealed. When exceeded appeal cost becomes NON_PAYABLE_AMOUNT.
+    // Initially, the governor will be an address controlled by the Kleros team. At a later stage, the governor will be switched to a governence contract with liquid voting.
     address public governor; // Address of the governor contract.
 
     // Variables changing during day to day interaction.
