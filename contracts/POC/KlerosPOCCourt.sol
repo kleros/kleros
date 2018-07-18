@@ -32,7 +32,7 @@ contract KlerosPOCCourt is ArbitratorCourt, KlerosPOC {
      *  @param _extraData Part of the standard but not used by this contract.
      */
     function appeal(uint256 _disputeID, bytes _extraData) public payable onlyDuring(Period.Appeal) {
-        if (disputes[_disputeID].appeals < maxLocalAppeals) { // Will we stay under max local appeals?
+        if (disputes[_disputeID].appeals < maxAppeals) { // Will we stay under max local appeals?
             super.appeal(_disputeID, _extraData); // Regular appeal
         } else { // Appeal to `parent`
             // Checks
@@ -58,10 +58,12 @@ contract KlerosPOCCourt is ArbitratorCourt, KlerosPOC {
      *  @return _fee The appeal cost.
      */
     function appealCost(uint256 _disputeID, bytes _extraData) public constant returns(uint256 _fee) {
-        if (disputes[_disputeID].appeals < maxLocalAppeals) { // Will we stay under max local appeals?
+        if (disputes[_disputeID].appeals < maxAppeals) { // Will we stay under max local appeals?
             return super.appealCost(_disputeID, _extraData); // Regular appeal cost
+        } else {
+            if (parent._address == address(0) && bytes(parent.name).length == 0) return NON_PAYABLE_AMOUNT;
+            return parent._address.arbitrationCost(_extraData); // `parent` arbitration cost
         }
 
-        return parent._address.arbitrationCost(_extraData); // `parent` arbitration cost
     }
 }
