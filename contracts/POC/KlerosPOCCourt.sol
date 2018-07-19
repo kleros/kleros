@@ -61,7 +61,7 @@ contract KlerosPOCCourt is KlerosCourt, KlerosPOC {
         if (disputes[_disputeID].appeals < maxAppeals) { // Will we stay under max local appeals?
             return super.appealCost(_disputeID, _extraData); // Regular appeal cost
         } else {
-            if (parent._address == address(0) && bytes(parent.name).length == 0) return NON_PAYABLE_AMOUNT;
+            if (parent._address == address(0)) return NON_PAYABLE_AMOUNT;
             return parent._address.arbitrationCost(_extraData); // `parent` arbitration cost
         }
     }
