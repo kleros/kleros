@@ -1,17 +1,17 @@
 pragma solidity ^0.4.15;
 
-import "kleros-interaction/contracts/standard/arbitration/ArbitratorCourt.sol";
 import "kleros-interaction/contracts/standard/rng/RNG.sol";
 import { MiniMeTokenERC20 as Pinakion } from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
 
 import "./KlerosPOC.sol";
+import "../KlerosCourt.sol";
 
 /**
  *  @title KlerosPOCCourt
  *  @author Enrique Piqueras - <epiquerass@gmail.com>
  *  @notice A `KlerosPOC` Court in a tree of `ArbitratorCourt`s.
  */
-contract KlerosPOCCourt is ArbitratorCourt, KlerosPOC {
+contract KlerosPOCCourt is KlerosCourt, KlerosPOC {
     /* Constructor */
 
     /**
