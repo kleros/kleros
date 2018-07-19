@@ -729,8 +729,8 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     function executeOrder(bytes32 _data, uint _value, address _target) public onlyGovernor {
       _target.call.value(_value)(_data);
     }
-    
-        /** @dev Setter for rng.
+
+    /** @dev Setter for rng.
      *  @param _rng An instance of RNG.
      */
     function setRng(RNG _rng) public onlyGovernor {
