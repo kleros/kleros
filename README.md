@@ -7,21 +7,20 @@
 ## Prerequisites
 Install [yarn](https://yarnpkg.com/lang/en/), [Truffle Suite](https://truffleframework.com/) and [Ganache](https://truffleframework.com/ganache)
 
-* `npm install -g truffle`
-* `npm install -g solc`
+* `yarn add global truffle`
 
 ## Get Started
-* `git clone`
+* `git clone https://github.com/kleros/kleros`
 * `cd kleros`
-* `npm install`
+* `yarn`
 * Make sure you have the MetaMask Chrome extension installed and are logged in.
 
 ### Migrate to local blockchain
 Ensure you have Ganache running.
-* `npm migrate`
+* `yarn migrate`
 
 ### Deploy to Kovan testnet
-* `npm deploy`
+* `yarn deploy`
 
 ### Running Tests
 
