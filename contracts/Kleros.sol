@@ -178,8 +178,8 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     }
 
     /** @dev Withdraw tokens. Note that we can't withdraw the tokens which are still atStake. 
-     *       Jurors can't withdraw their tokens if they have activated some during Draw and Vote.
-     *       This is to prevent jurors from withdrawing tokens they could loose.
+     *  Jurors can't withdraw their tokens if they have activated some during Draw and Vote.
+     *  This is to prevent jurors from withdrawing tokens they could loose.
      *  @param _value The amount to withdraw.
      */
     function withdraw(uint _value) public {
@@ -229,7 +229,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
 
 
     /** @dev Activate tokens in order to have chances of being drawn. Note that once tokens are activated, 
-     *       there is no possibility of activating more.
+     *  there is no possibility of activating more.
      *  @param _value Amount of fractions of token to activate.
      */
     function activateTokens(uint _value) public onlyDuring(Period.Activation) {
@@ -283,7 +283,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     }
 
     /** @dev Steal part of the tokens of a juror who failed to vote.
-     *       Note that a juror who voted but without all his weight can't be penalized.
+     *  Note that a juror who voted but without all his weight can't be penalized.
      *  @param _jurorAddress Address of the juror to steal tokens from.
      *  @param _disputeID The ID of the dispute the juror was drawn.
      *  @param _draws The list of draws the juror was drawn. Numbering starts at 1 and the numbers should be increasing.
@@ -305,10 +305,10 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     }
 
     /** @dev Execute all the token repartition.
-     *       Note that this function could consume to much gas if there is too much votes. 
-     *       It is O(v), where v is the number of votes for this dispute.
-     *       In the next version, there will also be a function to execute it in multiple calls 
-     *       (but note that one shot execution, if possible, is less expensive).
+     *  Note that this function could consume to much gas if there is too much votes. 
+     *  It is O(v), where v is the number of votes for this dispute.
+     *  In the next version, there will also be a function to execute it in multiple calls 
+     *  (but note that one shot execution, if possible, is less expensive).
      *  @param _disputeID ID of the dispute.
      */
     function oneShotTokenRepartition(uint _disputeID) public onlyDuring(Period.Execution) {
@@ -364,8 +364,8 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     }
 
     /** @dev Execute token repartition on a dispute for a specific number of votes.
-     *       This should only be called if oneShotTokenRepartition will throw because there are too many votes (will use too much gas).
-     *       NOTE There are 3 iterations per vote. e.g. A dispute with 1 appeal (2 sessions) and 3 votes per session will have 18 iterations
+     *  This should only be called if oneShotTokenRepartition will throw because there are too many votes (will use too much gas).
+     *  NOTE There are 3 iterations per vote. e.g. A dispute with 1 appeal (2 sessions) and 3 votes per session will have 18 iterations
      *  @param _disputeId ID of the dispute.
      *  @param _maxIterations the maxium number of votes to repartition in this iteration
      */
@@ -472,8 +472,8 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     // **************************** //
 
     /** @dev Return the amount of jurors which are or will be drawn in the dispute.
-     *       The number of jurors is doubled and 1 is added at each appeal. We have proven the formula by recurrence.
-     *       This avoid having a variable number of jurors which would be updated in order to save gas.
+     *  The number of jurors is doubled and 1 is added at each appeal. We have proven the formula by recurrence.
+     *  This avoid having a variable number of jurors which would be updated in order to save gas.
      *  @param _disputeID The ID of the dispute we compute the amount of jurors.
      *  @return nbJurors The number of jurors which are drawn.
      */
@@ -483,8 +483,8 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     }
 
     /** @dev Must be used to prove that a juror has been draw at least _draws.length times.
-     *       We have to require the user to specify the draws that lead the juror to be drawn.
-     *       Because doing otherwise (looping through all draws) could consume too much gas.
+     *  We have to require the user to specify the draws that lead the juror to be drawn.
+     *  Because doing otherwise (looping through all draws) could consume too much gas.
      *  @param _jurorAddress Address of the juror we want to prove was drawn.
      *  @param _disputeID The ID of the dispute the juror was drawn.
      *  @param _draws The list of draws the juror was drawn. It draw numbering starts at 1 and the numbers should be increasing.
@@ -518,7 +518,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     // **************************** //
 
     /** @dev Create a dispute. Must be called by the arbitrable contract.
-     *       Must be paid at least arbitrationCost().
+     *  Must be paid at least arbitrationCost().
      *  @param _choices Amount of choices the arbitrator can make in this dispute.
      *  @param _extraData Null for the default number. Otherwise, first 16 bytes will be used to return the number of jurors.
      *  @return disputeID ID of the dispute created.
@@ -577,7 +577,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     // **************************** //
 
     /** @dev Compute the cost of arbitration. It is recommended not to increase it often, 
-     *       as it can be highly time and gas consuming for the arbitrated contracts to cope with fee augmentation.
+     *  as it can be highly time and gas consuming for the arbitrated contracts to cope with fee augmentation.
      *  @param _extraData Null for the default number. Other first 16 bits will be used to return the number of jurors.
      *  @return fee Amount to be paid.
      */
@@ -586,7 +586,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     }
 
     /** @dev Compute the cost of appeal. It is recommended not to increase it often, 
-     *       as it can be highly time and gas consuming for the arbitrated contracts to cope with fee augmentation.
+     *  as it can be highly time and gas consuming for the arbitrated contracts to cope with fee augmentation.
      *  @param _disputeID ID of the dispute to be appealed.
      *  @param _extraData Is not used there.
      *  @return fee Amount to be paid.
