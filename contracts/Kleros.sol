@@ -22,7 +22,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
 
     // Variables which should not change after initialization.
     Pinakion public pinakion;
-    uint public constant NON_PAYABLE_AMOUNT = (2 ** 256 - 2) / 2; // An astronomic amount, practically can't be paid.
+    uint public constant NON_PAYABLE_AMOUNT = (2**256 - 2) / 2; // An astronomic amount, practically can't be paid.
 
     // Variables which will subject to the governance mechanism.
     // Note they will only be able to be changed during the activation period (because a session assumes they don't change after it).
@@ -185,7 +185,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     function withdraw(uint _value) public {
         Juror storage juror = jurors[msg.sender];
         require(juror.atStake <= juror.balance); // Make sure that there is no more at stake than owned to avoid overflow.
-        require(_value <= juror.balance - juror.atStake);
+        require(_value <= juror.balance-juror.atStake);
         require(juror.lastSession != session);
 
         juror.balance -= _value;
@@ -200,7 +200,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     /** @dev To call to go to a new period. TRUSTED.
      */
     function passPeriod() public {
-        require(now - lastPeriodChange >= timePerPeriod[uint8(period)]);
+        require(now-lastPeriodChange >= timePerPeriod[uint8(period)]);
 
         if (period == Period.Activation) {
             rnBlock = block.number + 1;
@@ -266,7 +266,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         if (voteCounter.winningCount < voteCounter.voteCount[_ruling]) {
             voteCounter.winningCount = voteCounter.voteCount[_ruling];
             voteCounter.winningChoice = _ruling;
-        } else if (voteCounter.winningCount == voteCounter.voteCount[_ruling] && _draws.length != 0) {
+        } else if (voteCounter.winningCount==voteCounter.voteCount[_ruling] && _draws.length!=0) {
             voteCounter.winningChoice = 0; // It's currently a tie.
         }
         for (uint i = 0; i < _draws.length; ++i) {
@@ -296,7 +296,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         dispute.lastSessionVote[_jurorAddress] = session;
         require(validDraws(_jurorAddress, _disputeID, _draws));
         uint penality = _draws.length * minActivatedToken * 2 * alpha / ALPHA_DIVISOR;
-        penality = (penality < inactiveJuror.balance - inactiveJuror.atStake) ? penality : inactiveJuror.balance - inactiveJuror.atStake; // Make sure the penality is not higher than what the juror can lose.
+        penality = (penality < inactiveJuror.balance-inactiveJuror.atStake) ? penality : inactiveJuror.balance-inactiveJuror.atStake; // Make sure the penality is not higher than what the juror can lose.
         inactiveJuror.balance -= penality;
         jurors[msg.sender].balance += penality / 2; // Give half of the penalty to the caller.
         jurors[this].balance += penality / 2; // The other half to Kleros.
@@ -314,7 +314,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     function oneShotTokenRepartition(uint _disputeID) public onlyDuring(Period.Execution) {
         Dispute storage dispute = disputes[_disputeID];
         require(dispute.state == DisputeState.Open);
-        require(dispute.session + dispute.appeals <= session);
+        require(dispute.session+dispute.appeals <= session);
 
         uint winningChoice = dispute.voteCounter[dispute.appeals].winningChoice;
         uint amountShift = getStakePerDraw();
@@ -322,7 +322,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
             // If the result is not a tie, some parties are incoherent. Note that 0 (refuse to arbitrate) winning is not a tie.
             // Result is a tie if the winningChoice is 0 (refuse to arbitrate) and the choice 0 is not the most voted choice.
             // Note that in case of a "tie" among some choices including 0, parties who did not vote 0 are considered incoherent.
-            if (winningChoice != 0 || (dispute.voteCounter[dispute.appeals].voteCount[0] == dispute.voteCounter[dispute.appeals].winningCount)) {
+            if (winningChoice!=0 || (dispute.voteCounter[dispute.appeals].voteCount[0] == dispute.voteCounter[dispute.appeals].winningCount)) {
                 uint totalToRedistribute = 0;
                 uint nbcoherent = 0;
                 // First loop to penalize the incoherent votes.
@@ -330,7 +330,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
                     Vote storage vote = dispute.votes[i][j];
                     if (vote.ruling != winningChoice) {
                         Juror storage juror = jurors[vote.account];
-                        uint penalty = amountShift < juror.balance ? amountShift : juror.balance;
+                        uint penalty = amountShift<juror.balance ? amountShift : juror.balance;
                         juror.balance -= penalty;
                         TokenShift(vote.account, _disputeID, int(-penalty));
                         totalToRedistribute += penalty;
@@ -372,7 +372,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     function multipleShotTokenRepartition(uint _disputeId, uint _maxIterations) public onlyDuring(Period.Execution) {
         Dispute storage dispute = disputes[_disputeId];
         require(dispute.state <= DisputeState.Resolving);
-        require(dispute.session + dispute.appeals <= session);
+        require(dispute.session+dispute.appeals <= session);
         dispute.state = DisputeState.Resolving; // mark as resolving so oneShotTokenRepartition cannot be called on dispute
 
         uint winningChoice = dispute.voteCounter[dispute.appeals].winningChoice;
@@ -385,7 +385,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
             }
 
             // If the result is a tie, no parties are incoherent and no need to move tokens. Note that 0 (refuse to arbitrate) winning is not a tie.
-            if (winningChoice == 0 && (dispute.voteCounter[dispute.appeals].voteCount[0] != dispute.voteCounter[dispute.appeals].winningCount)) {
+            if (winningChoice==0 && (dispute.voteCounter[dispute.appeals].voteCount[0] != dispute.voteCounter[dispute.appeals].winningCount)) {
                 // if ruling is a tie we can skip to at stake
                 dispute.appealsRepartitioned[i].stage = RepartitionStage.AtStake;
             }
@@ -479,7 +479,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      */
     function amountJurors(uint _disputeID) public view returns (uint nbJurors) {
         Dispute storage dispute = disputes[_disputeID];
-        return (dispute.initialNumberJurors+1) * 2 ** dispute.appeals - 1;
+        return (dispute.initialNumberJurors+1) * 2**dispute.appeals - 1;
     }
 
     /** @dev Must be used to prove that a juror has been draw at least _draws.length times.
@@ -498,7 +498,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         uint nbJurors = amountJurors(_disputeID);
 
         if (juror.lastSession != session) return false; // Make sure that the tokens were activated for this session.
-        if (dispute.session + dispute.appeals != session) return false; // Make sure this currently a dispute.
+        if (dispute.session+dispute.appeals != session) return false; // Make sure this currently a dispute.
         if (period <= Period.Draw) return false; // Make sure that it's already drawn.
         for (uint i; i < _draws.length; ++i) {
             if (_draws[i] <= draw) return false; // Make sure that draws are always increasing to avoid someone inputing the same multiple times.
@@ -596,7 +596,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
 
         if(dispute.appeals >= maxAppeals) return NON_PAYABLE_AMOUNT;
 
-        return (2 * amountJurors(_disputeID) + 1) * dispute.arbitrationFeePerJuror;
+        return (2*amountJurors(_disputeID) + 1) * dispute.arbitrationFeePerJuror;
     }
 
     /** @dev Compute the amount of jurors to be drawn.
@@ -689,11 +689,11 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         Dispute storage dispute = disputes[_disputeID];
         Juror storage juror = jurors[_juror];
         if (juror.lastSession != session
-        || (dispute.session + dispute.appeals != session)
-        || period <= Period.Draw
-        || _draw > amountJurors(_disputeID)
-        || _draw == 0
-        || segmentSize == 0
+        || (dispute.session+dispute.appeals != session)
+        || period<=Period.Draw
+        || _draw>amountJurors(_disputeID)
+        || _draw==0
+        || segmentSize==0
         ) {
             return false;
         } else {
@@ -718,7 +718,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      */
     function disputeStatus(uint _disputeID) public view returns (DisputeStatus status) {
         Dispute storage dispute = disputes[_disputeID];
-        if (dispute.session + dispute.appeals<session) // Dispute of past session.
+        if (dispute.session+dispute.appeals<session) // Dispute of past session.
             return DisputeStatus.Solved;
         else if(dispute.session + dispute.appeals == session) { // Dispute of current session.
             if (dispute.state == DisputeState.Open) {
