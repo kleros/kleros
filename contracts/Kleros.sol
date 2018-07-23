@@ -477,7 +477,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      *  @param _disputeID The ID of the dispute we compute the amount of jurors.
      *  @return nbJurors The number of jurors which are drawn.
      */
-    function amountJurors(uint _disputeID) public constant returns (uint nbJurors) {
+    function amountJurors(uint _disputeID) public view returns (uint nbJurors) {
         Dispute storage dispute = disputes[_disputeID];
         return (dispute.initialNumberJurors+1) * 2 ** dispute.appeals - 1;
     }
@@ -491,7 +491,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      *  Note that in most cases this list will just contain 1 number.
      *  @param valid true if the draws are valid.
      */
-    function validDraws(address _jurorAddress, uint _disputeID, uint[] _draws) public constant returns (bool valid) {
+    function validDraws(address _jurorAddress, uint _disputeID, uint[] _draws) public view returns (bool valid) {
         uint draw = 0;
         Juror storage juror = jurors[_jurorAddress];
         Dispute storage dispute = disputes[_disputeID];
@@ -581,7 +581,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      *  @param _extraData Null for the default number. Other first 16 bits will be used to return the number of jurors.
      *  @return fee Amount to be paid.
      */
-    function arbitrationCost(bytes _extraData) public constant returns (uint fee) {
+    function arbitrationCost(bytes _extraData) public view returns (uint fee) {
         return extraDataToNbJurors(_extraData) * arbitrationFeePerJuror;
     }
 
@@ -591,7 +591,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      *  @param _extraData Is not used there.
      *  @return fee Amount to be paid.
      */
-    function appealCost(uint _disputeID, bytes _extraData) public constant returns (uint fee) {
+    function appealCost(uint _disputeID, bytes _extraData) public view returns (uint fee) {
         Dispute storage dispute = disputes[_disputeID];
 
         if(dispute.appeals >= maxAppeals) return NON_PAYABLE_AMOUNT;
@@ -603,7 +603,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      *  @param _extraData Null for the default number. Other first 16 bits will be used to return the number of jurors.
      *  Note that it does not check that the number of jurors is odd, but users are advised to choose a odd number of jurors.
      */
-    function extraDataToNbJurors(bytes _extraData) internal constant returns (uint16 nbJurors) {
+    function extraDataToNbJurors(bytes _extraData) internal view returns (uint16 nbJurors) {
         if (_extraData.length < 2)
             return defaultNumberJuror;
         else
@@ -613,7 +613,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     /** @dev Compute the minimum activated pinakions in alpha.
      * Note there may be multiple draws for a single user on a single dispute.
     */
-    function getStakePerDraw() public constant returns (uint minActivatedTokenInAlpha) {
+    function getStakePerDraw() public view returns (uint minActivatedTokenInAlpha) {
         return (alpha * minActivatedToken) / ALPHA_DIVISOR;
     }
 
@@ -628,7 +628,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      *  @param _voteID The ID of the vote for this appeal (or initial session).
      *  @return account The address of the voter.
      */
-    function getVoteAccount(uint _disputeID, uint _appeals, uint _voteID) public constant returns (address account) {
+    function getVoteAccount(uint _disputeID, uint _appeals, uint _voteID) public view returns (address account) {
         return disputes[_disputeID].votes[_appeals][_voteID].account;
     }
 
@@ -638,7 +638,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      *  @param _voteID The ID of the vote for this appeal (or initial session).
      *  @return ruling The ruling given by the voter.
      */
-    function getVoteRuling(uint _disputeID, uint _appeals, uint _voteID) public constant returns (uint ruling) {
+    function getVoteRuling(uint _disputeID, uint _appeals, uint _voteID) public view returns (uint ruling) {
         return disputes[_disputeID].votes[_appeals][_voteID].ruling;
     }
 
@@ -647,7 +647,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      *  @param _appeals Which appeal (or 0 for the initial session).
      *  @return winningChoice The currently winning choice (or 0 if it's tied). Note that 0 can also be return if the juror mainly refuse to arbitrate.
      */
-    function getWinningChoice(uint _disputeID, uint _appeals) public constant returns (uint winningChoice) {
+    function getWinningChoice(uint _disputeID, uint _appeals) public view returns (uint winningChoice) {
         return disputes[_disputeID].voteCounter[_appeals].winningChoice;
     }
 
@@ -656,7 +656,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      *  @param _appeals Which appeal (or 0 for the initial session).
      *  @return winningCount The amount of votes the winning choice (or those who are tied) has.
      */
-    function getWinningCount(uint _disputeID, uint _appeals) public constant returns (uint winningCount) {
+    function getWinningCount(uint _disputeID, uint _appeals) public view returns (uint winningCount) {
         return disputes[_disputeID].voteCounter[_appeals].winningCount;
     }
 
@@ -666,7 +666,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      *  @param _choice The choice.
      *  @return voteCount The amount of votes the winning choice (or those who are tied) has.
      */
-    function getVoteCount(uint _disputeID, uint _appeals, uint _choice) public constant returns (uint voteCount) {
+    function getVoteCount(uint _disputeID, uint _appeals, uint _choice) public view returns (uint voteCount) {
         return disputes[_disputeID].voteCounter[_appeals].voteCount[_choice];
     }
 
@@ -675,7 +675,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      *  @param _juror The juror we want to get the last session he voted.
      *  @return lastSessionVote The last session the juror voted.
      */
-    function getLastSessionVote(uint _disputeID, address _juror) public constant returns (uint lastSessionVote) {
+    function getLastSessionVote(uint _disputeID, address _juror) public view returns (uint lastSessionVote) {
         return disputes[_disputeID].lastSessionVote[_juror];
     }
 
@@ -685,7 +685,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      *  @param _draw The draw. Note that it starts at 1.
      *  @return drawn True if the juror is drawn, false otherwise.
      */
-    function isDrawn(uint _disputeID, address _juror, uint _draw) public constant returns (bool drawn) {
+    function isDrawn(uint _disputeID, address _juror, uint _draw) public view returns (bool drawn) {
         Dispute storage dispute = disputes[_disputeID];
         Juror storage juror = jurors[_juror];
         if (juror.lastSession != session
@@ -707,7 +707,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      *  @param _disputeID ID of the dispute.
      *  @return ruling The current ruling which will be given if there is no appeal. If it is not available, return 0.
      */
-    function currentRuling(uint _disputeID) public constant returns (uint ruling) {
+    function currentRuling(uint _disputeID) public view returns (uint ruling) {
         Dispute storage dispute = disputes[_disputeID];
         return dispute.voteCounter[dispute.appeals].winningChoice;
     }
@@ -716,7 +716,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      *  @param _disputeID ID of the dispute to rule.
      *  @return status The status of the dispute.
      */
-    function disputeStatus(uint _disputeID) public constant returns (DisputeStatus status) {
+    function disputeStatus(uint _disputeID) public view returns (DisputeStatus status) {
         Dispute storage dispute = disputes[_disputeID];
         if (dispute.session + dispute.appeals<session) // Dispute of past session.
             return DisputeStatus.Solved;
