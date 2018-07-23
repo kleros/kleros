@@ -46,7 +46,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     uint public randomNumber;     // Random number of the session.
 
     enum Period {
-        Activation, // When juror can activate their tokens and parties give evidences.
+        Activation, // When juror can deposit their tokens and parties give evidences.
         Draw,       // When jurors are drawn at random, note that this period is fast.
         Vote,       // Where jurors can vote on disputes.
         Appeal,     // When parties can appeal the rulings.
@@ -56,8 +56,8 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     Period public period;
 
     struct Juror {
-        uint balance;      // The amount of token the contract holds for this juror.
-        uint atStake;      // Total number of tokens the juror can loose in disputes he is drawn in. Those tokens are locked. Note that we can have atStake > balance but it should be statistically unlikely and does not pose issues.
+        uint balance;      // The amount of tokens the contract holds for this juror.
+        uint atStake;      // Total number of tokens the jurors can loose in disputes they are drawn in. Those tokens are locked. Note that we can have atStake > balance but it should be statistically unlikely and does not pose issues.
         uint lastSession;  // Last session the tokens were activated.
         uint segmentStart; // Start of the segment of activated tokens.
         uint segmentEnd;   // End of the segment of activated tokens.
@@ -77,7 +77,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     }
 
     enum DisputeState {
-        Open,       // The dispute is opened but not outcome is available yet (this include when jurors voted but appeal is still possible).
+        Open,       // The dispute is opened but the outcome is not available yet (this include when jurors voted but appeal is still possible).
         Resolving,  // The token repartition has started. Note that if it's done in just one call, this state is skipped.
         Executable, // The arbitrated contract can be called to enforce the decision.
         Executed    // Everything has been done and the dispute can't be interacted with anymore.
@@ -256,7 +256,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         Dispute storage dispute = disputes[_disputeID];
         Juror storage juror = jurors[msg.sender];
         VoteCounter storage voteCounter = dispute.voteCounter[dispute.appeals];
-        require(dispute.lastSessionVote[msg.sender] != session); // Make sure he hasn't voted yet.
+        require(dispute.lastSessionVote[msg.sender] != session); // Make sure juror hasn't voted yet.
         require(_ruling <= dispute.choices);
         // Note that it throws if the draws are incorrect.
         require(validDraws(msg.sender, _disputeID, _draws));
