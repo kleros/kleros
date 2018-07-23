@@ -24,8 +24,8 @@
   },
   "homepage": "https://github.com/kleros/kleros#readme",
   "devDependencies": {
-    "truffle": "^4.1.12",
-    "web3": "^1.0.0-beta.22"
+    "truffle": "^4.1.13",
+    "web3": "^1.0.0-beta.34"
   },
   "dependencies": {
     "eth-gas-reporter": "^0.1.1",
