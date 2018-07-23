@@ -57,7 +57,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
 
     struct Juror {
         uint balance;      // The amount of tokens the contract holds for this juror.
-        uint atStake;      // Total number of tokens the juror can loose in disputes they are drawn in. Those tokens are locked. Note that we can have atStake>balance but it should be statistically unlikely and does not pose issues.
+        uint atStake;      // Total number of tokens jurors can loose in disputes they are drawn in. Those tokens are locked. Note that we can have atStake > balance but it should be statistically unlikely and does not pose issues.
         uint lastSession;  // Last session the tokens were activated.
         uint segmentStart; // Start of the segment of activated tokens.
         uint segmentEnd;   // End of the segment of activated tokens.
