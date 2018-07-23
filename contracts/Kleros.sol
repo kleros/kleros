@@ -364,8 +364,13 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     }
 
     /** @dev Execute token repartition on a dispute for a specific number of votes.
+<<<<<<< HEAD
      *  This should only be called if oneShotTokenRepartition will throw because there are too many votes (will use too much gas).
      *  NOTE There are 3 iterations per vote. e.g. A dispute with 1 appeal (2 sessions) and 3 votes per session will have 18 iterations
+=======
+     *       This should only be called if oneShotTokenRepartition will throw because there are too many votes (will use too much gas).
+     *       Note There are 3 iterations per vote. e.g. A dispute with 1 appeal (2 sessions) and 3 votes per session will have 18 iterations
+>>>>>>> 2dc3d9259a77fa6f3460956f6d028eb6ae177cfa
      *  @param _disputeId ID of the dispute.
      *  @param _maxIterations the maxium number of votes to repartition in this iteration
      */
