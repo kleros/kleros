@@ -380,7 +380,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         uint currentIterations = 0; // total votes we have repartitioned this iteration
         for (uint i = dispute.currentAppealToRepartition; i <= dispute.appeals; ++i) {
             // make new AppealsRepartitioned
-            if (dispute.appealsRepartitioned.length < i + 1) {
+            if (dispute.appealsRepartitioned.length < i+1) {
                 dispute.appealsRepartitioned.length++;
             }
 
@@ -479,7 +479,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      */
     function amountJurors(uint _disputeID) public view returns (uint nbJurors) {
         Dispute storage dispute = disputes[_disputeID];
-        return (dispute.initialNumberJurors+1) * 2**dispute.appeals - 1;
+        return (dispute.initialNumberJurors + 1) * 2**dispute.appeals - 1;
     }
 
     /** @dev Must be used to prove that a juror has been draw at least _draws.length times.
@@ -718,9 +718,9 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      */
     function disputeStatus(uint _disputeID) public view returns (DisputeStatus status) {
         Dispute storage dispute = disputes[_disputeID];
-        if (dispute.session+dispute.appeals<session) // Dispute of past session.
+        if (dispute.session+dispute.appeals < session) // Dispute of past session.
             return DisputeStatus.Solved;
-        else if(dispute.session + dispute.appeals == session) { // Dispute of current session.
+        else if(dispute.session+dispute.appeals == session) { // Dispute of current session.
             if (dispute.state == DisputeState.Open) {
                 if (period < Period.Appeal)
                     return DisputeStatus.Waiting;
