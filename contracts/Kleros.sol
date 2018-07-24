@@ -32,7 +32,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     uint public minActivatedToken = 0.1 * 1e18; // Minimum of tokens to be activated (in basic units).
     uint[5] public timePerPeriod; // The minimum time each period lasts (seconds).
     uint public alpha = 2000; // alpha in ‱.
-    uint constant ALPHA_DIVISOR = 1e4; // Amount we need to dived alpha in ‱ to get the float value of alpha.
+    uint constant ALPHA_DIVISOR = 1e4; // Amount we need to divided alpha in ‱ to get the float value of alpha.
     uint public maxAppeals = 5; // Number of times a dispute can be appealed. When exceeded appeal cost becomes NON_PAYABLE_AMOUNT.
     // Initially, the governor will be an address controlled by the Kleros team. At a later stage,
     // the governor will be switched to a governance contract with liquid voting.
@@ -98,7 +98,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         AppealsRepartitioned[] appealsRepartitioned; // Track a partially repartitioned appeal in the form AppealsRepartitioned[appeal].
     }
 
-    enum RepartitionStage { // State of the token repartition if oneShotTokenRepartition will throw because there are too many votes.
+    enum RepartitionStage { // State of the token repartition if oneShotTokenRepartition would throw because there are too many votes.
         Incoherent,
         Coherent,
         AtStake,
@@ -107,11 +107,11 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
 
     struct AppealsRepartitioned {
         uint totalToRedistribute;   // Total amount of tokens we have to redistribute.
-        uint nbcoherent;            // Number of coherent jurors for session.
+        uint nbCoherent;            // Number of coherent jurors for session.
         uint currentIncoherentVote; // Current vote for the incoherent loop.
         uint currentCoherentVote;   // Current vote we need to count.
         uint currentAtStakeVote;    // Current vote we need to count.
-        RepartitionStage stage;     // Use with multipleShotTokenRepartition if oneShotTokenRepartition will throw.
+        RepartitionStage stage;     // Use with multipleShotTokenRepartition if oneShotTokenRepartition would throw.
     }
 
     Dispute[] public disputes;
@@ -167,18 +167,18 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     // *  with Pinakion contract  * //
     // **************************** //
 
-    /** @dev Callback of approveAndCall - deposit pinakions of a juror in the contract. Should be called by the pinakion contract. TRUSTED.
-     *  @param _from The address making the deposit.
-     *  @param _value Amount of fractions of token to deposit.
+    /** @dev Callback of approveAndCall - transfer pinakions of a juror in the contract. Should be called by the pinakion contract. TRUSTED.
+     *  @param _from The address making the transfer.
+     *  @param _amount Amount of tokens to transfer to Kleros (in basic units).
      */
-    function receiveApproval(address _from, uint _value, address, bytes) public onlyBy(pinakion) {
-        require(pinakion.transferFrom(_from, this, _value));
+    function receiveApproval(address _from, uint _amount, address, bytes) public onlyBy(pinakion) {
+        require(pinakion.transferFrom(_from, this, _amount));
 
-        jurors[_from].balance += _value;
+        jurors[_from].balance += _amount;
     }
 
     /** @dev Withdraw tokens. Note that we can't withdraw the tokens which are still atStake. 
-     *  Jurors can't withdraw their tokens if they have activated some during Draw and Vote.
+     *  Jurors can't withdraw their tokens if they have deposited some during this session.
      *  This is to prevent jurors from withdrawing tokens they could loose.
      *  @param _value The amount to withdraw.
      */
@@ -324,7 +324,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
             // Note that in case of a "tie" among some choices including 0, parties who did not vote 0 are considered incoherent.
             if (winningChoice!=0 || (dispute.voteCounter[dispute.appeals].voteCount[0] == dispute.voteCounter[dispute.appeals].winningCount)) {
                 uint totalToRedistribute = 0;
-                uint nbcoherent = 0;
+                uint nbCoherent = 0;
                 // First loop to penalize the incoherent votes.
                 for (uint j = 0; j < dispute.votes[i].length; ++j) {
                     Vote storage vote = dispute.votes[i][j];
@@ -335,13 +335,13 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
                         TokenShift(vote.account, _disputeID, int(-penalty));
                         totalToRedistribute += penalty;
                     } else {
-                        ++nbcoherent;
+                        ++nbCoherent;
                     }
                 }
-                if (nbcoherent == 0) { // No one was coherent at this stage. Take the tokens.
+                if (nbCoherent == 0) { // No one was coherent at this stage. Take the tokens.
                     jurors[this].balance += totalToRedistribute;
                 } else { // otherwise, redistribute them.
-                    uint toRedistribute = totalToRedistribute / nbcoherent; // Note that few fractions of tokens can be lost but due to the high amount of decimals we don't care.
+                    uint toRedistribute = totalToRedistribute / nbCoherent; // Note that few fractions of tokens can be lost but due to the high amount of decimals we don't care.
                     // Second loop to redistribute.
                     for (j = 0; j < dispute.votes[i].length; ++j) {
                         vote = dispute.votes[i][j];
@@ -404,7 +404,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
                         TokenShift(vote.account, _disputeId, int(-penalty));
                         dispute.appealsRepartitioned[i].totalToRedistribute += penalty;
                     } else {
-                        ++dispute.appealsRepartitioned[i].nbcoherent;
+                        ++dispute.appealsRepartitioned[i].nbCoherent;
                     }
 
                     ++dispute.appealsRepartitioned[i].currentIncoherentVote;
@@ -416,11 +416,11 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
 
             // Second loop to reward coherent voters
             if (dispute.appealsRepartitioned[i].stage == RepartitionStage.Coherent) {
-                if (dispute.appealsRepartitioned[i].nbcoherent == 0) { // No one was coherent at this stage. Take the tokens.
+                if (dispute.appealsRepartitioned[i].nbCoherent == 0) { // No one was coherent at this stage. Take the tokens.
                     jurors[this].balance += dispute.appealsRepartitioned[i].totalToRedistribute;
                     dispute.appealsRepartitioned[i].stage = RepartitionStage.AtStake;
                 } else { // otherwise, redistribute them.
-                    uint toRedistribute = dispute.appealsRepartitioned[i].totalToRedistribute / dispute.appealsRepartitioned[i].nbcoherent; // Note that few fractions of tokens can be lost but due to the high amount of decimals we don't care.
+                    uint toRedistribute = dispute.appealsRepartitioned[i].totalToRedistribute / dispute.appealsRepartitioned[i].nbCoherent; // Note that few fractions of tokens can be lost but due to the high amount of decimals we don't care.
                     // Second loop to redistribute.
                     for (j = dispute.appealsRepartitioned[i].currentCoherentVote; j < dispute.votes[i].length; ++j) {
                         if (currentIterations >= _maxIterations) {
