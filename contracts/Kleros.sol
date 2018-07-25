@@ -296,7 +296,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         dispute.lastSessionVote[_jurorAddress] = session;
         require(validDraws(_jurorAddress, _disputeID, _draws));
         uint penality = _draws.length * minActivatedToken * 2 * alpha / ALPHA_DIVISOR;
-        penality = (penality < inactiveJuror.balance-inactiveJuror.atStake) ? penality : inactiveJuror.balance-inactiveJuror.atStake; // Make sure the penality is not higher than what the juror can lose.
+        penality = (penality < inactiveJuror.balance) ? penality : inactiveJuror.balance; // Make sure the penality is not higher than the balance.
         inactiveJuror.balance -= penality;
         jurors[msg.sender].balance += penality / 2; // Give half of the penalty to the caller.
         jurors[this].balance += penality / 2; // The other half to Kleros.
