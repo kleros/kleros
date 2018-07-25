@@ -507,7 +507,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         if (juror.lastSession != session) return false; // Make sure that the tokens were deposited for this session.
         if (dispute.session+dispute.appeals != session) return false; // Make sure there is currently a dispute.
         if (period <= Period.Draw) return false; // Make sure that jurors are already drawn.
-        for (uint i; i < _draws.length; ++i) {
+        for (uint i = 0; i < _draws.length; ++i) {
             if (_draws[i] <= draw) return false; // Make sure that draws are always increasing to avoid someone inputing the same multiple times.
             draw = _draws[i];
             if (draw > nbJurors) return false;
