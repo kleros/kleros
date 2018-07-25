@@ -301,9 +301,11 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         uint penality = _draws.length * minActivatedToken * 2 * alpha / ALPHA_DIVISOR;
         penality = (penality < inactiveJuror.balance) ? penality : inactiveJuror.balance; // Make sure the penality is not higher than the balance.
         inactiveJuror.balance -= penality;
+        TokenShift(_jurorAddress, _disputeID, -int(penality));
         jurors[msg.sender].balance += penality / 2; // Give half of the penalty to the caller.
-        jurors[this].balance += penality / 2; // The other half to Kleros.
-
+        TokenShift(msg.sender, _disputeID, int(penality / 2));
+        jurors[governor].balance += penality / 2; // The other half to the governor.
+        TokenShift(governor, _disputeID, int(penality / 2));
         msg.sender.transfer(_draws.length*dispute.arbitrationFeePerJuror); // Give the arbitration fees to the caller.
     }
 
@@ -341,8 +343,9 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
                         ++nbCoherent;
                     }
                 }
-                if (nbCoherent == 0) { // No one was coherent at this stage. Take the tokens.
-                    jurors[this].balance += totalToRedistribute;
+                if (nbCoherent == 0) { // No one was coherent at this stage. Give the tokens to the governor.
+                    jurors[governor].balance += totalToRedistribute;
+                    TokenShift(governor, _disputeID, int(totalToRedistribute));
                 } else { // otherwise, redistribute them.
                     uint toRedistribute = totalToRedistribute / nbCoherent; // Note that few fractions of tokens can be lost but due to the high amount of decimals we don't care.
                     // Second loop to redistribute.
@@ -419,10 +422,11 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
 
             // Second loop to reward coherent voters
             if (dispute.appealsRepartitioned[i].stage == RepartitionStage.Coherent) {
-                if (dispute.appealsRepartitioned[i].nbCoherent == 0) { // No one was coherent at this stage. Take the tokens.
-                    jurors[this].balance += dispute.appealsRepartitioned[i].totalToRedistribute;
+                if (dispute.appealsRepartitioned[i].nbCoherent == 0) { // No one was coherent at this stage. Give the tokens to the governor.
+                    jurors[governor].balance += dispute.appealsRepartitioned[i].totalToRedistribute;
+                    TokenShift(governor, _disputeID, int(dispute.appealsRepartitioned[i].totalToRedistribute));
                     dispute.appealsRepartitioned[i].stage = RepartitionStage.AtStake;
-                } else { // otherwise, redistribute them.
+                } else { // Otherwise, redistribute them.
                     uint toRedistribute = dispute.appealsRepartitioned[i].totalToRedistribute / dispute.appealsRepartitioned[i].nbCoherent; // Note that few fractions of tokens can be lost but due to the high amount of decimals we don't care.
                     // Second loop to redistribute.
                     for (j = dispute.appealsRepartitioned[i].currentCoherentVote; j < dispute.votes[i].length; ++j) {
