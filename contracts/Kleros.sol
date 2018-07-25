@@ -372,11 +372,11 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     /** @dev Execute token repartition on a dispute for a specific number of votes.
      *  This should only be called if oneShotTokenRepartition will throw because there are too many votes (will use too much gas).
      *  Note that There are 3 iterations per vote. e.g. A dispute with 1 appeal (2 sessions) and 3 votes per session will have 18 iterations
-     *  @param _disputeId ID of the dispute.
+     *  @param _disputeID ID of the dispute.
      *  @param _maxIterations the maxium number of votes to repartition in this iteration
      */
-    function multipleShotTokenRepartition(uint _disputeId, uint _maxIterations) public onlyDuring(Period.Execution) {
-        Dispute storage dispute = disputes[_disputeId];
+    function multipleShotTokenRepartition(uint _disputeID, uint _maxIterations) public onlyDuring(Period.Execution) {
+        Dispute storage dispute = disputes[_disputeID];
         require(dispute.state <= DisputeState.Resolving);
         require(dispute.session+dispute.appeals <= session);
         dispute.state = DisputeState.Resolving; // Mark as resolving so oneShotTokenRepartition cannot be called on dispute.
@@ -407,7 +407,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
                         Juror storage juror = jurors[vote.account];
                         uint penalty = amountShift<juror.balance ? amountShift : juror.balance;
                         juror.balance -= penalty;
-                        TokenShift(vote.account, _disputeId, int(-penalty));
+                        TokenShift(vote.account, _disputeID, int(-penalty));
                         dispute.appealsRepartitioned[i].totalToRedistribute += penalty;
                     } else {
                         ++dispute.appealsRepartitioned[i].nbCoherent;
@@ -437,7 +437,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
                         if (vote.ruling == winningChoice) {
                             juror = jurors[vote.account];
                             juror.balance += toRedistribute;
-                            TokenShift(vote.account, _disputeId, int(toRedistribute));
+                            TokenShift(vote.account, _disputeID, int(toRedistribute));
                         }
 
                         ++currentIterations;
