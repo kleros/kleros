@@ -228,9 +228,9 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     }
 
 
-    /** @dev Activate tokens in order to have chances of being drawn. Note that once tokens are activated, 
-     *  there is no possibility of activating more.
-     *  @param _value Amount of fractions of token to activate.
+    /** @dev Deposit tokens in order to have chances of being drawn. Note that once tokens are deposited, 
+     *  there is no possibility of depositing more.
+     *  @param _value Amount of tokens (in basic units) to deposit.
      */
     function activateTokens(uint _value) public onlyDuring(Period.Activation) {
         Juror storage juror = jurors[msg.sender];
@@ -248,9 +248,10 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     /** @dev Vote a ruling. Juror must input the draw ID he was drawn.
      *  Note that the complexity is O(d), where d is amount of times the juror was drawn.
      *  Since being drawn multiple time is a rare occurrence and that a juror can always vote with less weight than it has, it is not a problem.
+     *  But note that it can lead to arbitration fees being kept by the contract and never distributed.
      *  @param _disputeID The ID of the dispute the juror was drawn.
      *  @param _ruling The ruling given.
-     *  @param _draws The list of draws the juror was drawn. It draw numbering starts at 1 and the numbers should be increasing.
+     *  @param _draws The list of draws the juror was drawn. Draw numbering starts at 1 and the numbers should be increasing.
      */
     function voteRuling(uint _disputeID, uint _ruling, uint[] _draws) public onlyDuring(Period.Vote) {
         Dispute storage dispute = disputes[_disputeID];
@@ -266,7 +267,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         if (voteCounter.winningCount < voteCounter.voteCount[_ruling]) {
             voteCounter.winningCount = voteCounter.voteCount[_ruling];
             voteCounter.winningChoice = _ruling;
-        } else if (voteCounter.winningCount==voteCounter.voteCount[_ruling] && _draws.length!=0) {
+        } else if (voteCounter.winningCount==voteCounter.voteCount[_ruling] && _draws.length!=0) { // Verify draw length to be non-zero to avoid the possibility of setting tie by casting 0 votes.
             voteCounter.winningChoice = 0; // It's currently a tie.
         }
         for (uint i = 0; i < _draws.length; ++i) {
@@ -282,8 +283,10 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         ArbitrationReward(msg.sender, _disputeID, feeToPay);
     }
 
-    /** @dev Steal part of the tokens of a juror who failed to vote.
+    /** @dev Steal part of the tokens and the arbitration fee of a juror who failed to vote.
      *  Note that a juror who voted but without all his weight can't be penalized.
+     *  It is possible to not penalize with the maximum weight.
+     *  But note that it can lead to arbitration fees being kept by the contract and never distributed.
      *  @param _jurorAddress Address of the juror to steal tokens from.
      *  @param _disputeID The ID of the dispute the juror was drawn.
      *  @param _draws The list of draws the juror was drawn. Numbering starts at 1 and the numbers should be increasing.
@@ -293,7 +296,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         Juror storage inactiveJuror = jurors[_jurorAddress];
         require(period > Period.Vote);
         require(dispute.lastSessionVote[_jurorAddress] != session); // Verify the juror hasn't voted.
-        dispute.lastSessionVote[_jurorAddress] = session;
+        dispute.lastSessionVote[_jurorAddress] = session; // Update last session to avoid penalizing multiple times.
         require(validDraws(_jurorAddress, _disputeID, _draws));
         uint penality = _draws.length * minActivatedToken * 2 * alpha / ALPHA_DIVISOR;
         penality = (penality < inactiveJuror.balance) ? penality : inactiveJuror.balance; // Make sure the penality is not higher than the balance.
@@ -301,7 +304,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         jurors[msg.sender].balance += penality / 2; // Give half of the penalty to the caller.
         jurors[this].balance += penality / 2; // The other half to Kleros.
 
-        msg.sender.transfer(_draws.length*dispute.arbitrationFeePerJuror);
+        msg.sender.transfer(_draws.length*dispute.arbitrationFeePerJuror); // Give the arbitration fees to the caller.
     }
 
     /** @dev Execute all the token repartition.
@@ -365,7 +368,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
 
     /** @dev Execute token repartition on a dispute for a specific number of votes.
      *  This should only be called if oneShotTokenRepartition will throw because there are too many votes (will use too much gas).
-     *  Note There are 3 iterations per vote. e.g. A dispute with 1 appeal (2 sessions) and 3 votes per session will have 18 iterations
+     *  Note that There are 3 iterations per vote. e.g. A dispute with 1 appeal (2 sessions) and 3 votes per session will have 18 iterations
      *  @param _disputeId ID of the dispute.
      *  @param _maxIterations the maxium number of votes to repartition in this iteration
      */
@@ -373,20 +376,20 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         Dispute storage dispute = disputes[_disputeId];
         require(dispute.state <= DisputeState.Resolving);
         require(dispute.session+dispute.appeals <= session);
-        dispute.state = DisputeState.Resolving; // mark as resolving so oneShotTokenRepartition cannot be called on dispute
+        dispute.state = DisputeState.Resolving; // Mark as resolving so oneShotTokenRepartition cannot be called on dispute.
 
         uint winningChoice = dispute.voteCounter[dispute.appeals].winningChoice;
         uint amountShift = getStakePerDraw();
-        uint currentIterations = 0; // total votes we have repartitioned this iteration
+        uint currentIterations = 0; // Total votes we have repartitioned this iteration.
         for (uint i = dispute.currentAppealToRepartition; i <= dispute.appeals; ++i) {
-            // make new AppealsRepartitioned
+            // Allocate space for new AppealsRepartitioned.
             if (dispute.appealsRepartitioned.length < i+1) {
                 dispute.appealsRepartitioned.length++;
             }
 
             // If the result is a tie, no parties are incoherent and no need to move tokens. Note that 0 (refuse to arbitrate) winning is not a tie.
             if (winningChoice==0 && (dispute.voteCounter[dispute.appeals].voteCount[0] != dispute.voteCounter[dispute.appeals].winningCount)) {
-                // if ruling is a tie we can skip to at stake
+                // If ruling is a tie we can skip to at stake.
                 dispute.appealsRepartitioned[i].stage = RepartitionStage.AtStake;
             }
 
@@ -482,10 +485,10 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         return (dispute.initialNumberJurors + 1) * 2**dispute.appeals - 1;
     }
 
-    /** @dev Must be used to prove that a juror has been draw at least _draws.length times.
+    /** @dev Must be used to verify that a juror has been draw at least _draws.length times.
      *  We have to require the user to specify the draws that lead the juror to be drawn.
      *  Because doing otherwise (looping through all draws) could consume too much gas.
-     *  @param _jurorAddress Address of the juror we want to prove was drawn.
+     *  @param _jurorAddress Address of the juror we want to verify draws.
      *  @param _disputeID The ID of the dispute the juror was drawn.
      *  @param _draws The list of draws the juror was drawn. It draw numbering starts at 1 and the numbers should be increasing.
      *  Note that in most cases this list will just contain 1 number.
@@ -497,9 +500,9 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         Dispute storage dispute = disputes[_disputeID];
         uint nbJurors = amountJurors(_disputeID);
 
-        if (juror.lastSession != session) return false; // Make sure that the tokens were activated for this session.
-        if (dispute.session+dispute.appeals != session) return false; // Make sure this currently a dispute.
-        if (period <= Period.Draw) return false; // Make sure that it's already drawn.
+        if (juror.lastSession != session) return false; // Make sure that the tokens were deposited for this session.
+        if (dispute.session+dispute.appeals != session) return false; // Make sure there is currently a dispute.
+        if (period <= Period.Draw) return false; // Make sure that jurors are already drawn.
         for (uint i; i < _draws.length; ++i) {
             if (_draws[i] <= draw) return false; // Make sure that draws are always increasing to avoid someone inputing the same multiple times.
             draw = _draws[i];
@@ -536,7 +539,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
             dispute.session = session+1;
         dispute.choices = _choices;
         dispute.initialNumberJurors = nbJurors;
-        dispute.arbitrationFeePerJuror = arbitrationFeePerJuror; // We story it as it will be able to be changed through the governance mechanism.
+        dispute.arbitrationFeePerJuror = arbitrationFeePerJuror; // We store it as the general fee can be changed through the governance mechanism.
         dispute.votes.length++;
         dispute.voteCounter.length++;
 
@@ -557,7 +560,6 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         dispute.appeals++;
         dispute.votes.length++;
         dispute.voteCounter.length++;
-
     }
 
     /** @dev Execute the ruling of a dispute which is in the state executable. UNTRUSTED.
@@ -611,8 +613,8 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     }
 
     /** @dev Compute the minimum activated pinakions in alpha.
-     * Note there may be multiple draws for a single user on a single dispute.
-    */
+     *  Note there may be multiple draws for a single user on a single dispute.
+     */
     function getStakePerDraw() public view returns (uint minActivatedTokenInAlpha) {
         return (alpha * minActivatedToken) / ALPHA_DIVISOR;
     }
@@ -645,7 +647,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     /** @dev Getter for winningChoice in VoteCounter.
      *  @param _disputeID ID of the dispute.
      *  @param _appeals Which appeal (or 0 for the initial session).
-     *  @return winningChoice The currently winning choice (or 0 if it's tied). Note that 0 can also be return if the juror mainly refuse to arbitrate.
+     *  @return winningChoice The currently winning choice (or 0 if it's tied). Note that 0 can also be return if the majority refuses to arbitrate.
      */
     function getWinningChoice(uint _disputeID, uint _appeals) public view returns (uint winningChoice) {
         return disputes[_disputeID].voteCounter[_appeals].winningChoice;
