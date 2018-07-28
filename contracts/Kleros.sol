@@ -5,7 +5,7 @@
  *  Bug Bounties: This code hasn't undertaken a bug bounty program yet.
  */
 
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.24;
 
 import "kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
 import {MiniMeTokenERC20 as Pinakion} from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
@@ -154,7 +154,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      *  @param _timePerPeriod The minimal time for each period (seconds).
      *  @param _governor Address of the governor contract.
      */
-    function Kleros(Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod, address _governor) public {
+    constructor(Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod, address _governor) public {
         pinakion = _pinakion;
         rng = _rng;
         lastPeriodChange = now;
@@ -560,7 +560,8 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         Dispute storage dispute = disputes[_disputeID];
         require(msg.value >= appealCost(_disputeID, _extraData));
         require(dispute.session+dispute.appeals == session); // Dispute of the current session.
-
+        require(dispute.arbitrated == msg.sender);
+        
         dispute.appeals++;
         dispute.votes.length++;
         dispute.voteCounter.length++;
