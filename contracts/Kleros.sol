@@ -31,7 +31,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     uint16 public defaultNumberJuror = 3; // Number of drawn jurors unless specified otherwise.
     uint public minActivatedToken = 0.1 * 1e18; // Minimum of tokens to be activated (in basic units).
     uint[5] public timePerPeriod; // The minimum time each period lasts (seconds).
-    uint public alpha = 2000; // alpha in ‱.
+    uint public alpha = 2000; // alpha in ‱ (1 / 10 000).
     uint constant ALPHA_DIVISOR = 1e4; // Amount we need to divided alpha in ‱ to get the float value of alpha.
     uint public maxAppeals = 5; // Number of times a dispute can be appealed. When exceeded appeal cost becomes NON_PAYABLE_AMOUNT.
     // Initially, the governor will be an address controlled by the Kleros team. At a later stage,
