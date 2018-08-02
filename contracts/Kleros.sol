@@ -76,7 +76,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         mapping (uint => uint) voteCount; // voteCount[choice] is the number of votes for choice.
     }
 
-    enum DisputeState { // Please do not confuse this with DisputeStatus enum in Arbitrator contract
+    enum DisputeState { // Not to be confused this with DisputeStatus in Arbitrator contract.
         Open,       // The dispute is opened but the outcome is not available yet (this include when jurors voted but appeal is still possible).
         Resolving,  // The token repartition has started. Note that if it's done in just one call, this state is skipped.
         Executable, // The arbitrated contract can be called to enforce the decision.
