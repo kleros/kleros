@@ -23,3 +23,9 @@ This RNG is part of another submission.
 This arbitrable curated list is part of another submission.
 - In this realease, the governor is an address controlled by Kleros team. It will be switched to a liquid voting mechanism when contracts for this purpose will be ready. Note that it is not our intention to build a centralized or backdoored system but we prefer to release an early version for testing rather than to wait for the governance mechanism to be implemented. The governor has full control over the Kleros contract. We assume that this governor is honest and change parameters only when it does not lead to issues for the remaining parts of the contract.
 - The Pinakion contract has already been deployed [there](https://etherscan.io/address/0x93ed3fbe21207ec2e8f2d3c3de6e058cb73bc04d).
+
+### Deployments
+- Kleros: [0x211f01e59b425253c0a0e9a7bf612605b42ce82c](https://etherscan.io/address/0x211f01e59b425253c0a0e9a7bf612605b42ce82c)
+- Pinakion: [0x93ed3fbe21207ec2e8f2d3c3de6e058cb73bc04d](https://etherscan.io/address/0x93ed3fbe21207ec2e8f2d3c3de6e058cb73bc04d)
+- RNG: [0x1738b62e403090666687243e758b1c29edffc90e](https://etherscan.io/address/0x1738b62e403090666687243e758b1c29edffc90e)
+- Doge List: [0xb7faddf3ecd2402a7e48cea6d2637d90eeb5a7e6](https://etherscan.io/address/0xb7faddf3ecd2402a7e48cea6d2637d90eeb5a7e6)
