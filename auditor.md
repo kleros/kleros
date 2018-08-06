@@ -29,3 +29,7 @@ This arbitrable curated list is part of another submission.
 - Pinakion: [0x93ed3fbe21207ec2e8f2d3c3de6e058cb73bc04d](https://etherscan.io/address/0x93ed3fbe21207ec2e8f2d3c3de6e058cb73bc04d)
 - RNG: [0x1738b62e403090666687243e758b1c29edffc90e](https://etherscan.io/address/0x1738b62e403090666687243e758b1c29edffc90e)
 - Doge List: [0xb7faddf3ecd2402a7e48cea6d2637d90eeb5a7e6](https://etherscan.io/address/0xb7faddf3ecd2402a7e48cea6d2637d90eeb5a7e6)
+
+### Bounties
+Bugs or vulnerabilities on deployed (and in use) contracts are eligible up to 20 ETH of bounties (depending of their vulnerability, using the OWASP rating). Please disclose them to contact@kleros.io .
+
