@@ -85,6 +85,22 @@ contract KArySumTreeFactory {
      */
     function remove(bytes32 _key, uint _treeIndex) internal {
         KArySumTree storage tree = KArySumTrees[_key];
+
+        // Remember value and set to 0
+        uint _value = tree.tree[_treeIndex];
+        tree.tree[_treeIndex] = 0;
+
+        // Push to stack
+        tree.stack.length++;
+        tree.stack[tree.stack.length - 1] = _treeIndex;
+
+        // Update parents
+        uint parentIndex = _treeIndex;
+        while (true) {
+            parentIndex = (parentIndex - 1) / tree.K;
+            tree.tree[parentIndex] -= _value;
+            if (parentIndex == 0) break;
+        }
     }
 
     /* Internal Views */
