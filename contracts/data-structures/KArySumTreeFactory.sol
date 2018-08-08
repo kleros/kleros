@@ -46,8 +46,36 @@ contract KArySumTreeFactory {
      *  @dev Append a value to a tree.
      *  @param _key The key of the tree to append to.
      *  @param _value The value to append.
+     *  @return treeIndex The index of the appended value in the tree.
      */
-    function append(bytes32 _key, uint _value) internal {
+    function append(bytes32 _key, uint _value) internal returns(uint treeIndex) {
+        KArySumTree storage tree = KArySumTrees[_key];
+
+        if (tree.stack.length == 0) { // No vacant spots
+            // Get the index and append the value
+            treeIndex = tree.tree.length;
+            tree.tree.length++;
+            tree.tree[treeIndex] = _value;
+
+            // Potentially append a new node and make the parent a sum node
+            if (treeIndex % tree.K == 0) { // Is first child
+                tree.tree.length++;
+                tree.tree[treeIndex + 1] = tree.tree[treeIndex / tree.K];
+            }
+        } else { // Some vacant spot
+            // Pop the stack and append the value
+            treeIndex = tree.stack[tree.stack.length - 1];
+            tree.stack.length--;
+            tree.tree[treeIndex] = _value;
+        }
+
+        // Update parents
+        uint parentIndex = treeIndex;
+        while (true) {
+            parentIndex = (parentIndex - 1) / tree.K;
+            tree.tree[parentIndex] += _value;
+            if (parentIndex == 0) break;
+        }
     }
 
     /**
@@ -56,6 +84,7 @@ contract KArySumTreeFactory {
      *  @param _treeIndex The index of the value to remove.
      */
     function remove(bytes32 _key, uint _treeIndex) internal {
+        KArySumTree storage tree = KArySumTrees[_key];
     }
 
     /* Internal Views */
