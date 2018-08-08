@@ -46,7 +46,7 @@ contract KArySumTreeFactory {
      *  @dev Append a value to a tree.
      *  @param _key The key of the tree to append to.
      *  @param _value The value to append.
-     *  @return treeIndex The index of the appended value in the tree.
+     *  @return The index of the appended value in the tree.
      */
     function append(bytes32 _key, uint _value) internal returns(uint treeIndex) {
         KArySumTree storage tree = KArySumTrees[_key];
@@ -105,6 +105,35 @@ contract KArySumTreeFactory {
 
     /* Internal Views */
 
-    
+    /**
+     *  @dev Query the leafs of a tree.
+     *  @param _key The key of the tree to get the leafs from.
+     *  @param _cursor The pagination cursor.
+     *  @param _count The number of items to return.
+     *  @return The index at which leafs start, the values of the returned leafs, and wether there are more for pagination.
+     */
+    function queryLeafs(bytes32 _key, uint _cursor, uint _count) internal view returns(uint startIndex, uint[] values, bool hasMore) {
+        KArySumTree storage tree = KArySumTrees[_key];
 
+        // Find the start index
+        for (uint i = 0; i < tree.tree.length; i++) {
+            if ((tree.K * i) + 1 >= tree.tree.length) {
+                startIndex = i;
+                break;
+            }
+        }
+
+        // Get the values
+        values = new uint[](_count);
+        uint _index = 0;
+        for (uint j = _cursor == 0 || startIndex > _cursor ? startIndex : _cursor + 1; j < tree.tree.length; j++) {
+            if (_index < _count) {
+                values[_index] = tree.tree[j];
+                _index++;
+            } else {
+                hasMore = true;
+                break;
+            }
+        }
+    }
 }
