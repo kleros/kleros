@@ -42,8 +42,24 @@ contract KArySumTreeFactory {
         delete KArySumTrees[_key];
     }
 
+    /**
+     *  @dev Append a value to a tree.
+     *  @param _key The key of the tree to append to.
+     *  @param _value The value to append.
+     */
+    function append(bytes32 _key, uint _value) internal {
+    }
+
+    /**
+     *  @dev Remove a value from a tree.
+     *  @param _key The key of the tree to remove from.
+     *  @param _treeIndex The index of the value to remove.
+     */
+    function remove(bytes32 _key, uint _treeIndex) internal {
+    }
+
     /* Internal Views */
 
-
+    
 
 }
