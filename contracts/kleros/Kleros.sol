@@ -7,12 +7,10 @@
 
 pragma solidity ^0.4.24;
 
-import "kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
-import {MiniMeTokenERC20 as Pinakion} from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
 import "kleros-interaction/contracts/standard/rng/RNG.sol";
-import {ApproveAndCallFallBack} from "minimetoken/contracts/MiniMeToken.sol";
-
-
+import "kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
+import { MiniMeTokenERC20 as Pinakion } from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
+import { ApproveAndCallFallBack } from "minimetoken/contracts/MiniMeToken.sol";
 
 contract Kleros is Arbitrator, ApproveAndCallFallBack {
 
@@ -224,7 +222,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
 
 
         lastPeriodChange = now;
-        NewPeriod(period, session);
+        emit NewPeriod(period, session);
     }
 
 
@@ -280,7 +278,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         juror.atStake += _draws.length * getStakePerDraw();
         uint feeToPay = _draws.length * dispute.arbitrationFeePerJuror;
         msg.sender.transfer(feeToPay);
-        ArbitrationReward(msg.sender, _disputeID, feeToPay);
+        emit ArbitrationReward(msg.sender, _disputeID, feeToPay);
     }
 
     /** @dev Steal part of the tokens and the arbitration fee of a juror who failed to vote.
@@ -301,11 +299,11 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         uint penality = _draws.length * minActivatedToken * 2 * alpha / ALPHA_DIVISOR;
         penality = (penality < inactiveJuror.balance) ? penality : inactiveJuror.balance; // Make sure the penality is not higher than the balance.
         inactiveJuror.balance -= penality;
-        TokenShift(_jurorAddress, _disputeID, -int(penality));
+        emit TokenShift(_jurorAddress, _disputeID, -int(penality));
         jurors[msg.sender].balance += penality / 2; // Give half of the penalty to the caller.
-        TokenShift(msg.sender, _disputeID, int(penality / 2));
+        emit TokenShift(msg.sender, _disputeID, int(penality / 2));
         jurors[governor].balance += penality / 2; // The other half to the governor.
-        TokenShift(governor, _disputeID, int(penality / 2));
+        emit TokenShift(governor, _disputeID, int(penality / 2));
         msg.sender.transfer(_draws.length*dispute.arbitrationFeePerJuror); // Give the arbitration fees to the caller.
     }
 
@@ -337,7 +335,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
                         Juror storage juror = jurors[vote.account];
                         uint penalty = amountShift<juror.balance ? amountShift : juror.balance;
                         juror.balance -= penalty;
-                        TokenShift(vote.account, _disputeID, int(-penalty));
+                        emit TokenShift(vote.account, _disputeID, int(-penalty));
                         totalToRedistribute += penalty;
                     } else {
                         ++nbCoherent;
@@ -345,7 +343,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
                 }
                 if (nbCoherent == 0) { // No one was coherent at this stage. Give the tokens to the governor.
                     jurors[governor].balance += totalToRedistribute;
-                    TokenShift(governor, _disputeID, int(totalToRedistribute));
+                    emit TokenShift(governor, _disputeID, int(totalToRedistribute));
                 } else { // otherwise, redistribute them.
                     uint toRedistribute = totalToRedistribute / nbCoherent; // Note that few fractions of tokens can be lost but due to the high amount of decimals we don't care.
                     // Second loop to redistribute.
@@ -354,7 +352,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
                         if (vote.ruling == winningChoice) {
                             juror = jurors[vote.account];
                             juror.balance += toRedistribute;
-                            TokenShift(vote.account, _disputeID, int(toRedistribute));
+                            emit TokenShift(vote.account, _disputeID, int(toRedistribute));
                         }
                     }
                 }
@@ -407,7 +405,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
                         Juror storage juror = jurors[vote.account];
                         uint penalty = amountShift<juror.balance ? amountShift : juror.balance;
                         juror.balance -= penalty;
-                        TokenShift(vote.account, _disputeID, int(-penalty));
+                        emit TokenShift(vote.account, _disputeID, int(-penalty));
                         dispute.appealsRepartitioned[i].totalToRedistribute += penalty;
                     } else {
                         ++dispute.appealsRepartitioned[i].nbCoherent;
@@ -424,7 +422,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
             if (dispute.appealsRepartitioned[i].stage == RepartitionStage.Coherent) {
                 if (dispute.appealsRepartitioned[i].nbCoherent == 0) { // No one was coherent at this stage. Give the tokens to the governor.
                     jurors[governor].balance += dispute.appealsRepartitioned[i].totalToRedistribute;
-                    TokenShift(governor, _disputeID, int(dispute.appealsRepartitioned[i].totalToRedistribute));
+                    emit TokenShift(governor, _disputeID, int(dispute.appealsRepartitioned[i].totalToRedistribute));
                     dispute.appealsRepartitioned[i].stage = RepartitionStage.AtStake;
                 } else { // Otherwise, redistribute them.
                     uint toRedistribute = dispute.appealsRepartitioned[i].totalToRedistribute / dispute.appealsRepartitioned[i].nbCoherent; // Note that few fractions of tokens can be lost but due to the high amount of decimals we don't care.
@@ -437,7 +435,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
                         if (vote.ruling == winningChoice) {
                             juror = jurors[vote.account];
                             juror.balance += toRedistribute;
-                            TokenShift(vote.account, _disputeID, int(toRedistribute));
+                            emit TokenShift(vote.account, _disputeID, int(toRedistribute));
                         }
 
                         ++currentIterations;
@@ -748,7 +746,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      *  @param _target Transaction target.
      */
     function executeOrder(bytes32 _data, uint _value, address _target) public onlyGovernor {
-        _target.call.value(_value)(_data);
+        _target.call.value(_value)(_data); // solium-disable-line security/no-call-value
     }
 
     /** @dev Setter for rng.

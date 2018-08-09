@@ -12,6 +12,8 @@ import "minimetoken/contracts/TokenController.sol";
 import "../Kleros.sol";
 
 contract KlerosPOC is Kleros, TokenController {
+    /* Constructor */
+
     /** @dev Constructor for KlerosPOC passing all arguments to base Kleros contract.
      *  @param _pinakion The address of the pinakion contract.
      *  @param _rng The random number generator which will be used.
