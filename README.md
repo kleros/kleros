@@ -5,39 +5,50 @@
 # Kleros Smart Contracts
 
 ## Prerequisites
+
 Install [yarn](https://yarnpkg.com/lang/en/), [Truffle Suite](https://truffleframework.com/) and [Ganache](https://truffleframework.com/ganache)
 
-* `yarn add global truffle`
+- `yarn add global truffle`
 
 ## Get Started
-* `git clone https://github.com/kleros/kleros`
-* `cd kleros`
-* `yarn`
-* Make sure you have the MetaMask Chrome extension installed and are logged in.
+
+- `git clone https://github.com/kleros/kleros`
+- `cd kleros`
+- `yarn`
+- Make sure you have the MetaMask Chrome extension installed and are logged in.
 
 ### Migrate to local blockchain
+
 Ensure you have Ganache running.
-* `yarn migrate`
+
+- `yarn migrate`
 
 ### Deploy to Kovan testnet
-* `yarn deploy`
+
+- `yarn deploy`
 
 ### Running Tests
 
 Install dependencies using `yarn` package manager:
+
 ```
 yarn
 ```
+
 Compile the project using `Truffle` suite
+
 ```
 truffle compile
 ```
+
 Run tests
+
 ```
 truffle test
 ```
 
 ## Contributing
+
 Check out [Contributing](CONTRIBUTING.md)
 
 We follow [GitHub Flow](https://guides.github.com/introduction/flow/) in this repository.
