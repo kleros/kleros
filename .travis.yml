@@ -1,0 +1,14 @@
+language: node_js
+node_js:
+  - v9.4.0
+cache:
+  directories:
+    - node_modules
+  yarn: true
+install: yarn install --pure-lockfile
+script:
+  - yarn run lint
+  - yarn test
+  - yarn run build
+notifications:
+  slack: 'kleros:Ub8n81EgKJ3iRrMDyWyQIVJp'
