@@ -1,58 +1,33 @@
-# Kleros
+<p align="center">
+  <b style="font-size: 32px;">Kleros</b>
+</p>
 
-[![Join the chat at https://gitter.im/kleros/kleros](https://badges.gitter.im/kleros/kleros.svg)](https://gitter.im/kleros/kleros?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+<p align="center">
+  <a href="https://standardjs.com"><img src="https://img.shields.io/badge/code_style-standard-brightgreen.svg" alt="JavaScript Style Guide"></a>
+  <a href="https://travis-ci.org/kleros/kleros"><img src="https://travis-ci.org/kleros/kleros.svg?branch=master" alt="Build Status"></a>
+  <a href="https://david-dm.org/kleros/kleros"><img src="https://david-dm.org/kleros/kleros.svg" alt="Dependencies"></a>
+  <a href="https://david-dm.org/kleros/kleros?type=dev"><img src="https://david-dm.org/kleros/kleros/dev-status.svg" alt="Dev Dependencies"></a>
+  <a href="https://github.com/trufflesuite/truffle"><img src="https://img.shields.io/badge/tested%20with-truffle-red.svg" alt="Tested with Truffle"></a>
+  <a href="https://conventionalcommits.org"><img src="https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg" alt="Conventional Commits"></a>
+  <a href="http://commitizen.github.io/cz-cli/"><img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commitizen Friendly"></a>
+  <a href="https://github.com/prettier/prettier"><img src="https://img.shields.io/badge/styled_with-prettier-ff69b4.svg" alt="Styled with Prettier"></a>
+</p>
 
-# Kleros Smart Contracts
-
-## Prerequisites
-
-Install [yarn](https://yarnpkg.com/lang/en/), [Truffle Suite](https://truffleframework.com/) and [Ganache](https://truffleframework.com/ganache)
-
-- `yarn add global truffle`
+Kleros core smart contracts.
 
 ## Get Started
 
-- `git clone https://github.com/kleros/kleros`
-- `cd kleros`
-- `yarn`
-- Make sure you have the MetaMask Chrome extension installed and are logged in.
+1.  Clone this repo.
+2.  Run `yarn` to install dependencies and then `yarn run build` to compile the contracts.
 
-### Migrate to local blockchain
+## Other Scripts
 
-Ensure you have Ganache running.
-
-- `yarn migrate`
-
-### Deploy to Kovan testnet
-
-- `yarn deploy`
-
-### Running Tests
-
-Install dependencies using `yarn` package manager:
-
-```
-yarn
-```
-
-Compile the project using `Truffle` suite
-
-```
-truffle compile
-```
-
-Run tests
-
-```
-truffle test
-```
-
-## Contributing
-
-Check out [Contributing](CONTRIBUTING.md)
-
-We follow [GitHub Flow](https://guides.github.com/introduction/flow/) in this repository.
-
-Please see [smart contract guidelines](https://github.com/kleros/kleros/wiki/Guidelines-contracts).
-
-Feel free to ask for help on [slack](https://slack.kleros.io/).
+- `yarn run prettify` - Apply prettier to the entire project.
+- `yarn run lint:sol` - Lint the entire project's .sol files.
+- `yarn run lint:js` - Lint the entire project's .js files.
+- `yarn run lint:sol --fix` - Fix fixable linting errors in .sol files.
+- `yarn run lint:js --fix` - Fix fixable linting errors in .js files.
+- `yarn run lint` - Lint the entire project's .sol and .js files.
+- `yarn test` - Run the truffle tests.
+- `yarn run cz` - Run commitizen.
+- `yarn run build` - Compile contracts.
