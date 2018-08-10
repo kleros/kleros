@@ -57,6 +57,36 @@ contract ExposedKArySumTreeFactory is KArySumTreeFactory {
         return remove(_key, _treeIndex);
     }
 
+    /**
+     *  @dev Set a value of the tree.
+     *  @param _key The key of the tree.
+     *  @param _treeIndex The index of the value.
+     *  @param _value The new value.
+     */
+    function _set(bytes32 _key, uint _treeIndex, uint _value) public {
+        return set(_key, _treeIndex, _value);
+    }
+
+    /**
+     *  @dev Increase a value of the tree.
+     *  @param _key The key of the tree.
+     *  @param _treeIndex The index of the value.
+     *  @param _value The value to increase by.
+     */
+    function _increase(bytes32 _key, uint _treeIndex, uint _value) public {
+        return increase(_key, _treeIndex, _value);
+    }
+
+    /**
+     *  @dev Decrease a value of the tree.
+     *  @param _key The key of the tree.
+     *  @param _treeIndex The index of the value.
+     *  @param _value The value to decrease by.
+     */
+    function _decrease(bytes32 _key, uint _treeIndex, uint _value) public {
+        return decrease(_key, _treeIndex, _value);
+    }
+
     /* Public Views */
 
     /**
