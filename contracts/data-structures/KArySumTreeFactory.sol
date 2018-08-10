@@ -69,12 +69,7 @@ contract KArySumTreeFactory {
             tree.tree[treeIndex] = _value;
         }
 
-        // Update parents
-        uint parentIndex = treeIndex;
-        while (parentIndex != 0) {
-            parentIndex = (parentIndex - 1) / tree.K;
-            tree.tree[parentIndex] += _value;
-        }
+        updateParents(_key, treeIndex, true, _value);
     }
 
     /**
@@ -93,12 +88,7 @@ contract KArySumTreeFactory {
         tree.stack.length++;
         tree.stack[tree.stack.length - 1] = _treeIndex;
 
-        // Update parents
-        uint parentIndex = _treeIndex;
-        while (parentIndex != 0) {
-            parentIndex = (parentIndex - 1) / tree.K;
-            tree.tree[parentIndex] -= _value;
-        }
+        updateParents(_key, _treeIndex, false, _value);
     }
 
     /* Internal Views */
@@ -133,6 +123,25 @@ contract KArySumTreeFactory {
                 hasMore = true;
                 break;
             }
+        }
+    }
+
+    /* Private */
+
+    /**
+     *  @dev Update all the parents of a node.
+     *  @param _key The key of the tree to update.
+     *  @param _treeIndex The index of the node to start from.
+     *  @param _plusOrMinus Wether to add or substract.
+     *  @param _value The value to add or substract.
+     */
+    function updateParents(bytes32 _key, uint _treeIndex, bool _plusOrMinus, uint _value) private {
+        KArySumTree storage tree = kArySumTrees[_key];
+
+        uint parentIndex = _treeIndex;
+        while (parentIndex != 0) {
+            parentIndex = (parentIndex - 1) / tree.K;
+            tree.tree[parentIndex] = _plusOrMinus ? tree.tree[parentIndex] + _value : tree.tree[parentIndex] - _value;
         }
     }
 }
