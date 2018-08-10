@@ -100,6 +100,23 @@ contract('KArySumTreeFactory', () =>
       await checkTree(kArySumTreeFactory, tree.key)
     }
 
+    // Set, increase, and decrease values, and check trees
+    for (const tree of trees) {
+      const treeTree = (await kArySumTreeFactory._kArySumTrees(tree.key))[2]
+      const startIndex = treeTree.length - tree.values.length
+
+      tree.values[tree.values.indexOf(treeTree[startIndex].toNumber())] = tree.K
+      tree.values[tree.values.indexOf(treeTree[startIndex + 1].toNumber())] +=
+        tree.K
+      tree.values[tree.values.indexOf(treeTree[startIndex + 2].toNumber())] -=
+        tree.K
+      await kArySumTreeFactory._set(tree.key, startIndex, tree.K)
+      await kArySumTreeFactory._increase(tree.key, startIndex + 1, tree.K)
+      await kArySumTreeFactory._decrease(tree.key, startIndex + 2, tree.K)
+
+      await checkTree(kArySumTreeFactory, tree.key)
+    }
+
     // Test pagination query
     for (const tree of trees) {
       let startIndex = 0
