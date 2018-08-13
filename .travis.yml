@@ -11,4 +11,5 @@ script:
   - yarn test
   - yarn run build
 notifications:
-  slack: 'kleros:Ub8n81EgKJ3iRrMDyWyQIVJp'
+  kleros:
+    slack: 'kleros:Ub8n81EgKJ3iRrMDyWyQIVJp'
