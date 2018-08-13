@@ -31,3 +31,6 @@ Kleros core smart contracts.
 - `yarn test` - Run the truffle tests.
 - `yarn run cz` - Run commitizen.
 - `yarn run build` - Compile contracts.
+
+
+DUMMY CHANGE
