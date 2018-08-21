@@ -105,30 +105,6 @@ contract KArySumTreeFactory {
         updateParents(_key, _treeIndex, _plusOrMinus, _plusOrMinusValue);
     }
 
-    /**
-     *  @dev Increase a value of the tree.
-     *  @param _key The key of the tree.
-     *  @param _treeIndex The index of the value.
-     *  @param _value The value to increase by.
-     */
-    function increase(bytes32 _key, uint _treeIndex, uint _value) internal {
-        KArySumTree storage tree = kArySumTrees[_key];
-        tree.tree[_treeIndex] += _value;
-        updateParents(_key, _treeIndex, true, _value);
-    }
-
-    /**
-     *  @dev Decrease a value of the tree.
-     *  @param _key The key of the tree.
-     *  @param _treeIndex The index of the value.
-     *  @param _value The value to decrease by.
-     */
-    function decrease(bytes32 _key, uint _treeIndex, uint _value) internal {
-        KArySumTree storage tree = kArySumTrees[_key];
-        tree.tree[_treeIndex] -= _value;
-        updateParents(_key, _treeIndex, false, _value);
-    }
-
     /* Internal Views */
 
     /**
