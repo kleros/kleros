@@ -25,7 +25,7 @@ contract KArySumTreeFactory {
      *  @param _key The key of the new tree.
      *  @param _K The number of children each node in the tree should have.
      */
-    function createKArySumTree(bytes32 _key, uint _K) internal {
+    function createTree(bytes32 _key, uint _K) internal {
         kArySumTrees[_key].K = _K;
         kArySumTrees[_key].stack.length = 0;
         kArySumTrees[_key].tree.length = 0;
@@ -35,7 +35,7 @@ contract KArySumTreeFactory {
      *  @dev Delete a k-ary sum tree at the specified key.
      *  @param _key The key of the tree to delete.
      */
-    function deleteKArySumTree(bytes32 _key) internal {
+    function deleteTree(bytes32 _key) internal {
         kArySumTrees[_key].K = 0;
         kArySumTrees[_key].stack.length = 0;
         kArySumTrees[_key].tree.length = 0;
@@ -92,7 +92,7 @@ contract KArySumTreeFactory {
     }
 
     /**
-     *  @dev Set a value of the tree.
+     *  @dev Set a value of a tree.
      *  @param _key The key of the tree.
      *  @param _treeIndex The index of the value.
      *  @param _value The new value.

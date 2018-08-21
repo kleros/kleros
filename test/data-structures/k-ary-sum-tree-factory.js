@@ -56,7 +56,7 @@ contract('KArySumTreeFactory', () =>
       }
     ]
     for (const tree of trees)
-      await kArySumTreeFactory._createKArySumTree(tree.key, tree.K)
+      await kArySumTreeFactory._createTree(tree.key, tree.K)
 
     // Check for proper initialization of trees
     for (const tree of trees)
@@ -67,7 +67,7 @@ contract('KArySumTreeFactory', () =>
       ])
 
     // Delete the middle tree
-    await kArySumTreeFactory._deleteKArySumTree(trees[1].key)
+    await kArySumTreeFactory._deleteTree(trees[1].key)
 
     // Check that it was deleted properly and remove it from the test array
     expect(await kArySumTreeFactory._kArySumTrees(trees[1].key)).to.deep.equal([

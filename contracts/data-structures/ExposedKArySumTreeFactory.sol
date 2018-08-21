@@ -26,16 +26,16 @@ contract ExposedKArySumTreeFactory is KArySumTreeFactory {
      *  @param _key The key of the new tree.
      *  @param _K The number of children each node in the tree should have.
      */
-    function _createKArySumTree(bytes32 _key, uint _K) public {
-        return createKArySumTree(_key, _K);
+    function _createTree(bytes32 _key, uint _K) public {
+        return createTree(_key, _K);
     }
 
     /**
      *  @dev Delete a k-ary sum tree at the specified key.
      *  @param _key The key of the tree to delete.
      */
-    function _deleteKArySumTree(bytes32 _key) public {
-        return deleteKArySumTree(_key);
+    function _deleteTree(bytes32 _key) public {
+        return deleteTree(_key);
     }
 
     /**
@@ -58,7 +58,7 @@ contract ExposedKArySumTreeFactory is KArySumTreeFactory {
     }
 
     /**
-     *  @dev Set a value of the tree.
+     *  @dev Set a value of a tree.
      *  @param _key The key of the tree.
      *  @param _treeIndex The index of the value.
      *  @param _value The new value.
