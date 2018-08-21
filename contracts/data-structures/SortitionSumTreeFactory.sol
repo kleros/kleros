@@ -5,7 +5,7 @@ import "./KArySumTreeFactory.sol";
 /**
  *  @title SortitionSumTreeFactory
  *  @author Enrique Piqueras - <epiquerass@gmail.com>
- *  @notice A factory of trees that keep track of staked values for sortition.
+ *  @dev A factory of trees that keep track of staked values for sortition.
  */
 contract SortitionSumTreeFactory is KArySumTreeFactory {
     /* Structs */

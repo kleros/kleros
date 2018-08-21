@@ -10,13 +10,13 @@ import "./KlerosPOC.sol";
 /**
  *  @title KlerosPOCCourt
  *  @author Enrique Piqueras - <epiquerass@gmail.com>
- *  @notice A `KlerosPOC` Court in a tree of `ArbitratorCourt`s.
+ *  @dev A `KlerosPOC` Court in a tree of `ArbitratorCourt`s.
  */
 contract KlerosPOCCourt is KlerosCourt, KlerosPOC {
     /* Constructor */
 
     /**
-     *  @notice Constructs the `KlerosPOCCourt`, forwarding all required parameters to the base contracts.
+     *  @dev Constructs the `KlerosPOCCourt`, forwarding all required parameters to the base contracts.
      *  @param _parentName The name of the `parent`.
      *  @param _parentAddress The address of the `parent`.
      *  @param _pinakion The address of the pinakion contract which will be used.

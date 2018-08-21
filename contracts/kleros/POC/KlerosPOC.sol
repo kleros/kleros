@@ -27,7 +27,7 @@ contract KlerosPOC is Kleros, TokenController {
     // *    for TokenController   * //
     // **************************** //
 
-    /** @notice Called when `_owner` sends ether to the Pinakion contract
+    /** @dev Called when `_owner` sends ether to the Pinakion contract
      *  @param _owner The address that sent the ether to create tokens
      *  @return True if the ether is accepted, false if it throws
      */
@@ -35,7 +35,7 @@ contract KlerosPOC is Kleros, TokenController {
         return false; // don't allow any ether transfers to Pinakion contract
     }
 
-    /** @notice Notifies the controller about a token transfer allowing the controller to react if desired
+    /** @dev Notifies the controller about a token transfer allowing the controller to react if desired
      *  @param _from The origin of the transfer
      *  @param _to The destination of the transfer
      *  @param _amount The amount of the transfer
@@ -45,7 +45,7 @@ contract KlerosPOC is Kleros, TokenController {
         return true; // allow all transfers
     }
 
-    /** @notice Notifies the controller about an approval allowing the controller to react if desired
+    /** @dev Notifies the controller about an approval allowing the controller to react if desired
      *  @param _owner The address that calls `approve()`
      *  @param _spender The spender in the `approve()` call
      *  @param _amount The amount in the `approve()` call
