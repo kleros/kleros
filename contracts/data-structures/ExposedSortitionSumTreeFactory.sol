@@ -1,5 +1,6 @@
 pragma solidity ^0.4.24;
 
+import "./ExposedKArySumTreeFactory.sol";
 import "./SortitionSumTreeFactory.sol";
 
 /**
@@ -7,7 +8,7 @@ import "./SortitionSumTreeFactory.sol";
  *  @author Enrique Piqueras - <epiquerass@gmail.com>
  *  @dev Exposed version of SortitionSumTreeFactory for testing.
  */
-contract ExposedSortitionSumTreeFactory is SortitionSumTreeFactory {
+contract ExposedSortitionSumTreeFactory is ExposedKArySumTreeFactory, SortitionSumTreeFactory {
     /* Public */
 
     /**

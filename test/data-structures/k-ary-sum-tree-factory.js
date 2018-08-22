@@ -133,11 +133,13 @@ contract('KArySumTreeFactory', () =>
       }
 
       // Check result
-      expect(startIndex.toNumber()).to.equal(
-        (await kArySumTreeFactory._kArySumTrees(tree.key))[2].length -
-          tree.values.length
+      expect(startIndex).to.deep.equal(
+        web3.toBigNumber(
+          (await kArySumTreeFactory._kArySumTrees(tree.key))[2].length -
+            tree.values.length
+        )
       )
-      expect(values.map(v => v.toNumber())).to.deep.equal(tree.values)
+      expect(values).to.deep.equal(tree.values.map(v => web3.toBigNumber(v)))
       expect(hasMore).to.equal(false)
     }
   })

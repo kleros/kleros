@@ -58,7 +58,7 @@ contract KArySumTreeFactory {
             tree.tree[treeIndex] = _value;
 
             // Potentially append a new node and make the parent a sum node
-            if ((treeIndex - 1) % tree.K == 0) { // Is first child
+            if (treeIndex != 0 && (treeIndex - 1) % tree.K == 0) { // Is first child
                 tree.tree.length++;
                 tree.tree[treeIndex + 1] = tree.tree[treeIndex / tree.K];
             }
