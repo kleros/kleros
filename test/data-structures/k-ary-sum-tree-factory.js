@@ -56,7 +56,7 @@ contract('KArySumTreeFactory', () =>
       }
     ]
     for (const tree of trees)
-      await kArySumTreeFactory._createKArySumTree(tree.key, tree.K)
+      await kArySumTreeFactory._createTree(tree.key, tree.K)
 
     // Check for proper initialization of trees
     for (const tree of trees)
@@ -67,7 +67,7 @@ contract('KArySumTreeFactory', () =>
       ])
 
     // Delete the middle tree
-    await kArySumTreeFactory._deleteKArySumTree(trees[1].key)
+    await kArySumTreeFactory._deleteTree(trees[1].key)
 
     // Check that it was deleted properly and remove it from the test array
     expect(await kArySumTreeFactory._kArySumTrees(trees[1].key)).to.deep.equal([
@@ -100,19 +100,19 @@ contract('KArySumTreeFactory', () =>
       await checkTree(kArySumTreeFactory, tree.key)
     }
 
-    // Set, increase, and decrease values, and check trees
+    // Set values and check trees
     for (const tree of trees) {
       const treeTree = (await kArySumTreeFactory._kArySumTrees(tree.key))[2]
       const startIndex = treeTree.length - tree.values.length
 
       tree.values[tree.values.indexOf(treeTree[startIndex].toNumber())] = tree.K
-      tree.values[tree.values.indexOf(treeTree[startIndex + 1].toNumber())] +=
+      tree.values[tree.values.indexOf(treeTree[startIndex + 1].toNumber())] =
         tree.K
-      tree.values[tree.values.indexOf(treeTree[startIndex + 2].toNumber())] -=
+      tree.values[tree.values.indexOf(treeTree[startIndex + 2].toNumber())] =
         tree.K
       await kArySumTreeFactory._set(tree.key, startIndex, tree.K)
-      await kArySumTreeFactory._increase(tree.key, startIndex + 1, tree.K)
-      await kArySumTreeFactory._decrease(tree.key, startIndex + 2, tree.K)
+      await kArySumTreeFactory._set(tree.key, startIndex + 1, tree.K)
+      await kArySumTreeFactory._set(tree.key, startIndex + 2, tree.K)
 
       await checkTree(kArySumTreeFactory, tree.key)
     }
@@ -133,11 +133,13 @@ contract('KArySumTreeFactory', () =>
       }
 
       // Check result
-      expect(startIndex.toNumber()).to.equal(
-        (await kArySumTreeFactory._kArySumTrees(tree.key))[2].length -
-          tree.values.length
+      expect(startIndex).to.deep.equal(
+        web3.toBigNumber(
+          (await kArySumTreeFactory._kArySumTrees(tree.key))[2].length -
+            tree.values.length
+        )
       )
-      expect(values.map(v => v.toNumber())).to.deep.equal(tree.values)
+      expect(values).to.deep.equal(tree.values.map(v => web3.toBigNumber(v)))
       expect(hasMore).to.equal(false)
     }
   })

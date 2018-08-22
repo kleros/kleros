@@ -19,7 +19,7 @@ contract KlerosCourt is Kleros, ArbitratorCourt {
 
     /* Public */
 
-    /** @notice Appeals a ruling to the parent court.
+    /** @dev Appeals a ruling to the parent court.
      *  @param _disputeID The ID of the dispute to be appealed.
      *  @param _extraData Part of the standard but not used by this contract.
      */
@@ -44,7 +44,7 @@ contract KlerosCourt is Kleros, ArbitratorCourt {
 
     /* Public Views */
 
-    /** @notice Computes the cost of appealing to the parent court. It is recommended not to increase it often, as it can be highly time and gas consuming for the arbitrated contracts to cope with fee augmentation.
+    /** @dev Computes the cost of appealing to the parent court. It is recommended not to increase it often, as it can be highly time and gas consuming for the arbitrated contracts to cope with fee augmentation.
      *  @param _disputeID The ID of the dispute to be appealed.
      *  @param _extraData Part of the standard but not used by this contract.
      *  @return _fee The appeal cost.

@@ -26,16 +26,16 @@ contract ExposedKArySumTreeFactory is KArySumTreeFactory {
      *  @param _key The key of the new tree.
      *  @param _K The number of children each node in the tree should have.
      */
-    function _createKArySumTree(bytes32 _key, uint _K) public {
-        return createKArySumTree(_key, _K);
+    function _createTree(bytes32 _key, uint _K) public {
+        return createTree(_key, _K);
     }
 
     /**
      *  @dev Delete a k-ary sum tree at the specified key.
      *  @param _key The key of the tree to delete.
      */
-    function _deleteKArySumTree(bytes32 _key) public {
-        return deleteKArySumTree(_key);
+    function _deleteTree(bytes32 _key) public {
+        return deleteTree(_key);
     }
 
     /**
@@ -58,33 +58,13 @@ contract ExposedKArySumTreeFactory is KArySumTreeFactory {
     }
 
     /**
-     *  @dev Set a value of the tree.
+     *  @dev Set a value of a tree.
      *  @param _key The key of the tree.
      *  @param _treeIndex The index of the value.
      *  @param _value The new value.
      */
     function _set(bytes32 _key, uint _treeIndex, uint _value) public {
         return set(_key, _treeIndex, _value);
-    }
-
-    /**
-     *  @dev Increase a value of the tree.
-     *  @param _key The key of the tree.
-     *  @param _treeIndex The index of the value.
-     *  @param _value The value to increase by.
-     */
-    function _increase(bytes32 _key, uint _treeIndex, uint _value) public {
-        return increase(_key, _treeIndex, _value);
-    }
-
-    /**
-     *  @dev Decrease a value of the tree.
-     *  @param _key The key of the tree.
-     *  @param _treeIndex The index of the value.
-     *  @param _value The value to decrease by.
-     */
-    function _decrease(bytes32 _key, uint _treeIndex, uint _value) public {
-        return decrease(_key, _treeIndex, _value);
     }
 
     /* Public Views */
