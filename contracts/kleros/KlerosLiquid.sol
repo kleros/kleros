@@ -1,6 +1,7 @@
 pragma solidity ^0.4.24;
 
 import "kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
+import "kleros-interaction/contracts/standard/arbitration/Arbitrable.sol";
 
 import "../data-structures/SortitionSumTreeFactory.sol";
 
@@ -29,7 +30,35 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
 
     /* Structs */
 
-
+    // General
+    struct Court {
+        Court parent; // The parent court
+        Court[] children; // List of child courts
+        uint minStake; // Minimum PNK needed to stake in the court
+        uint alpha; // Percentage of PNK that is lost when incoherent (alpha / 10000)
+        bool hidden; // Wether to use commit and reveal or not
+        uint jurorFee; // Arbitration fee paid to each juror
+        // The appeal after the one that reaches this number of jurors will go to the parent court if any, otherwise, no more appeals are possible
+        uint jurorsForJump;
+        uint[4] timesPerPeriod; // The time allotted to each dispute period in the form `timesPerPeriod[period]`
+    }
+    // Dispute
+    struct Vote {
+        address _address; // The address of the voter
+        uint choice; // The choice of the voter
+    }
+    struct VoteCounter {
+        uint winningChoice; // The choice with the most votes
+        uint[] counts; // The sum of votes for each choice in the form `counts[choice]`
+    }
+    struct Dispute {
+        Arbitrable arbitrated; // The arbitrated arbitrable contract
+        uint choices; // The number of choices jurors have when voting
+        Period period; // The current period of the dispute
+        Vote[][] votes; // The votes in the form `votes[appeal][voteID]`
+        VoteCounter[] voteCounters; // The vote counters in the form `voteCounters[appeal]`
+        uint[] appealRepartitions; // The last repartitioned voteIDs in the form `appealRepartitions[appeal]`
+    }
 
     /* Events */
 
