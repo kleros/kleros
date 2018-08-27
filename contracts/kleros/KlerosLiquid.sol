@@ -63,7 +63,12 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
 
     /* Events */
 
-
+    /** @dev To be raised when a voter is drawn.
+     *  @param disputeID The ID of the dispute.
+     *  @param arbitrable The arbitrable contract that is ruled by the dispute.
+     *  @param _address The drawn address.
+     */
+    event Draw(uint indexed disputeID, Arbitrable indexed arbitrable, address indexed _address);
 
     /* Storage */
 
