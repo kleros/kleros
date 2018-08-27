@@ -1,7 +1,6 @@
 pragma solidity ^0.4.15;
 
-import "kleros-interaction/contracts/standard/arbitration/ArbitratorCourt.sol";
-
+import "./ArbitratorCourt.sol";
 import "./Kleros.sol";
 
 contract KlerosCourt is Kleros, ArbitratorCourt {
