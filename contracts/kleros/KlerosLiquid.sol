@@ -37,6 +37,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
     struct Court {
         Court parent; // The parent court
         Court[] children; // List of child courts
+        uint[] vacantChildrenIndexes; // Stack of vacant slots in the children list
         bool hidden; // Wether to use commit and reveal or not
         uint minStake; // Minimum PNK needed to stake in the court
         uint alpha; // Percentage of PNK that is lost when incoherent (alpha / 10000)
@@ -130,10 +131,11 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
      */
     modifier onlyDuringPhase(Phase _phase) {require(phase == _phase, "Incorrect phase."); _;}
 
-    /** @dev Requires a specific period.
+    /** @dev Requires a specific period in a dispute.
+     *  @param _disputeID The ID of the dispute.
      *  @param _period The required period.
      */
-    modifier onlyDuringPeriod(Period _period) {require(period == _period, "Incorrect period."); _;}
+    modifier onlyDuringPeriod(uint _disputeID, Period _period) {require(disputes[_disputeID].period == _period, "Incorrect period."); _;}
 
     /** @dev Requires that the sender is the governor. */
     modifier onlyByGovernor() {require(governor == msg.sender, "Can only be called by the governor."); _;}
@@ -156,13 +158,9 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         lastPhaseChange = block.timestamp; // solium-disable-line security/no-block-members
     }
 
-    /* Fallback */
-
-
-
     /* External */
 
-
+    
 
     /* External Views */
 
