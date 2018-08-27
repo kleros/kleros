@@ -35,8 +35,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
 
     // General
     struct Court {
-        Court parent; // The parent court
-        Court[] children; // List of child courts
+        uint parent; // The parent court
+        uint[] children; // List of child courts
         uint[] vacantChildrenIndexes; // Stack of vacant slots in the children list
         bool hidden; // Wether to use commit and reveal or not
         uint minStake; // Minimum PNK needed to stake in the court
