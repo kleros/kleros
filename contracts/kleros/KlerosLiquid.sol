@@ -55,6 +55,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         Arbitrable arbitrated; // The arbitrated arbitrable contract
         uint choices; // The number of choices jurors have when voting
         Period period; // The current period of the dispute
+        uint lastPeriodChange; // The last time the period was changed
         Vote[][] votes; // The votes in the form `votes[appeal][voteID]`
         VoteCounter[] voteCounters; // The vote counters in the form `voteCounters[appeal]`
         uint[] totalJurorFees; // The total juror fees paid in the form `totalJurorFees[appeal]`
