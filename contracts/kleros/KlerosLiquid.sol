@@ -160,7 +160,40 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
 
     /* External */
 
-    
+    /** @dev Changes the `governor` storage variable.
+     *  @param _governor The new value for the `governor` storage variable.
+     */
+    function changeGovernor(address _governor) external onlyByGovernor {
+        governor = _governor;
+    }
+
+    /** @dev Changes the `pinakion` storage variable.
+     *  @param _pinakion The new value for the `pinakion` storage variable.
+     */
+    function changePinakion(Pinakion _pinakion) external onlyByGovernor {
+        pinakion = _pinakion;
+    }
+
+    /** @dev Changes the `_RNG` storage variable.
+     *  @param __RNG The new value for the `_RNG` storage variable.
+     */
+    function change_RNG(RNG __RNG) external onlyByGovernor {
+        _RNG = __RNG;
+    }
+
+    /** @dev Changes the `minStakingTime` storage variable.
+     *  @param _minStakingTime The new value for the `minStakingTime` storage variable.
+     */
+    function changeMinStakingTime(uint _minStakingTime) external onlyByGovernor {
+        minStakingTime = _minStakingTime;
+    }
+
+    /** @dev Changes the `maxDrawingTime` storage variable.
+     *  @param _maxDrawingTime The new value for the `maxDrawingTime` storage variable.
+     */
+    function changeMaxDrawingTime(uint _maxDrawingTime) external onlyByGovernor {
+        maxDrawingTime = _maxDrawingTime;
+    }
 
     /* External Views */
 
