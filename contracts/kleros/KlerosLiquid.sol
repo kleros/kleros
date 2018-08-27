@@ -63,12 +63,36 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
 
     /* Events */
 
-    /** @dev To be raised when a voter is drawn.
+    /** @dev Emitted when we pass to a new phase.
+     *  @param phase The new phase.
+     */
+    event NewPhase(uint phase);
+
+    /** @dev Emitted when a dispute passes to a new period.
+     *  @param period The new period.
+     */
+    event NewPeriod(uint indexed disputeID, uint period);
+
+    /** @dev Emitted when a voter is drawn.
      *  @param disputeID The ID of the dispute.
      *  @param arbitrable The arbitrable contract that is ruled by the dispute.
      *  @param _address The drawn address.
      */
     event Draw(uint indexed disputeID, Arbitrable indexed arbitrable, address indexed _address);
+
+    /** @dev Emitted when a voter wins or loses tokens from a dispute.
+     *  @param disputeID The ID of the dispute.
+     *  @param _address The voter affected.
+     *  @param amount The amount won or lost.
+     */
+    event TokenShift(uint indexed disputeID, address indexed _address, int amount);
+
+    /** @dev Emitted when a voter wins ETH from a dispute.
+     *  @param disputeID The ID of the dispute.
+     *  @param _address The voter affected.
+     *  @param amount The amount won.
+     */
+    event ArbitrationReward(uint indexed disputeID, address indexed _address, uint amount);
 
     /* Storage */
 
