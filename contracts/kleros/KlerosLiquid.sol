@@ -148,14 +148,50 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
      *  @param __RNG The address of the RNG contract.
      *  @param _minStakingTime The minimum time that the staking phase should last.
      *  @param _maxDrawingTime The maximum time that the drawing phase should last.
+     *  @param _hidden The `hidden` property value of the general court.
+     *  @param _minStake The `minStake` property value of the general court.
+     *  @param _alpha The `alpha` property value of the general court.
+     *  @param _jurorFee The `jurorFee` property value of the general court.
+     *  @param _minJurors The `minJurors` property value of the general court.
+     *  @param _jurorsForJump The `jurorsForJump` property value of the general court.
+     *  @param _timesPerPeriod The `timesPerPeriod` property value of the general court.
+     *  @param _sortitionSumTreeK The number of children per node of the general court's sortition sum tree.
      */
-    constructor(address _governor, Pinakion _pinakion, RNG __RNG, uint _minStakingTime, uint _maxDrawingTime) public {
+    constructor(
+        address _governor,
+        Pinakion _pinakion,
+        RNG __RNG,
+        uint _minStakingTime,
+        uint _maxDrawingTime,
+        bool _hidden,
+        uint _minStake,
+        uint _alpha,
+        uint _jurorFee,
+        uint _minJurors,
+        uint _jurorsForJump,
+        uint[4] _timesPerPeriod,
+        uint _sortitionSumTreeK
+    ) public {
+        // Initialize contract
         governor = _governor;
         pinakion = _pinakion;
         _RNG = __RNG;
         minStakingTime = _minStakingTime;
         maxDrawingTime = _maxDrawingTime;
         lastPhaseChange = block.timestamp; // solium-disable-line security/no-block-members
+
+        // Create the general court
+        courts.push(new Court({
+            hidden: _hidden,
+            minStake: _minStake,
+            alpha: _alpha,
+            jurorFee: _jurorFee,
+            minJurors: _minJurors,
+            jurorsForJump: _jurorsForJump,
+            timesPerPeriod: _timesPerPeriod,
+            sortitionSumTreeKey: bytes32(0)
+        }));
+        createTree(bytes32(0), _sortitionSumTreeK);
     }
 
     /* External */
@@ -193,6 +229,50 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
      */
     function changeMaxDrawingTime(uint _maxDrawingTime) external onlyByGovernor {
         maxDrawingTime = _maxDrawingTime;
+    }
+
+    /** @dev Creates a subcourt under a specified parent court.
+     *  @param _parent The `parent` property value of the subcourt.
+     *  @param _hidden The `hidden` property value of the subcourt.
+     *  @param _minStake The `minStake` property value of the subcourt.
+     *  @param _alpha The `alpha` property value of the subcourt.
+     *  @param _jurorFee The `jurorFee` property value of the subcourt.
+     *  @param _minJurors The `minJurors` property value of the subcourt.
+     *  @param _jurorsForJump The `jurorsForJump` property value of the subcourt.
+     *  @param _timesPerPeriod The `timesPerPeriod` property value of the subcourt.
+     *  @param _sortitionSumTreeK The number of children per node of the subcourt's sortition sum tree.
+     */
+    function createSubcourt(
+        uint _parent,
+        bool _hidden,
+        uint _minStake,
+        uint _alpha,
+        uint _jurorFee,
+        uint _minJurors,
+        uint _jurorsForJump,
+        uint[4] _timesPerPeriod,
+        uint _sortitionSumTreeK
+    ) external onlyByGovernor {
+        // Create the subcourt
+        uint _courtID = courts.push(new Court({
+            parent: _parent,
+            hidden: _hidden,
+            minStake: _minStake,
+            alpha: _alpha,
+            jurorFee: _jurorFee,
+            minJurors: _minJurors,
+            jurorsForJump: _jurorsForJump,
+            timesPerPeriod: _timesPerPeriod,
+            sortitionSumTreeKey: bytes32(courts.length)
+        })) - 1;
+        createTree(bytes32(_courtID), _sortitionSumTreeK);
+
+        // Update the parent
+        if (courts[_parent].vacantChildrenIndexes.length) {
+            uint _vacantIndex = courts[_parent].vacantChildrenIndexes[courts[_parent].vacantChildrenIndexes.length - 1];
+            courts[_parent].vacantChildrenIndexes.length--;
+            courts[_parent].children[_vacantIndex] = _courtID;
+        } else courts[_parent].children.push(_courtID);
     }
 
     /* External Views */
