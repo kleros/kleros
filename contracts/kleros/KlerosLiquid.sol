@@ -34,9 +34,9 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
     struct Court {
         Court parent; // The parent court
         Court[] children; // List of child courts
+        bool hidden; // Wether to use commit and reveal or not
         uint minStake; // Minimum PNK needed to stake in the court
         uint alpha; // Percentage of PNK that is lost when incoherent (alpha / 10000)
-        bool hidden; // Wether to use commit and reveal or not
         uint jurorFee; // Arbitration fee paid to each juror
         // The appeal after the one that reaches this number of jurors will go to the parent court if any, otherwise, no more appeals are possible
         uint jurorsForJump;
@@ -57,6 +57,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         Period period; // The current period of the dispute
         Vote[][] votes; // The votes in the form `votes[appeal][voteID]`
         VoteCounter[] voteCounters; // The vote counters in the form `voteCounters[appeal]`
+        uint[] totalJurorFees; // The total juror fees paid in the form `totalJurorFees[appeal]`
         uint[] appealRepartitions; // The last repartitioned voteIDs in the form `appealRepartitions[appeal]`
     }
 
