@@ -2,6 +2,8 @@ pragma solidity ^0.4.24;
 
 import "kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
 import "kleros-interaction/contracts/standard/arbitration/Arbitrable.sol";
+import "kleros-interaction/contracts/standard/rng/RNG.sol";
+import { MiniMeTokenERC20 as Pinakion } from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
 
 import "../data-structures/SortitionSumTreeFactory.sol";
 
@@ -19,6 +21,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
       generating, // Waiting on random number. Pass as soon as it is ready
       drawing // Jurors are drawn. Pass after all open disputes are drawn or `maxDrawingTime` passes
     }
+
     // Dispute
     enum Period {
       evidence, // Evidence can be submitted. This is also when drawing takes place
@@ -38,10 +41,13 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         uint minStake; // Minimum PNK needed to stake in the court
         uint alpha; // Percentage of PNK that is lost when incoherent (alpha / 10000)
         uint jurorFee; // Arbitration fee paid to each juror
+        uint minJurors; // The minimum number of jurors required per dispute
         // The appeal after the one that reaches this number of jurors will go to the parent court if any, otherwise, no more appeals are possible
         uint jurorsForJump;
         uint[4] timesPerPeriod; // The time allotted to each dispute period in the form `timesPerPeriod[period]`
+        bytes32 sortitionSumTreeKey; // The key of the sortition sum tree
     }
+
     // Dispute
     struct Vote {
         address _address; // The address of the voter
@@ -97,7 +103,23 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
 
     /* Storage */
 
+    // General Constants
+    uint public constant NON_PAYABLE_AMOUNT = (2 ** 256 - 2) / 2;
+    uint public constant ALPHA_DIVISOR = 1e4;
+    // General Contracts
+    address public governor;
+    Pinakion public pinakion;
+    RNG public _RNG;
+    // General Dynamic
+    Phase public phase;
+    uint public lastPhaseChange;
+    uint public RNBlock;
+    uint public RN;
+    // General Storage
+    Court[] public courts;
 
+    // Dispute
+    Dispute[] public disputes;
 
     /* Modifiers */
 
