@@ -254,7 +254,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         uint _sortitionSumTreeK
     ) external onlyByGovernor {
         // Create the subcourt
-        uint _courtID = courts.push(new Court({
+        uint _subcourtID = courts.push(new Court({
             parent: _parent,
             hidden: _hidden,
             minStake: _minStake,
@@ -265,14 +265,30 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
             timesPerPeriod: _timesPerPeriod,
             sortitionSumTreeKey: bytes32(courts.length)
         })) - 1;
-        createTree(bytes32(_courtID), _sortitionSumTreeK);
+        createTree(bytes32(_subcourtID), _sortitionSumTreeK);
 
         // Update the parent
         if (courts[_parent].vacantChildrenIndexes.length) {
             uint _vacantIndex = courts[_parent].vacantChildrenIndexes[courts[_parent].vacantChildrenIndexes.length - 1];
             courts[_parent].vacantChildrenIndexes.length--;
-            courts[_parent].children[_vacantIndex] = _courtID;
-        } else courts[_parent].children.push(_courtID);
+            courts[_parent].children[_vacantIndex] = _subcourtID;
+        } else courts[_parent].children.push(_subcourtID);
+    }
+
+    /** @dev Move a subcourt to a new parent.
+     *  @param _subcourtID The ID of the subcourt.
+     *  @param _parent The new `parent` property value of the subcourt.
+     */
+    function moveSubcourt(uint _subcourtID, uint _parent) external onlyByGovernor {
+        // Update the old parent's children, if any
+        for (uint i = 0; i < courts[courts[_subcourtID].parent].children.length; i++)
+            if (courts[courts[_subcourtID].parent].children[i] == _subcourtID) {
+                delete courts[courts[_subcourtID].parent].children[i];
+                courts[courts[_subcourtID].parent].vacantChildrenIndexes.push(i);
+            }
+        
+        // Set the new parent
+        courts[_subcourtID].parent = _parent;
     }
 
     /* External Views */
