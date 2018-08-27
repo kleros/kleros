@@ -1,7 +1,6 @@
 pragma solidity ^0.4.15;
 
-import "kleros-interaction/contracts/standard/arbitration/ArbitratorCourt.sol";
-
+import "./ArbitratorCourt.sol";
 import "./Kleros.sol";
 
 contract KlerosCourt is Kleros, ArbitratorCourt {
@@ -15,7 +14,7 @@ contract KlerosCourt is Kleros, ArbitratorCourt {
      *  @param _timePerPeriod The minimal time for each period.
      *  @param _governor Address of the governor contract.
      */
-    constructor(string _parentName, Arbitrator _parentAddress, Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod, address _governor) Kleros(_pinakion, _rng, _timePerPeriod, _governor) ArbitratorCourt(1, _parentName, _parentAddress)  public {}
+    constructor(string _parentName, Arbitrator _parentAddress, Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod, address _governor) Kleros(_pinakion, _rng, _timePerPeriod, _governor) ArbitratorCourt(_parentName, _parentAddress)  public {}
 
     /* Public */
 
