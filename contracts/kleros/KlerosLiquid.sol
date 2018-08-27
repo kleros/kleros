@@ -123,7 +123,18 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
 
     /* Modifiers */
 
+    /** @dev Requires a specific phase.
+     *  @param _phase The required phase.
+     */
+    modifier onlyDuringPhase(Phase _phase) {require(phase == _phase, "Incorrect phase."); _;}
 
+    /** @dev Requires a specific period.
+     *  @param _period The required period.
+     */
+    modifier onlyDuringPeriod(Period _period) {require(period == _period, "Incorrect period."); _;}
+
+    /** @dev Requires that the sender is the governor. */
+    modifier onlyByGovernor() {require(governor == msg.sender, "Can only be called by the governor."); _;}
 
     /* Constructor */
 
