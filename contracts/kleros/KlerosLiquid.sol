@@ -115,6 +115,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
     uint public lastPhaseChange;
     uint public RNBlock;
     uint public RN;
+    uint public minStakingTime;
+    uint public maxDrawingTime;
     // General Storage
     Court[] public courts;
 
@@ -138,7 +140,21 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
 
     /* Constructor */
 
-
+    /** @dev Constructs the KlerosLiquid contract.
+     *  @param _governor The governor's address.
+     *  @param _pinakion The address of the token contract.
+     *  @param __RNG The address of the RNG contract.
+     *  @param _minStakingTime The minimum time that the staking phase should last.
+     *  @param _maxDrawingTime The maximum time that the drawing phase should last.
+     */
+    constructor(address _governor, Pinakion _pinakion, RNG __RNG, uint _minStakingTime, uint _maxDrawingTime) public {
+        governor = _governor;
+        pinakion = _pinakion;
+        _RNG = __RNG;
+        minStakingTime = _minStakingTime;
+        maxDrawingTime = _maxDrawingTime;
+        lastPhaseChange = block.timestamp; // solium-disable-line security/no-block-members
+    }
 
     /* Fallback */
 
