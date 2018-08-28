@@ -381,13 +381,23 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
     function passPeriod(uint _disputeID) external {
         Dispute storage dispute = disputes[_disputeID];
         if (dispute.period == Period.evidence) {
-
+            // solium-disable-next-line security/no-block-members
+            require(block.timestamp - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[dispute.period], "The evidence period time has not passed yet.");
         } else if (dispute.period == Period.commit) {
-            
+            require(
+                // solium-disable-next-line security/no-block-members
+                block.timestamp - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[dispute.period] || dispute.appealCommits[dispute.appealCommits.length - 1] == dispute.votes[dispute.votes.length - 1].length,
+                "The commit period time has not passed yet and/or not every juror has committed yet."
+            );
         } else if (dispute.period == Period.vote) {
-            
+            require(
+                // solium-disable-next-line security/no-block-members
+                block.timestamp - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[dispute.period] || dispute.appealVotes[dispute.appealVotes.length - 1] == dispute.votes[dispute.votes.length - 1].length,
+                "The vote period time has not passed yet and/or not every juror has voted yet."
+            );
         } else if (dispute.period == Period.appeal) {
-            
+            // solium-disable-next-line security/no-block-members
+            require(block.timestamp - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[dispute.period], "The appeal period time has not passed yet.");
         } else if (dispute.period == Period.execution) {
             
         }
