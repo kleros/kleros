@@ -359,7 +359,30 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
 
     /* Public */
 
-
+    /** @dev Creates a dispute. Must be called by the arbitrable contract.
+     *  @param _subcourtID The ID of the subcourt to create the dispute in.
+     *  @param _choices Number of choices to choose from in the dispute to be created.
+     *  @param _extraData Additional info about the dispute to be created.
+     *  @return The ID of the created dispute.
+     */
+    function createDispute(
+        uint _subcourtID,
+        uint _choices,
+        bytes _extraData
+    ) public payable requireArbitrationFee(_extraData) returns(uint disputeID)  {
+        disputes.push(Dispute({
+            subcourtID: _subcourtID,
+            arbitrated: Arbitrable(msg.sender),
+            choices: _choices,
+            period: Period.evidence,
+            // solium-disable-next-line security/no-block-members
+            lastPeriodChange: block.timestamp,
+            votes: new Vote[][](0),
+            voteCounters: new VoteCounter[](0),
+            totalJurorFees: new uint[](0),
+            appealRepartitions: new uint[](0)
+        }));
+    }
 
     /* Public Views */
 
@@ -393,7 +416,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
     function disputeStatus(uint _disputeID) public view returns(DisputeStatus status) {
         Dispute storage dispute = disputes[_disputeID];
         if (dispute.period < Period.appeal) status = DisputeStatus.Waiting;
-        else if (dispute.period < Period.execute) status = DisputeStatus.Appealable;
+        else if (dispute.period < Period.execution) status = DisputeStatus.Appealable;
         else status = DisputeStatus.Solved;
     }
 
