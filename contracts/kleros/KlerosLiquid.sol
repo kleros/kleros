@@ -17,9 +17,9 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
 
     // General
     enum Phase {
-      staking, // Stake sum trees can be updated. Pass after `minStakingTime` passes and at least one dispute was created
+      staking, // Stake sum trees can be updated. Pass after `minStakingTime` passes and there is at least one dispute without jurors
       generating, // Waiting on random number. Pass as soon as it is ready
-      drawing // Jurors are drawn. Pass after all open disputes are drawn or `maxDrawingTime` passes
+      drawing // Jurors can be drawn. Pass after all disputes have jurors or `maxDrawingTime` passes
     }
 
     // Dispute
@@ -51,8 +51,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
 
     // Dispute
     struct Vote {
-        address _address; // The address of the voter
-        uint choice; // The choice of the voter
+        address _address; // The address of the juror
+        uint choice; // The choice of the juror
     }
     struct VoteCounter {
         uint winningChoice; // The choice with the most votes
@@ -82,23 +82,23 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
      */
     event NewPeriod(uint indexed disputeID, uint period);
 
-    /** @dev Emitted when a voter is drawn.
+    /** @dev Emitted when a juror is drawn.
      *  @param disputeID The ID of the dispute.
      *  @param arbitrable The arbitrable contract that is ruled by the dispute.
      *  @param _address The drawn address.
      */
     event Draw(uint indexed disputeID, Arbitrable indexed arbitrable, address indexed _address);
 
-    /** @dev Emitted when a voter wins or loses tokens from a dispute.
+    /** @dev Emitted when a juror wins or loses tokens from a dispute.
      *  @param disputeID The ID of the dispute.
-     *  @param _address The voter affected.
+     *  @param _address The juror affected.
      *  @param amount The amount won or lost.
      */
     event TokenShift(uint indexed disputeID, address indexed _address, int amount);
 
-    /** @dev Emitted when a voter wins ETH from a dispute.
+    /** @dev Emitted when a juror wins ETH from a dispute.
      *  @param disputeID The ID of the dispute.
-     *  @param _address The voter affected.
+     *  @param _address The juror affected.
      *  @param amount The amount won.
      */
     event ArbitrationReward(uint indexed disputeID, address indexed _address, uint amount);
@@ -115,6 +115,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
     // General Dynamic
     Phase public phase;
     uint public lastPhaseChange;
+    uint public disputesWithoutJurors;
     uint public RNBlock;
     uint public RN;
     uint public minStakingTime;
@@ -387,6 +388,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         dispute.voteCounters.push(VoteCounter({ winningChoice: 0, counts: new uint[](dispute.choices) }));
         dispute.totalJurorFees.push(msg.value);
         dispute.appealRepartitions.push(0);
+        disputesWithoutJurors++;
 
         emit DisputeCreation(disputeID, Arbitrable(msg.sender));
     }
@@ -407,6 +409,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         dispute.voteCounters.push(VoteCounter({ winningChoice: 0, counts: new uint[](dispute.choices) }));
         dispute.totalJurorFees.push(msg.value);
         dispute.appealRepartitions.push(0);
+        disputesWithoutJurors++;
 
         emit AppealDecision(_disputeID, Arbitrable(msg.sender));
     }
