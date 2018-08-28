@@ -354,7 +354,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
 
     /* External Views */
 
-
+    
 
     /* Public */
 
@@ -362,7 +362,14 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
 
     /* Public Views */
 
-
+    /** @dev Get the cost of arbitration in a specified subcourt.
+     *  @param _subcourtID The ID of the subcourt.
+     *  @param _extraData Additional info about the dispute.
+     *  @return The cost.
+     */
+    function arbitrationCost(uint _subcourtID, bytes _extraData) public view returns(uint cost) {
+        cost = courts[_subcourtID].jurorFee * courts[_subcourtID].minJurors;
+    }
 
     /* Internal */
 
