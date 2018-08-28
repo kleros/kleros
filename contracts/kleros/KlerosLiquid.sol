@@ -67,7 +67,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         Vote[][] votes; // The votes in the form `votes[appeal][voteID]`
         VoteCounter[] voteCounters; // The vote counters in the form `voteCounters[appeal]`
         uint[] totalJurorFees; // The total juror fees paid in the form `totalJurorFees[appeal]`
-        uint[] appealRepartitions; // The last repartitioned voteIDs in the form `appealRepartitions[appeal]`
+        uint[] appealDraws; // The next voteIDs to draw in the form `appealDraws[appeal]`
+        uint[] appealRepartitions; // The next voteIDs to repartition tokens/eth for in the form `appealRepartitions[appeal]`
     }
 
     /* Events */
@@ -372,6 +373,33 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         emit NewPhase(phase);
     }
 
+    /** @dev Pass the period of a specified dispute.
+     *  @param _disputeID The ID of the dispute.
+     */
+    function passPeriod(uint _disputeID) external {
+        Dispute storage dispute = disputes[_disputeID];
+        if (dispute.period == Period.evidence) {
+
+        } else if (dispute.period == Period.commit) {
+            
+        } else if (dispute.period == Period.vote) {
+            
+        } else if (dispute.period == Period.appeal) {
+            
+        } else if (dispute.period == Period.execution) {
+            
+        }
+
+        // solium-disable-next-line security/no-block-members
+        dispute.lastPeriodChange = block.timestamp;
+        emit NewPeriod(_disputeID, dispute.period);
+    }
+    // evidence, // Evidence can be submitted. This is also when drawing takes place
+    //   commit, // Jurors commit a hashed vote. This is skipped if not a hidden court
+    //   vote, // Jurors reveal/cast their vote depending on wether the court is hidden or not
+    //   appeal, // The dispute can be appealed
+    //   execution // Tokens are redistributed and the ruling is executed
+
     /* External Views */
 
     
@@ -399,12 +427,14 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
             votes: new Vote[][](0),
             voteCounters: new VoteCounter[](0),
             totalJurorFees: new uint[](0),
+            appealDraws: new uint[](0),
             appealRepartitions: new uint[](0)
         })) - 1;
         Dispute storage dispute = disputes[disputeID];
         dispute.votes.push(new Vote[](msg.value / courts[dispute.subcourtID].jurorFee));
         dispute.voteCounters.push(VoteCounter({ winningChoice: 0, counts: new uint[](dispute.choices) }));
         dispute.totalJurorFees.push(msg.value);
+        dispute.appealDraws.push(0);
         dispute.appealRepartitions.push(0);
         disputesWithoutJurors++;
 
@@ -426,6 +456,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         dispute.votes.push(new Vote[](msg.value / courts[dispute.subcourtID].jurorFee));
         dispute.voteCounters.push(VoteCounter({ winningChoice: 0, counts: new uint[](dispute.choices) }));
         dispute.totalJurorFees.push(msg.value);
+        dispute.appealDraws.push(0);
         dispute.appealRepartitions.push(0);
         disputesWithoutJurors++;
 
