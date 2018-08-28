@@ -382,7 +382,33 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
             totalJurorFees: new uint[](0),
             appealRepartitions: new uint[](0)
         })) - 1;
+        Dispute storage dispute = disputes[disputeID];
+        dispute.votes.push(new Vote[](msg.value / courts[dispute.subcourtID].jurorFee));
+        dispute.voteCounters.push(VoteCounter({ winningChoice: 0, counts: new uint[](dispute.choices) }));
+        dispute.totalJurorFees.push(msg.value);
+        dispute.appealRepartitions.push(0);
+
         emit DisputeCreation(disputeID, Arbitrable(msg.sender));
+    }
+
+    /** @dev Appeal the ruling of a specified dispute.
+     *  @param _disputeID The ID of the dispute.
+     *  @param _extraData Additional info about the appeal.
+     */
+    function appeal(
+        uint _disputeID,
+        bytes _extraData
+    ) public payable requireAppealFee(_disputeID, _extraData) onlyDuringPeriod(_disputeID, Period.appeal) {
+        Dispute storage dispute = disputes[_disputeID];
+        if (dispute.votes[dispute.votes.length - 1].length >= courts[dispute.subcourtID].jurorsForJump) // Jump to parent subcourt
+            dispute.subcourtID = courts[dispute.subcourtID].parent;
+        dispute.period = Period.evidence;
+        dispute.votes.push(new Vote[](msg.value / courts[dispute.subcourtID].jurorFee));
+        dispute.voteCounters.push(VoteCounter({ winningChoice: 0, counts: new uint[](dispute.choices) }));
+        dispute.totalJurorFees.push(msg.value);
+        dispute.appealRepartitions.push(0);
+
+        emit AppealDecision(_disputeID, Arbitrable(msg.sender));
     }
 
     /* Public Views */
@@ -405,7 +431,10 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         Dispute storage dispute = disputes[_disputeID];
         uint _lastNumberOfJurors = dispute.votes[dispute.votes.length - 1].length;
         if (_lastNumberOfJurors >= courts[dispute.subcourtID].jurorsForJump) // Jump to parent subcourt
-            cost = courts[courts[dispute.subcourtID].parent].jurorFee * courts[courts[dispute.subcourtID].parent].minJurors;
+            if (dispute.subcourtID == 0) // Already in the general court
+                cost = NON_PAYABLE_AMOUNT;
+            else
+                cost = courts[courts[dispute.subcourtID].parent].jurorFee * courts[courts[dispute.subcourtID].parent].minJurors;
         else // Stay in current subcourt
             cost = courts[dispute.subcourtID].jurorFee * ((_lastNumberOfJurors * 2) + 1);
     }
