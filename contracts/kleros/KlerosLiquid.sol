@@ -181,7 +181,10 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         lastPhaseChange = block.timestamp; // solium-disable-line security/no-block-members
 
         // Create the general court
-        courts.push(new Court({
+        courts.push(Court({
+            parent: 0,
+            children: new uint[](0),
+            vacantChildrenIndexes: new uint[](0),
             hidden: _hidden,
             minStake: _minStake,
             alpha: _alpha,
@@ -254,8 +257,10 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         uint _sortitionSumTreeK
     ) external onlyByGovernor {
         // Create the subcourt
-        uint _subcourtID = courts.push(new Court({
+        uint _subcourtID = courts.push(Court({
             parent: _parent,
+            children: new uint[](0),
+            vacantChildrenIndexes: new uint[](0),
             hidden: _hidden,
             minStake: _minStake,
             alpha: _alpha,
@@ -268,7 +273,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         createTree(bytes32(_subcourtID), _sortitionSumTreeK);
 
         // Update the parent
-        if (courts[_parent].vacantChildrenIndexes.length) {
+        if (courts[_parent].vacantChildrenIndexes.length > 0) {
             uint _vacantIndex = courts[_parent].vacantChildrenIndexes[courts[_parent].vacantChildrenIndexes.length - 1];
             courts[_parent].vacantChildrenIndexes.length--;
             courts[_parent].children[_vacantIndex] = _subcourtID;
