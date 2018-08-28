@@ -59,6 +59,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         uint[] counts; // The sum of votes for each choice in the form `counts[choice]`
     }
     struct Dispute {
+        uint subcourtID; // The ID of the subcourt the dispute is in
         Arbitrable arbitrated; // The arbitrated arbitrable contract
         uint choices; // The number of choices jurors have when voting
         Period period; // The current period of the dispute
@@ -369,6 +370,20 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
      */
     function arbitrationCost(uint _subcourtID, bytes _extraData) public view returns(uint cost) {
         cost = courts[_subcourtID].jurorFee * courts[_subcourtID].minJurors;
+    }
+
+    /** @dev Get the cost of appealing a specified dispute.
+     *  @param _disputeID The ID of the dispute.
+     *  @param _extraData Additional info about the appeal.
+     *  @return The cost.
+     */
+    function appealCost(uint _disputeID, bytes _extraData) public view returns(uint cost) {
+        Dispute storage dispute = disputes[_disputeID];
+        uint _lastNumberOfJurors = dispute.votes[dispute.votes.length - 1].length;
+        if (_lastNumberOfJurors >= courts[dispute.subcourtID].jurorsForJump) // Jump to parent subcourt
+            cost = courts[courts[dispute.subcourtID].parent].jurorFee * courts[courts[dispute.subcourtID].parent].minJurors;
+        else // Stay in current subcourt
+            cost = courts[dispute.subcourtID].jurorFee * ((_lastNumberOfJurors * 2) + 1);
     }
 
     /* Internal */
