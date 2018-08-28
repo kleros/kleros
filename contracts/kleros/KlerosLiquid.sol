@@ -24,7 +24,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
 
     // Dispute
     enum Period {
-      evidence, // Evidence can be submitted. This is also when drawing takes place
+      evidence, // Evidence can be submitted. This is also when drawing has to take place
       commit, // Jurors commit a hashed vote. This is skipped if not a hidden court
       vote, // Jurors reveal/cast their vote depending on wether the court is hidden or not
       appeal, // The dispute can be appealed
@@ -68,6 +68,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         VoteCounter[] voteCounters; // The vote counters in the form `voteCounters[appeal]`
         uint[] totalJurorFees; // The total juror fees paid in the form `totalJurorFees[appeal]`
         uint[] appealDraws; // The next voteIDs to draw in the form `appealDraws[appeal]`
+        uint[] appealCommits; // The number of commits in the form `appealCommits[appeal]`
+        uint[] appealVotes; // The number of votes in the form `appealVotes[appeal]`
         uint[] appealRepartitions; // The next voteIDs to repartition tokens/eth for in the form `appealRepartitions[appeal]`
     }
 
@@ -428,6 +430,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
             voteCounters: new VoteCounter[](0),
             totalJurorFees: new uint[](0),
             appealDraws: new uint[](0),
+            appealCommits: new uint[](0),
+            appealVotes: new uint[](0),
             appealRepartitions: new uint[](0)
         })) - 1;
         Dispute storage dispute = disputes[disputeID];
@@ -435,6 +439,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         dispute.voteCounters.push(VoteCounter({ winningChoice: 0, counts: new uint[](dispute.choices) }));
         dispute.totalJurorFees.push(msg.value);
         dispute.appealDraws.push(0);
+        dispute.appealCommits.push(0);
+        dispute.appealVotes.push(0);
         dispute.appealRepartitions.push(0);
         disputesWithoutJurors++;
 
@@ -457,6 +463,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         dispute.voteCounters.push(VoteCounter({ winningChoice: 0, counts: new uint[](dispute.choices) }));
         dispute.totalJurorFees.push(msg.value);
         dispute.appealDraws.push(0);
+        dispute.appealCommits.push(0);
+        dispute.appealVotes.push(0);
         dispute.appealRepartitions.push(0);
         disputesWithoutJurors++;
 
