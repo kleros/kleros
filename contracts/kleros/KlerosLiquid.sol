@@ -397,6 +397,15 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         else status = DisputeStatus.Solved;
     }
 
+    /** @dev Get the current ruling of a specified dispute.
+     *  @param _disputeID The ID of the dispute.
+     *  @return The current ruling.
+     */
+    function currentRuling(uint _disputeID) public view returns(uint ruling) {
+        Dispute storage dispute = disputes[_disputeID];
+        ruling = dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice;
+    }
+
     /* Internal */
 
 
