@@ -370,7 +370,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         uint _choices,
         bytes _extraData
     ) public payable requireArbitrationFee(_extraData) returns(uint disputeID)  {
-        disputes.push(Dispute({
+        disputeID = disputes.push(Dispute({
             subcourtID: _subcourtID,
             arbitrated: Arbitrable(msg.sender),
             choices: _choices,
@@ -381,7 +381,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
             voteCounters: new VoteCounter[](0),
             totalJurorFees: new uint[](0),
             appealRepartitions: new uint[](0)
-        }));
+        })) - 1;
+        emit DisputeCreation(disputeID, Arbitrable(msg.sender));
     }
 
     /* Public Views */
