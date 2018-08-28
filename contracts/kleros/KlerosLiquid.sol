@@ -350,7 +350,26 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
 
     /** @dev Pass the phase. */
     function passPhase() external {
-    
+        if (phase == Phase.staking) {
+            // solium-disable-next-line security/no-block-members
+            require(block.timestamp - lastPhaseChange >= minStakingTime, "The minimum staking time has not passed yet.");
+            require(disputesWithoutJurors > 0, "There are no disputes without jurors.");
+            RNBlock = block.number + 1;
+            _RNG.requestRN(RNBlock);
+            phase = Phase.generating;
+        } else if (phase == Phase.generating) {
+            RN = _RNG.getUncorrelatedRN(RNBlock);
+            require(RN != 0, "Random number is not ready yet.");
+            phase = Phase.drawing;
+        } else if (phase == Phase.drawing) {
+            // solium-disable-next-line security/no-block-members
+            require(disputesWithoutJurors == 0 || block.timestamp - lastPhaseChange >= maxDrawingTime, "There are still disputes without jurors and/or the maximum drawing time has not passed yet.");
+            phase = Phase.staking;
+        }
+
+        // solium-disable-next-line security/no-block-members
+        lastPhaseChange = block.timestamp;
+        emit NewPhase(phase);
     }
 
     /* External Views */
