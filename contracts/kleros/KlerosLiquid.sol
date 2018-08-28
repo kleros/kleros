@@ -386,6 +386,17 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
             cost = courts[dispute.subcourtID].jurorFee * ((_lastNumberOfJurors * 2) + 1);
     }
 
+    /** @dev Get the status of a specified dispute.
+     *  @param _disputeID The ID of the dispute.
+     *  @return The status.
+     */
+    function disputeStatus(uint _disputeID) public view returns(DisputeStatus status) {
+        Dispute storage dispute = disputes[_disputeID];
+        if (dispute.period < Period.appeal) status = DisputeStatus.Waiting;
+        else if (dispute.period < Period.execute) status = DisputeStatus.Appealable;
+        else status = DisputeStatus.Solved;
+    }
+
     /* Internal */
 
 
