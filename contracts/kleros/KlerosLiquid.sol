@@ -89,19 +89,13 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
      */
     event Draw(uint indexed disputeID, Arbitrable indexed arbitrable, address indexed _address);
 
-    /** @dev Emitted when a juror wins or loses tokens from a dispute.
+    /** @dev Emitted when a juror wins or loses tokens and/or ETH from a dispute.
      *  @param disputeID The ID of the dispute.
      *  @param _address The juror affected.
-     *  @param amount The amount won or lost.
+     *  @param tokenAmount The amount of tokens won or lost.
+     *  @param ETHAmount The amount of ETH won or lost.
      */
-    event TokenShift(uint indexed disputeID, address indexed _address, int amount);
-
-    /** @dev Emitted when a juror wins ETH from a dispute.
-     *  @param disputeID The ID of the dispute.
-     *  @param _address The juror affected.
-     *  @param amount The amount won.
-     */
-    event ArbitrationReward(uint indexed disputeID, address indexed _address, uint amount);
+    event TokenAndETHShift(uint indexed disputeID, address indexed _address, int tokenAmount, int ETHAmount);
 
     /* Storage */
 
@@ -352,6 +346,11 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
      */
     function changeSubcourtTimesPerPeriod(uint _subcourtID, uint[4] _timesPerPeriod) external onlyByGovernor {
         courts[_subcourtID].timesPerPeriod = _timesPerPeriod;
+    }
+
+    /** @dev Pass the phase. */
+    function passPhase() external {
+    
     }
 
     /* External Views */
