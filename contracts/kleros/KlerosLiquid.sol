@@ -291,6 +291,62 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         courts[_subcourtID].parent = _parent;
     }
 
+    /** @dev Changes the `hidden` property value of the specified subcourt.
+     *  @param _subcourtID The ID of the subcourt.
+     *  @param _hidden The new value for the `hidden` property value.
+     */
+    function changeSubcourtHidden(uint _subcourtID, bool _hidden) external onlyByGovernor {
+        courts[_subcourtID].hidden = _hidden;
+    }
+
+    /** @dev Changes the `minStake` property value of the specified subcourt.
+     *  @param _subcourtID The ID of the subcourt.
+     *  @param _minStake The new value for the `minStake` property value.
+     */
+    function changeSubcourtMinStake(uint _subcourtID, uint _minStake) external onlyByGovernor {
+        courts[_subcourtID].minStake = _minStake;
+    }
+
+    /** @dev Changes the `alpha` property value of the specified subcourt.
+     *  @param _subcourtID The ID of the subcourt.
+     *  @param _alpha The new value for the `alpha` property value.
+     */
+    function changeSubcourtAlpha(uint _subcourtID, uint _alpha) external onlyByGovernor {
+        courts[_subcourtID].alpha = _alpha;
+    }
+
+    /** @dev Changes the `jurorFee` property value of the specified subcourt.
+     *  @param _subcourtID The ID of the subcourt.
+     *  @param _jurorFee The new value for the `jurorFee` property value.
+     */
+    function changeSubcourtJurorFee(uint _subcourtID, uint _jurorFee) external onlyByGovernor {
+        courts[_subcourtID].jurorFee = _jurorFee;
+    }
+
+    /** @dev Changes the `minJurors` property value of the specified subcourt.
+     *  @param _subcourtID The ID of the subcourt.
+     *  @param _minJurors The new value for the `minJurors` property value.
+     */
+    function changeSubcourtMinJurors(uint _subcourtID, uint _minJurors) external onlyByGovernor {
+        courts[_subcourtID].minJurors = _minJurors;
+    }
+
+    /** @dev Changes the `jurorsForJump` property value of the specified subcourt.
+     *  @param _subcourtID The ID of the subcourt.
+     *  @param _jurorsForJump The new value for the `jurorsForJump` property value.
+     */
+    function changeSubcourtJurorsForJump(uint _subcourtID, uint _jurorsForJump) external onlyByGovernor {
+        courts[_subcourtID].jurorsForJump = _jurorsForJump;
+    }
+
+    /** @dev Changes the `timesPerPeriod` property value of the specified subcourt.
+     *  @param _subcourtID The ID of the subcourt.
+     *  @param _timesPerPeriod The new value for the `timesPerPeriod` property value.
+     */
+    function changeSubcourtTimesPerPeriod(uint _subcourtID, uint[4] _timesPerPeriod) external onlyByGovernor {
+        courts[_subcourtID].timesPerPeriod = _timesPerPeriod;
+    }
+
     /* External Views */
 
 
