@@ -402,6 +402,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         } else if (dispute.period == Period.appeal) {
             // solium-disable-next-line security/no-block-members
             require(block.timestamp - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[dispute.period], "The appeal period time has not passed yet.");
+            dispute.period = Period.execution;
         } else if (dispute.period == Period.execution) {
             revert("The dispute is already in the last period.");
         }
@@ -410,11 +411,6 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         dispute.lastPeriodChange = block.timestamp;
         emit NewPeriod(_disputeID, dispute.period);
     }
-    // evidence, // Evidence can be submitted. This is also when drawing takes place
-    //   commit, // Jurors commit a hashed vote. This is skipped if not a hidden court
-    //   vote, // Jurors reveal/cast their vote depending on wether the court is hidden or not
-    //   appeal, // The dispute can be appealed
-    //   execution // Tokens are redistributed and the ruling is executed
 
     /* External Views */
 
