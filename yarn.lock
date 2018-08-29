@@ -3777,9 +3777,9 @@ klaw@^1.0.0:
   optionalDependencies:
     graceful-fs "^4.1.9"
 
-kleros-interaction@^0.0.18:
-  version "0.0.18"
-  resolved "https://registry.yarnpkg.com/kleros-interaction/-/kleros-interaction-0.0.18.tgz#33cc24de75a9bb218077b2d38a61a6dfe8a43519"
+kleros-interaction@^0.0.22:
+  version "0.0.22"
+  resolved "https://registry.yarnpkg.com/kleros-interaction/-/kleros-interaction-0.0.22.tgz#abf006cc3c8d07e35246779e18ea3fabb47bf6a8"
   dependencies:
     minimetoken "^0.2.0"
     zeppelin-solidity "^1.7.0"
