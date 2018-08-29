@@ -92,7 +92,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
      */
     event Draw(uint indexed disputeID, Arbitrable indexed arbitrable, address indexed _address);
 
-    /** @dev Emitted when a juror wins or loses tokens and/or ETH from a dispute.
+    /** @dev Emitted when a juror wins or loses tokens and ETH from a dispute.
      *  @param disputeID The ID of the dispute.
      *  @param _address The juror affected.
      *  @param tokenAmount The amount of tokens won or lost.
@@ -366,7 +366,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
             phase = Phase.drawing;
         } else if (phase == Phase.drawing) {
             // solium-disable-next-line security/no-block-members
-            require(disputesWithoutJurors == 0 || block.timestamp - lastPhaseChange >= maxDrawingTime, "There are still disputes without jurors and/or the maximum drawing time has not passed yet.");
+            require(disputesWithoutJurors == 0 || block.timestamp - lastPhaseChange >= maxDrawingTime, "There are still disputes without jurors and the maximum drawing time has not passed yet.");
             phase = Phase.staking;
         }
 
@@ -389,14 +389,14 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
             require(
                 // solium-disable-next-line security/no-block-members
                 block.timestamp - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[dispute.period] || dispute.appealCommits[dispute.appealCommits.length - 1] == dispute.votes[dispute.votes.length - 1].length,
-                "The commit period time has not passed yet and/or not every juror has committed yet."
+                "The commit period time has not passed yet and not every juror has committed yet."
             );
             dispute.period = Period.vote;
         } else if (dispute.period == Period.vote) {
             require(
                 // solium-disable-next-line security/no-block-members
                 block.timestamp - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[dispute.period] || dispute.appealVotes[dispute.appealVotes.length - 1] == dispute.votes[dispute.votes.length - 1].length,
-                "The vote period time has not passed yet and/or not every juror has voted yet."
+                "The vote period time has not passed yet and not every juror has voted yet."
             );
             dispute.period = Period.appeal;
         } else if (dispute.period == Period.appeal) {
