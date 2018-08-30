@@ -94,8 +94,9 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
      *  @param disputeID The ID of the dispute.
      *  @param arbitrable The arbitrable contract that is ruled by the dispute.
      *  @param _address The drawn address.
+     *  @param _voteID The vote ID.
      */
-    event Draw(uint indexed disputeID, Arbitrable indexed arbitrable, address indexed _address);
+    event Draw(uint indexed disputeID, Arbitrable indexed arbitrable, address indexed _address, uint _voteID);
 
     /** @dev Emitted when a juror wins or loses tokens and ETH from a dispute.
      *  @param disputeID The ID of the dispute.
@@ -466,7 +467,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
             address _drawnAddress = super.draw(bytes32(dispute.subcourtID), uint(keccak256(RN, _disputeID, i)));
             dispute.votes[dispute.votes.length - 1][i]._address = _drawnAddress;
             dispute.appealDraws[dispute.appealDraws.length - 1]++;
-            emit Draw(_disputeID, dispute.arbitrated, _drawnAddress);
+            emit Draw(_disputeID, dispute.arbitrated, _drawnAddress, i);
         }
     }
 
