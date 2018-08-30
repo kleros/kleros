@@ -430,7 +430,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
      *  @param _subcourtID The ID of the subcourt.
      *  @param _stake The new stake.
      */
-    function setStake(uint _subcourtID, uint _stake) external {
+    function setStake(uint _subcourtID, uint _stake) external onlyDuringPhase(Phase.staking) {
         require(courts[_subcourtID].minStake <= _stake, "The juror's stake cannot be lower than the minimum stake for the subcourt.");
         uint _stakeDiff = _stake - stakeOf(bytes32(_subcourtID), msg.sender);
         require(
@@ -451,6 +451,22 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
             );
             if (_currentSubcourtID == 0)  _finished = true;
             else _currentSubcourtID = courts[_currentSubcourtID].parent;
+        }
+    }
+
+    /** @dev Draws jurors for a dispute. Can be called in parts.
+     *  @param _disputeID The ID of the dispute.
+     *  @param _iterations The number of iterations to run.
+     */
+    function draw(uint _disputeID, uint _iterations) external onlyDuringPeriod(_disputeID, Period.evidence) {
+        Dispute storage dispute = disputes[_disputeID];
+        uint _startIndex = dispute.appealDraws[dispute.appealDraws.length - 1];
+        uint _endIndex = _iterations == 0 ? dispute.votes[dispute.votes.length - 1].length : _startIndex + _iterations;
+        for (uint i = _startIndex; i < _endIndex; i++) {
+            address _drawnAddress = super.draw(bytes32(dispute.subcourtID), uint(keccak256(RN, _disputeID, i)));
+            dispute.votes[dispute.votes.length - 1][i]._address = _drawnAddress;
+            dispute.appealDraws[dispute.appealDraws.length - 1]++;
+            emit Draw(_disputeID, dispute.arbitrated, _drawnAddress);
         }
     }
 
