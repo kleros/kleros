@@ -46,7 +46,6 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         // The appeal after the one that reaches this number of jurors will go to the parent court if any, otherwise, no more appeals are possible
         uint jurorsForJump;
         uint[4] timesPerPeriod; // The time allotted to each dispute period in the form `timesPerPeriod[period]`
-        bytes32 sortitionSumTreeKey; // The key of the sortition sum tree
     }
 
     // Dispute
@@ -71,6 +70,12 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         uint[] appealCommits; // The number of commits in the form `appealCommits[appeal]`
         uint[] appealVotes; // The number of votes in the form `appealVotes[appeal]`
         uint[] appealRepartitions; // The next voteIDs to repartition tokens/eth for in the form `appealRepartitions[appeal]`
+    }
+
+    // Juror
+    struct Juror {
+        uint[] subcourtIDS; // The IDs of subcourts where the juror has activation path ends
+        uint[] vacantSubcourtIDSIndexes; // Stack of vacant slots in the subcourt IDs list
     }
 
     /* Events */
@@ -122,6 +127,9 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
 
     // Dispute
     Dispute[] public disputes;
+
+    // Juror
+    mapping(address => Juror) internal jurors;
 
     /* Modifiers */
 
@@ -190,8 +198,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
             jurorFee: _jurorFee,
             minJurors: _minJurors,
             jurorsForJump: _jurorsForJump,
-            timesPerPeriod: _timesPerPeriod,
-            sortitionSumTreeKey: bytes32(0)
+            timesPerPeriod: _timesPerPeriod
         }));
         createTree(bytes32(0), _sortitionSumTreeK);
     }
@@ -255,6 +262,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         uint[4] _timesPerPeriod,
         uint _sortitionSumTreeK
     ) external onlyByGovernor {
+        require(courts[_parent].minStake <= _minStake, "A subcourt cannot be a child of a subcourt with a higher minimum stake.");
+
         // Create the subcourt
         uint _subcourtID = courts.push(Court({
             parent: _parent,
@@ -266,8 +275,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
             jurorFee: _jurorFee,
             minJurors: _minJurors,
             jurorsForJump: _jurorsForJump,
-            timesPerPeriod: _timesPerPeriod,
-            sortitionSumTreeKey: bytes32(courts.length)
+            timesPerPeriod: _timesPerPeriod
         })) - 1;
         createTree(bytes32(_subcourtID), _sortitionSumTreeK);
 
@@ -284,6 +292,12 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
      *  @param _parent The new `parent` property value of the subcourt.
      */
     function moveSubcourt(uint _subcourtID, uint _parent) external onlyByGovernor {
+        require(_subcourtID != 0, "Cannot move the general court.");
+        require(
+            courts[_parent].minStake <= courts[_subcourtID].minStake,
+            "A subcourt cannot be a child of a subcourt with a higher minimum stake."
+        );
+
         // Update the old parent's children, if any
         for (uint i = 0; i < courts[courts[_subcourtID].parent].children.length; i++)
             if (courts[courts[_subcourtID].parent].children[i] == _subcourtID) {
@@ -410,6 +424,34 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         // solium-disable-next-line security/no-block-members
         dispute.lastPeriodChange = block.timestamp;
         emit NewPeriod(_disputeID, dispute.period);
+    }
+
+    /** @dev Sets the caller's stake in a subcourt.
+     *  @param _subcourtID The ID of the subcourt.
+     *  @param _stake The new stake.
+     */
+    function setStake(uint _subcourtID, uint _stake) external {
+        require(courts[_subcourtID].minStake <= _stake, "The juror's stake cannot be lower than the minimum stake for the subcourt.");
+        uint _stakeDiff = _stake - stakeOf(bytes32(_subcourtID), msg.sender);
+        require(
+            pinakion.balanceOf(msg.sender) >= stakeOf(bytes32(0), msg.sender) + _stakeDiff,
+            "The juror's total amount of staked tokens cannot be higher than the juror's balance."
+        );
+
+        bool _finished = false;
+        uint _currentSubcourtID = _subcourtID;
+        while (!_finished) {
+            uint _currentSubcourtStake = stakeOf(bytes32(_currentSubcourtID), msg.sender);
+            if (_currentSubcourtStake == 0) append(bytes32(_currentSubcourtID), _stake, msg.sender);
+            else set(
+                bytes32(_currentSubcourtID),
+                sortitionSumTrees[bytes32(_currentSubcourtID)].addressesToTreeIndexes[msg.sender],
+                _currentSubcourtStake + _stakeDiff,
+                msg.sender
+            );
+            if (_currentSubcourtID == 0)  _finished = true;
+            else _currentSubcourtID = courts[_currentSubcourtID].parent;
+        }
     }
 
     /* External Views */
