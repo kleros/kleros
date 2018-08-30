@@ -11,15 +11,15 @@ contract('SortitionSumTreeFactory', () =>
     // Create tree and populate with 4 candidates
     const tree = { key: '0x01', K: 2 }
     const candidates = {
-      dave: {
-        address: '0x0000000000000000000000000000000000000004',
-        treeIndex: 0,
-        value: 5
-      },
       bob: {
         address: '0x0000000000000000000000000000000000000002',
         treeIndex: 0,
         value: 15
+      },
+      dave: {
+        address: '0x0000000000000000000000000000000000000004',
+        treeIndex: 0,
+        value: 5
       },
       alice: {
         address: '0x0000000000000000000000000000000000000001',

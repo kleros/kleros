@@ -5,8 +5,8 @@ const ExposedKArySumTreeFactory = artifacts.require(
 
 // Helpers
 const generateValues = K =>
-  [...new Array(Math.floor(K ** 2 + Math.random() * K))].map(_ =>
-    Math.floor(Math.random() * 100)
+  [...new Array(Math.floor(K ** 2 + Math.random() * K))].map(
+    _ => Math.floor(Math.random() * 100) + 1
   )
 const checkTree = async (kArySumTreeFactory, key) => {
   // Fetch tree
@@ -63,7 +63,7 @@ contract('KArySumTreeFactory', () =>
       expect(await kArySumTreeFactory._kArySumTrees(tree.key)).to.deep.equal([
         web3.toBigNumber(tree.K),
         [],
-        []
+        [web3.toBigNumber(0)]
       ])
 
     // Delete the middle tree
