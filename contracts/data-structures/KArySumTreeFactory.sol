@@ -29,6 +29,7 @@ contract KArySumTreeFactory {
         kArySumTrees[_key].K = _K;
         kArySumTrees[_key].stack.length = 0;
         kArySumTrees[_key].tree.length = 0;
+        kArySumTrees[_key].tree.push(0);
     }
 
     /**
@@ -58,7 +59,7 @@ contract KArySumTreeFactory {
             tree.tree[treeIndex] = _value;
 
             // Potentially append a new node and make the parent a sum node
-            if (treeIndex != 0 && (treeIndex - 1) % tree.K == 0) { // Is first child
+            if (treeIndex != 1 && (treeIndex - 1) % tree.K == 0) { // Is first child
                 tree.tree.length++;
                 tree.tree[treeIndex + 1] = tree.tree[treeIndex / tree.K];
             }
@@ -78,6 +79,7 @@ contract KArySumTreeFactory {
      *  @param _treeIndex The index of the value to remove.
      */
     function remove(bytes32 _key, uint _treeIndex) internal {
+        require(_treeIndex != 0, "Cannot remove the root node.");
         KArySumTree storage tree = kArySumTrees[_key];
 
         // Remember value and set to 0
@@ -98,6 +100,7 @@ contract KArySumTreeFactory {
      *  @param _value The new value.
      */
     function set(bytes32 _key, uint _treeIndex, uint _value) internal {
+        require(_treeIndex != 0, "Cannot set the root node.");
         KArySumTree storage tree = kArySumTrees[_key];
         bool _plusOrMinus = tree.tree[_treeIndex] <= _value;
         uint _plusOrMinusValue = _plusOrMinus ? _value - tree.tree[_treeIndex] : tree.tree[_treeIndex] - _value;
