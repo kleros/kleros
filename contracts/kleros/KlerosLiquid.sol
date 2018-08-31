@@ -26,8 +26,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     // Dispute
     enum Period {
       evidence, // Evidence can be submitted. This is also when drawing has to take place.
-      commit, // Jurors commit a hashed vote. This is skipped if not a hidden court.
-      vote, // Jurors reveal/cast their vote depending on wether the court is hidden or not.
+      commit, // Jurors commit a hashed vote. This is skipped for courts without hidden votes.
+      vote, // Jurors reveal/cast their vote depending on wether the court has hidden votes or not.
       appeal, // The dispute can be appealed.
       execution // Tokens are redistributed and the ruling is executed.
     }
@@ -39,7 +39,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint parent; // The parent court.
         uint[] children; // List of child courts.
         uint[] vacantChildrenIndexes; // Stack of vacant slots in the children list.
-        bool hidden; // Wether to use commit and reveal or not.
+        bool hiddenVotes; // Wether to use commit and reveal or not.
         uint minStake; // Minimum PNK needed to stake in the court.
         uint alpha; // Percentage of PNK that is lost when incoherent (alpha / 10000).
         uint jurorFee; // Arbitration fee paid to each juror.
@@ -52,7 +52,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     // Dispute
     struct Vote {
         address _address; // The address of the juror.
-        bytes32 commit; // The commit of the juror. For hidden courts.
+        bytes32 commit; // The commit of the juror. For courts with hidden votes.
         uint choice; // The choice of the juror.
     }
     struct VoteCounter {
@@ -161,7 +161,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param __RNG The address of the RNG contract.
      *  @param _minStakingTime The minimum time that the staking phase should last.
      *  @param _maxDrawingTime The maximum time that the drawing phase should last.
-     *  @param _hidden The `hidden` property value of the general court.
+     *  @param _hiddenVotes The `hiddenVotes` property value of the general court.
      *  @param _minStake The `minStake` property value of the general court.
      *  @param _alpha The `alpha` property value of the general court.
      *  @param _jurorFee The `jurorFee` property value of the general court.
@@ -176,7 +176,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         RNG __RNG,
         uint _minStakingTime,
         uint _maxDrawingTime,
-        bool _hidden,
+        bool _hiddenVotes,
         uint _minStake,
         uint _alpha,
         uint _jurorFee,
@@ -198,7 +198,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             parent: 0,
             children: new uint[](0),
             vacantChildrenIndexes: new uint[](0),
-            hidden: _hidden,
+            hiddenVotes: _hiddenVotes,
             minStake: _minStake,
             alpha: _alpha,
             jurorFee: _jurorFee,
@@ -248,7 +248,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
 
     /** @dev Creates a subcourt under a specified parent court.
      *  @param _parent The `parent` property value of the subcourt.
-     *  @param _hidden The `hidden` property value of the subcourt.
+     *  @param _hiddenVotes The `hiddenVotes` property value of the subcourt.
      *  @param _minStake The `minStake` property value of the subcourt.
      *  @param _alpha The `alpha` property value of the subcourt.
      *  @param _jurorFee The `jurorFee` property value of the subcourt.
@@ -259,7 +259,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      */
     function createSubcourt(
         uint _parent,
-        bool _hidden,
+        bool _hiddenVotes,
         uint _minStake,
         uint _alpha,
         uint _jurorFee,
@@ -275,7 +275,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             parent: _parent,
             children: new uint[](0),
             vacantChildrenIndexes: new uint[](0),
-            hidden: _hidden,
+            hiddenVotes: _hiddenVotes,
             minStake: _minStake,
             alpha: _alpha,
             jurorFee: _jurorFee,
@@ -315,12 +315,12 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         courts[_subcourtID].parent = _parent;
     }
 
-    /** @dev Changes the `hidden` property value of the specified subcourt.
+    /** @dev Changes the `hiddenVotes` property value of the specified subcourt.
      *  @param _subcourtID The ID of the subcourt.
-     *  @param _hidden The new value for the `hidden` property value.
+     *  @param _hiddenVotes The new value for the `hiddenVotes` property value.
      */
-    function changeSubcourtHidden(uint _subcourtID, bool _hidden) external onlyByGovernor {
-        courts[_subcourtID].hidden = _hidden;
+    function changeSubcourtHiddenVotes(uint _subcourtID, bool _hiddenVotes) external onlyByGovernor {
+        courts[_subcourtID].hiddenVotes = _hiddenVotes;
     }
 
     /** @dev Changes the `minStake` property value of the specified subcourt.
@@ -404,7 +404,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             // solium-disable-next-line security/no-block-members
             require(block.timestamp - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[uint(dispute.period)], "The evidence period time has not passed yet.");
             require(dispute.appealDraws[dispute.appealDraws.length - 1] == dispute.votes[dispute.votes.length - 1].length, "The dispute has not finished drawing yet.");
-            dispute.period = courts[dispute.subcourtID].hidden ? Period.commit : Period.vote;
+            dispute.period = courts[dispute.subcourtID].hiddenVotes ? Period.commit : Period.vote;
         } else if (dispute.period == Period.commit) {
             require(
                 // solium-disable-next-line security/no-block-members
@@ -513,8 +513,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         require(dispute.votes[dispute.votes.length - 1][_voteID]._address == msg.sender, "The caller has to own the vote.");
         require(dispute.numberOfChoices > _choice, "The choice has to be less than the number of choices for the dispute.");
         require(
-            !courts[dispute.subcourtID].hidden || dispute.votes[dispute.votes.length - 1][_voteID].commit == keccak256(_disputeID, _voteID, _choice, _salt),
-            "The commit must match the choice in hidden subcourts."
+            !courts[dispute.subcourtID].hiddenVotes || dispute.votes[dispute.votes.length - 1][_voteID].commit == keccak256(_disputeID, _voteID, _choice, _salt),
+            "The commit must match the choice in subcourts with hidden votes."
         );
         dispute.votes[dispute.votes.length - 1][_voteID].choice = _choice;
         dispute.appealVotes[dispute.appealVotes.length - 1]++;
