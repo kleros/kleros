@@ -376,7 +376,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         if (phase == Phase.staking) {
             // solium-disable-next-line security/no-block-members
             require(block.timestamp - lastPhaseChange >= minStakingTime, "The minimum staking time has not passed yet.");
-            require(disputesWithoutJurors > 0, "There are no disputes without jurors.");
+            require(disputesWithoutJurors > 0, "There are no disputes that need jurors.");
             RNBlock = block.number + 1;
             _RNG.requestRN(RNBlock);
             phase = Phase.generating;
