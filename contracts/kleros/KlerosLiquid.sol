@@ -18,69 +18,69 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
 
     // General
     enum Phase {
-      staking, // Stake sum trees can be updated. Pass after `minStakingTime` passes and there is at least one dispute without jurors
-      generating, // Waiting on random number. Pass as soon as it is ready
-      drawing // Jurors can be drawn. Pass after all disputes have jurors or `maxDrawingTime` passes
+      staking, // Stake sum trees can be updated. Pass after `minStakingTime` passes and there is at least one dispute without jurors.
+      generating, // Waiting on random number. Pass as soon as it is ready.
+      drawing // Jurors can be drawn. Pass after all disputes have jurors or `maxDrawingTime` passes.
     }
 
     // Dispute
     enum Period {
-      evidence, // Evidence can be submitted. This is also when drawing has to take place
-      commit, // Jurors commit a hashed vote. This is skipped if not a hidden court
-      vote, // Jurors reveal/cast their vote depending on wether the court is hidden or not
-      appeal, // The dispute can be appealed
-      execution // Tokens are redistributed and the ruling is executed
+      evidence, // Evidence can be submitted. This is also when drawing has to take place.
+      commit, // Jurors commit a hashed vote. This is skipped if not a hidden court.
+      vote, // Jurors reveal/cast their vote depending on wether the court is hidden or not.
+      appeal, // The dispute can be appealed.
+      execution // Tokens are redistributed and the ruling is executed.
     }
 
     /* Structs */
 
     // General
     struct Court {
-        uint parent; // The parent court
-        uint[] children; // List of child courts
-        uint[] vacantChildrenIndexes; // Stack of vacant slots in the children list
-        bool hidden; // Wether to use commit and reveal or not
-        uint minStake; // Minimum PNK needed to stake in the court
-        uint alpha; // Percentage of PNK that is lost when incoherent (alpha / 10000)
-        uint jurorFee; // Arbitration fee paid to each juror
-        uint minJurors; // The minimum number of jurors required per dispute
-        // The appeal after the one that reaches this number of jurors will go to the parent court if any, otherwise, no more appeals are possible
+        uint parent; // The parent court.
+        uint[] children; // List of child courts.
+        uint[] vacantChildrenIndexes; // Stack of vacant slots in the children list.
+        bool hidden; // Wether to use commit and reveal or not.
+        uint minStake; // Minimum PNK needed to stake in the court.
+        uint alpha; // Percentage of PNK that is lost when incoherent (alpha / 10000).
+        uint jurorFee; // Arbitration fee paid to each juror.
+        uint minJurors; // The minimum number of jurors required per dispute.
+        // The appeal after the one that reaches this number of jurors will go to the parent court if any, otherwise, no more appeals are possible.
         uint jurorsForJump;
-        uint[4] timesPerPeriod; // The time allotted to each dispute period in the form `timesPerPeriod[period]`
+        uint[4] timesPerPeriod; // The time allotted to each dispute period in the form `timesPerPeriod[period]`.
     }
 
     // Dispute
     struct Vote {
-        address _address; // The address of the juror
-        bytes32 commit; // The commit of the juror. For hidden courts
-        uint choice; // The choice of the juror
+        address _address; // The address of the juror.
+        bytes32 commit; // The commit of the juror. For hidden courts.
+        uint choice; // The choice of the juror.
     }
     struct VoteCounter {
-        uint winningChoice; // The choice with the most votes
-        uint[] counts; // The sum of votes for each choice in the form `counts[choice]`
+        uint winningChoice; // The choice with the most votes.
+        uint[] counts; // The sum of votes for each choice in the form `counts[choice]`.
     }
     struct Dispute {
-        uint subcourtID; // The ID of the subcourt the dispute is in
-        Arbitrable arbitrated; // The arbitrated arbitrable contract
-        uint choices; // The number of choices jurors have when voting
-        Period period; // The current period of the dispute
-        uint lastPeriodChange; // The last time the period was changed
-        Vote[][] votes; // The votes in the form `votes[appeal][voteID]`
-        VoteCounter[] voteCounters; // The vote counters in the form `voteCounters[appeal]`
-        uint[] jurorAtStake; // The amount of PNK at stake for each juror in the form `jurorAtStake[appeal]`
-        uint[] totalJurorFees; // The total juror fees paid in the form `totalJurorFees[appeal]`
-        uint[] appealDraws; // The next voteIDs to draw in the form `appealDraws[appeal]`
-        uint[] appealCommits; // The number of commits in the form `appealCommits[appeal]`
-        uint[] appealVotes; // The number of votes in the form `appealVotes[appeal]`
-        uint[] appealRepartitions; // The next voteIDs to repartition tokens/eth for in the form `appealRepartitions[appeal]`
+        uint subcourtID; // The ID of the subcourt the dispute is in.
+        Arbitrable arbitrated; // The arbitrated arbitrable contract.
+        uint choices; // The number of choices jurors have when voting.
+        Period period; // The current period of the dispute.
+        uint lastPeriodChange; // The last time the period was changed.
+        Vote[][] votes; // The votes in the form `votes[appeal][voteID]`.
+        VoteCounter[] voteCounters; // The vote counters in the form `voteCounters[appeal]`.
+        uint[] jurorAtStake; // The amount of PNK at stake for each juror in the form `jurorAtStake[appeal]`.
+        uint[] totalJurorFees; // The total juror fees paid in the form `totalJurorFees[appeal]`.
+        uint[] appealDraws; // The next voteIDs to draw in the form `appealDraws[appeal]`.
+        uint[] appealCommits; // The number of commits in the form `appealCommits[appeal]`.
+        uint[] appealVotes; // The number of votes in the form `appealVotes[appeal]`.
+        uint[] appealRepartitions; // The next voteIDs to repartition tokens/eth for in the form `appealRepartitions[appeal]`.
     }
 
     // Juror
     struct Juror {
-        uint[] subcourtIDS; // The IDs of subcourts where the juror has activation path ends
-        mapping(uint => bool) currentSubcourtIDSMap; // Map for efficient lookups of the subcourt IDs list
-        mapping(uint => bool) subcourtIDSMap; // Map for efficient lookups of the subcourt IDs list
-        uint atStake; // The juror's total amount of PNK at stake in disputes
+        uint[] subcourtIDS; // The IDs of subcourts where the juror has activation path ends.
+        mapping(uint => bool) currentSubcourtIDSMap; // Map for efficient lookups of the subcourt IDs list.
+        mapping(uint => bool) subcourtIDSMap; // Map for efficient lookups of the subcourt IDs list.
+        uint atStake; // The juror's total amount of PNK at stake in disputes.
     }
 
     /* Events */
@@ -185,7 +185,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint[4] _timesPerPeriod,
         uint _sortitionSumTreeK
     ) public {
-        // Initialize contract
+        // Initialize contract.
         governor = _governor;
         pinakion = _pinakion;
         _RNG = __RNG;
@@ -193,7 +193,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         maxDrawingTime = _maxDrawingTime;
         lastPhaseChange = block.timestamp; // solium-disable-line security/no-block-members
 
-        // Create the general court
+        // Create the general court.
         courts.push(Court({
             parent: 0,
             children: new uint[](0),
@@ -270,7 +270,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     ) external onlyByGovernor {
         require(courts[_parent].minStake <= _minStake, "A subcourt cannot be a child of a subcourt with a higher minimum stake.");
 
-        // Create the subcourt
+        // Create the subcourt.
         uint _subcourtID = courts.push(Court({
             parent: _parent,
             children: new uint[](0),
@@ -285,7 +285,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         })) - 1;
         createTree(bytes32(_subcourtID), _sortitionSumTreeK);
 
-        // Update the parent
+        // Update the parent.
         if (courts[_parent].vacantChildrenIndexes.length > 0) {
             uint _vacantIndex = courts[_parent].vacantChildrenIndexes[courts[_parent].vacantChildrenIndexes.length - 1];
             courts[_parent].vacantChildrenIndexes.length--;
@@ -304,14 +304,14 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             "A subcourt cannot be a child of a subcourt with a higher minimum stake."
         );
 
-        // Update the old parent's children, if any
+        // Update the old parent's children, if any.
         for (uint i = 0; i < courts[courts[_subcourtID].parent].children.length; i++)
             if (courts[courts[_subcourtID].parent].children[i] == _subcourtID) {
                 delete courts[courts[_subcourtID].parent].children[i];
                 courts[courts[_subcourtID].parent].vacantChildrenIndexes.push(i);
             }
         
-        // Set the new parent
+        // Set the new parent.
         courts[_subcourtID].parent = _parent;
     }
 
@@ -614,7 +614,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         bytes _extraData
     ) public payable requireAppealFee(_disputeID, _extraData) onlyDuringPeriod(_disputeID, Period.appeal) {
         Dispute storage dispute = disputes[_disputeID];
-        if (dispute.votes[dispute.votes.length - 1].length >= courts[dispute.subcourtID].jurorsForJump) // Jump to parent subcourt
+        if (dispute.votes[dispute.votes.length - 1].length >= courts[dispute.subcourtID].jurorsForJump) // Jump to parent subcourt.
             dispute.subcourtID = courts[dispute.subcourtID].parent;
         dispute.period = Period.evidence;
         dispute.votes.push(new Vote[](msg.value / courts[dispute.subcourtID].jurorFee));
@@ -676,12 +676,12 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     function appealCost(uint _disputeID, bytes _extraData) public view returns(uint cost) {
         Dispute storage dispute = disputes[_disputeID];
         uint _lastNumberOfJurors = dispute.votes[dispute.votes.length - 1].length;
-        if (_lastNumberOfJurors >= courts[dispute.subcourtID].jurorsForJump) // Jump to parent subcourt
-            if (dispute.subcourtID == 0) // Already in the general court
+        if (_lastNumberOfJurors >= courts[dispute.subcourtID].jurorsForJump) // Jump to parent subcourt.
+            if (dispute.subcourtID == 0) // Already in the general court.
                 cost = NON_PAYABLE_AMOUNT;
             else
                 cost = courts[courts[dispute.subcourtID].parent].jurorFee * courts[courts[dispute.subcourtID].parent].minJurors;
-        else // Stay in current subcourt
+        else // Stay in current subcourt.
             cost = courts[dispute.subcourtID].jurorFee * ((_lastNumberOfJurors * 2) + 1);
     }
 

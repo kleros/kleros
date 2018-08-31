@@ -45,8 +45,8 @@ contract SortitionSumTreeFactory is KArySumTreeFactory {
         sortitionSumTrees[_key].addressesToTreeIndexes[_address] = treeIndex;
         sortitionSumTrees[_key].treeIndexesToAddresses[treeIndex] = _address;
 
-        // Parent could have been turned into a sum node
-        if (treeIndex != 1 && (treeIndex - 1) % tree.K == 0) { // Is first child
+        // Parent could have been turned into a sum node.
+        if (treeIndex != 1 && (treeIndex - 1) % tree.K == 0) { // Is first child.
             uint _parentIndex = treeIndex / tree.K;
             address _parentAddress = sortitionSumTrees[_key].treeIndexesToAddresses[_parentIndex];
             uint _newIndex = treeIndex + 1;
@@ -97,13 +97,13 @@ contract SortitionSumTreeFactory is KArySumTreeFactory {
         uint _treeIndex = 0;
         uint _currentDrawnNumber = _drawnNumber % tree.tree[0];
 
-        while ((tree.K * _treeIndex) + 1 < tree.tree.length)  // While it still has children
-            for (uint i = 1; i <= tree.K; i++) { // Loop over children
+        while ((tree.K * _treeIndex) + 1 < tree.tree.length)  // While it still has children.
+            for (uint i = 1; i <= tree.K; i++) { // Loop over children.
                 uint _nodeIndex = (tree.K * _treeIndex) + i;
                 uint _nodeValue = tree.tree[_nodeIndex];
 
-                if (_currentDrawnNumber >= _nodeValue) _currentDrawnNumber -= _nodeValue; // Go to the next child
-                else { // Pick this child
+                if (_currentDrawnNumber >= _nodeValue) _currentDrawnNumber -= _nodeValue; // Go to the next child.
+                else { // Pick this child.
                     _treeIndex = _nodeIndex;
                     break;
                 }
@@ -116,7 +116,7 @@ contract SortitionSumTreeFactory is KArySumTreeFactory {
      *  @param _key The key of the tree.
      *  @param _address The candidate's address.
      */
-    function stakeOf(bytes32 _key, address _address) internal view returns(uint value) { // UNTESTED
+    function stakeOf(bytes32 _key, address _address) internal view returns(uint value) { // UNTESTED.
         KArySumTree storage tree = kArySumTrees[_key];
         uint _treeIndex = sortitionSumTrees[_key].addressesToTreeIndexes[_address];
         if (_treeIndex == 0) value = 0;
