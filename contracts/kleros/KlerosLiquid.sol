@@ -484,6 +484,22 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
         dispute.appealCommits[dispute.appealCommits.length - 1]++;
     }
 
+    /** @dev Sets the caller's choice for a specified vote.
+     *  @param _disputeID The ID of the dispute.
+     *  @param _voteID The ID of the vote.
+     *  @param _choice The choice.
+     */
+    function vote(uint _disputeID, uint _voteID, uint _choice) external onlyDuringPeriod(_disputeID, Period.vote) {
+        Dispute storage dispute = disputes[_disputeID];
+        require(dispute.votes[dispute.votes.length - 1][_voteID]._address == msg.sender, "The caller has to own the vote.");
+        require(
+            !courts[dispute.subcourtID].hidden || dispute.votes[dispute.votes.length - 1][_voteID].commit == keccak256(_disputeID, _voteID, _choice),
+            "The commit must match the choice in hidden subcourts."
+        );
+        dispute.votes[dispute.votes.length - 1][_voteID].choice = _choice;
+        dispute.appealVotes[dispute.appealVotes.length - 1]++;
+    }
+
     /* External Views */
 
     
