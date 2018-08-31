@@ -119,7 +119,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     // General Contracts
     address public governor;
     Pinakion public pinakion;
-    RNG public _RNG;
+    RNG public RNGenerator;
     // General Dynamic
     Phase public phase;
     uint public lastPhaseChange;
@@ -158,7 +158,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     /** @dev Constructs the KlerosLiquid contract.
      *  @param _governor The governor's address.
      *  @param _pinakion The address of the token contract.
-     *  @param __RNG The address of the RNG contract.
+     *  @param _RNGenerator The address of the RNG contract.
      *  @param _minStakingTime The minimum time that the staking phase should last.
      *  @param _maxDrawingTime The maximum time that the drawing phase should last.
      *  @param _hiddenVotes The `hiddenVotes` property value of the general court.
@@ -173,7 +173,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     constructor(
         address _governor,
         Pinakion _pinakion,
-        RNG __RNG,
+        RNG _RNGenerator,
         uint _minStakingTime,
         uint _maxDrawingTime,
         bool _hiddenVotes,
@@ -188,7 +188,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         // Initialize contract.
         governor = _governor;
         pinakion = _pinakion;
-        _RNG = __RNG;
+        RNGenerator = _RNGenerator;
         minStakingTime = _minStakingTime;
         maxDrawingTime = _maxDrawingTime;
         lastPhaseChange = block.timestamp; // solium-disable-line security/no-block-members
@@ -225,11 +225,11 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         pinakion = _pinakion;
     }
 
-    /** @dev Changes the `_RNG` storage variable.
-     *  @param __RNG The new value for the `_RNG` storage variable.
+    /** @dev Changes the `RNGenerator` storage variable.
+     *  @param _RNGenerator The new value for the `RNGenerator` storage variable.
      */
-    function change_RNG(RNG __RNG) external onlyByGovernor {
-        _RNG = __RNG;
+    function changeRNGenerator(RNG _RNGenerator) external onlyByGovernor {
+        RNGenerator = _RNGenerator;
     }
 
     /** @dev Changes the `minStakingTime` storage variable.
@@ -378,10 +378,10 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             require(block.timestamp - lastPhaseChange >= minStakingTime, "The minimum staking time has not passed yet.");
             require(disputesWithoutJurors > 0, "There are no disputes that need jurors.");
             RNBlock = block.number + 1;
-            _RNG.requestRN(RNBlock);
+            RNGenerator.requestRN(RNBlock);
             phase = Phase.generating;
         } else if (phase == Phase.generating) {
-            RN = _RNG.getUncorrelatedRN(RNBlock);
+            RN = RNGenerator.getUncorrelatedRN(RNBlock);
             require(RN != 0, "Random number is not ready yet.");
             phase = Phase.drawing;
         } else if (phase == Phase.drawing) {
