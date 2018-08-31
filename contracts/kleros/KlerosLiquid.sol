@@ -62,7 +62,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     struct Dispute {
         uint subcourtID; // The ID of the subcourt the dispute is in.
         Arbitrable arbitrated; // The arbitrated arbitrable contract.
-        uint choices; // The number of choices jurors have when voting.
+        uint numberOfChoices; // The number of choices jurors have when voting.
         Period period; // The current period of the dispute.
         uint lastPeriodChange; // The last time the period was changed.
         Vote[][] votes; // The votes in the form `votes[appeal][voteID]`.
@@ -511,7 +511,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     function vote(uint _disputeID, uint _voteID, uint _choice, uint _salt) external onlyDuringPeriod(_disputeID, Period.vote) {
         Dispute storage dispute = disputes[_disputeID];
         require(dispute.votes[dispute.votes.length - 1][_voteID]._address == msg.sender, "The caller has to own the vote.");
-        require(dispute.choices > _choice, "The choice has to be less than the number of choices for the dispute.");
+        require(dispute.numberOfChoices > _choice, "The choice has to be less than the number of choices for the dispute.");
         require(
             !courts[dispute.subcourtID].hidden || dispute.votes[dispute.votes.length - 1][_voteID].commit == keccak256(_disputeID, _voteID, _choice, _salt),
             "The commit must match the choice in hidden subcourts."
@@ -565,20 +565,20 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
 
     /** @dev Creates a dispute. Must be called by the arbitrable contract.
      *  @param _subcourtID The ID of the subcourt to create the dispute in.
-     *  @param _choices Number of choices to choose from in the dispute to be created.
+     *  @param _numberOfChoices Number of choices to choose from in the dispute to be created.
      *  @param _extraData Additional info about the dispute to be created.
      *  @return The ID of the created dispute.
      */
     function createDispute(
         uint _subcourtID,
-        uint _choices,
+        uint _numberOfChoices,
         bytes _extraData
     ) public payable requireArbitrationFee(_extraData) returns(uint disputeID)  {
-        require(_choices == 2, "We only support binary disputes for now.");
+        require(_numberOfChoices == 2, "We only support binary disputes for now.");
         disputeID = disputes.push(Dispute({
             subcourtID: _subcourtID,
             arbitrated: Arbitrable(msg.sender),
-            choices: _choices,
+            numberOfChoices: _numberOfChoices,
             period: Period.evidence,
             // solium-disable-next-line security/no-block-members
             lastPeriodChange: block.timestamp,
@@ -593,7 +593,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         })) - 1;
         Dispute storage dispute = disputes[disputeID];
         dispute.votes.push(new Vote[](msg.value / courts[dispute.subcourtID].jurorFee));
-        dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.choices) }));
+        dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.numberOfChoices) }));
         dispute.jurorAtStake.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalJurorFees.push(msg.value);
         dispute.appealDraws.push(0);
@@ -618,7 +618,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             dispute.subcourtID = courts[dispute.subcourtID].parent;
         dispute.period = Period.evidence;
         dispute.votes.push(new Vote[](msg.value / courts[dispute.subcourtID].jurorFee));
-        dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.choices) }));
+        dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.numberOfChoices) }));
         dispute.jurorAtStake.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalJurorFees.push(msg.value);
         dispute.appealDraws.push(0);
