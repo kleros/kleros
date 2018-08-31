@@ -51,6 +51,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
     // Dispute
     struct Vote {
         address _address; // The address of the juror
+        bytes32 commit; // The commit of the juror. For hidden courts
         uint choice; // The choice of the juror
     }
     struct VoteCounter {
@@ -469,6 +470,18 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
             dispute.appealDraws[dispute.appealDraws.length - 1]++;
             emit Draw(_disputeID, dispute.arbitrated, _drawnAddress, i);
         }
+    }
+
+    /** @dev Sets the caller's commit for a specified vote.
+     *  @param _disputeID The ID of the dispute.
+     *  @param _voteID The ID of the vote.
+     *  @param _commit The commit.
+     */
+    function commit(uint _disputeID, uint _voteID, bytes32 _commit) external onlyDuringPeriod(_disputeID, Period.commit) {
+        Dispute storage dispute = disputes[_disputeID];
+        require(dispute.votes[dispute.votes.length - 1][_voteID]._address == msg.sender, "The caller has to own the vote.");
+        dispute.votes[dispute.votes.length - 1][_voteID].commit = _commit;
+        dispute.appealCommits[dispute.appealCommits.length - 1]++;
     }
 
     /* External Views */
