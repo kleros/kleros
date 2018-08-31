@@ -506,13 +506,14 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param _disputeID The ID of the dispute.
      *  @param _voteID The ID of the vote.
      *  @param _choice The choice.
+     *  @param _salt The salt for the commit if the vote was hidden.
      */
-    function vote(uint _disputeID, uint _voteID, uint _choice) external onlyDuringPeriod(_disputeID, Period.vote) {
+    function vote(uint _disputeID, uint _voteID, uint _choice, uint _salt) external onlyDuringPeriod(_disputeID, Period.vote) {
         Dispute storage dispute = disputes[_disputeID];
         require(dispute.votes[dispute.votes.length - 1][_voteID]._address == msg.sender, "The caller has to own the vote.");
         require(dispute.choices > _choice, "The choice has to be less than the number of choices for the dispute.");
         require(
-            !courts[dispute.subcourtID].hidden || dispute.votes[dispute.votes.length - 1][_voteID].commit == keccak256(_disputeID, _voteID, _choice),
+            !courts[dispute.subcourtID].hidden || dispute.votes[dispute.votes.length - 1][_voteID].commit == keccak256(_disputeID, _voteID, _choice, _salt),
             "The commit must match the choice in hidden subcourts."
         );
         dispute.votes[dispute.votes.length - 1][_voteID].choice = _choice;
