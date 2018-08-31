@@ -4,6 +4,7 @@ import "kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
 import "kleros-interaction/contracts/standard/arbitration/Arbitrable.sol";
 import "kleros-interaction/contracts/standard/rng/RNG.sol";
 import { MiniMeTokenERC20 as Pinakion } from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
+import { TokenController } from "minimetoken/contracts/TokenController.sol";
 
 import "../data-structures/SortitionSumTreeFactory.sol";
 
@@ -12,7 +13,7 @@ import "../data-structures/SortitionSumTreeFactory.sol";
  *  @author Enrique Piqueras - <epiquerass@gmail.com>
  *  @dev The main Kleros contract with dispute resolution logic for the Athena release.
  */
-contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
+contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     /* Enums */
 
     // General
@@ -627,6 +628,33 @@ contract KlerosLiquid is SortitionSumTreeFactory, Arbitrator {
 
         emit AppealDecision(_disputeID, Arbitrable(msg.sender));
     }
+
+    /** @dev Called when `_owner` sends ether to the MiniMe Token contract.
+     *  @param _owner The address that sent the ether to create tokens.
+     *  @return Wether the operation should be allowed or not.
+     */
+    function proxyPayment(address _owner) public payable returns(bool allowed) { allowed = true; }
+
+    /** @dev Notifies the controller about a token transfer allowing the controller to react if desired.
+     *  @param _from The origin of the transfer.
+     *  @param _to The destination of the transfer.
+     *  @param _amount The amount of the transfer.
+     *  @return Wether the operation should be allowed or not.
+     */
+    function onTransfer(address _from, address _to, uint _amount) public returns(bool allowed) {
+        uint _newBalance = pinakion.balanceOf(_from) - _amount;
+        require(_newBalance >= stakeOf(bytes32(0), msg.sender), "Cannot transfer an amount that would make balance less than stake.");
+        require(_newBalance >= jurors[_from].atStake, "Cannot transfer an amount that would make balance less than locked stake.");
+        allowed = true;
+    }
+
+    /** @dev Notifies the controller about an approval allowing the controller to react if desired.
+     *  @param _owner The address that calls `approve()`.
+     *  @param _spender The spender in the `approve()` call.
+     *  @param _amount The amount in the `approve()` call.
+     *  @return Wether the operation should be allowed or not.
+     */
+    function onApprove(address _owner, address _spender, uint _amount) public returns(bool allowed) { allowed = true; }
 
     /* Public Views */
 
