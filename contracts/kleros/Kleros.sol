@@ -177,7 +177,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
 
     /** @dev Withdraw tokens. Note that we can't withdraw the tokens which are still atStake. 
      *  Jurors can't withdraw their tokens if they have deposited some during this session.
-     *  This is to prevent jurors from withdrawing tokens they could loose.
+     *  This is to prevent jurors from withdrawing tokens they could lose.
      *  @param _value The amount to withdraw.
      */
     function withdraw(uint _value) public {
