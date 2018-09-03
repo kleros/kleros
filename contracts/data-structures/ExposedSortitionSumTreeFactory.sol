@@ -62,4 +62,12 @@ contract ExposedSortitionSumTreeFactory is ExposedKArySumTreeFactory, SortitionS
     function _draw(bytes32 _key, uint _drawnNumber) public view returns(address _address) {
         return draw(_key, _drawnNumber);
     }
+
+    /** @dev Gets a specified candidate's associated value.
+     *  @param _key The key of the tree.
+     *  @param _address The candidate's address.
+     */
+    function _stakeOf(bytes32 _key, address _address) public view returns(uint value) {
+        return stakeOf(_key, _address);
+    }
 }

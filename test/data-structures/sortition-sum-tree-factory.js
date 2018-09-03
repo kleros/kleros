@@ -1,4 +1,4 @@
-/* globals artifacts, contract, expect */
+/* globals artifacts, contract, expect, web3 */
 const { expectThrow } = require('kleros-interaction/helpers/utils')
 
 const ExposedSortitionSumTreeFactory = artifacts.require(
@@ -110,9 +110,36 @@ contract('SortitionSumTreeFactory', () =>
       candidates.carl.value,
       candidates.carl.address
     )
+    // Setting to 0 should also remove him
+    await sortitionSumTreeFactory._set(
+      tree.key,
+      candidates.carl.treeIndex,
+      0,
+      candidates.carl.address
+    )
+    // Should not be able to append 0
+    await expectThrow(
+      sortitionSumTreeFactory._append(tree.key, 0, candidates.carl.address)
+    )
+    candidates.carl.treeIndex = await sortitionSumTreeFactory._append.call(
+      tree.key,
+      candidates.carl.value,
+      candidates.carl.address
+    )
+    await sortitionSumTreeFactory._append(
+      tree.key,
+      candidates.carl.value,
+      candidates.carl.address
+    )
     expect(await sortitionSumTreeFactory._draw(tree.key, 27)).to.equal(
       candidates.carl.address
     )
+
+    // Test stake view
+    for (const candidate of Object.values(candidates))
+      expect(
+        await sortitionSumTreeFactory._stakeOf(tree.key, candidate.address)
+      ).to.deep.equal(web3.toBigNumber(candidate.value))
 
     // Delete the tree
     await sortitionSumTreeFactory._deleteTree(tree.key)

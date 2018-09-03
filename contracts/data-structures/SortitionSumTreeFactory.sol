@@ -116,7 +116,7 @@ contract SortitionSumTreeFactory is KArySumTreeFactory {
      *  @param _key The key of the tree.
      *  @param _address The candidate's address.
      */
-    function stakeOf(bytes32 _key, address _address) internal view returns(uint value) { // UNTESTED.
+    function stakeOf(bytes32 _key, address _address) internal view returns(uint value) {
         KArySumTree storage tree = kArySumTrees[_key];
         uint _treeIndex = sortitionSumTrees[_key].addressesToTreeIndexes[_address];
         if (_treeIndex == 0) value = 0;
