@@ -1,4 +1,6 @@
 /* globals artifacts, contract, expect */
+const { expectThrow } = require('kleros-interaction/helpers/utils')
+
 const ExposedSortitionSumTreeFactory = artifacts.require(
   './data-structures/ExposedSortitionSumTreeFactory.sol'
 )
@@ -55,18 +57,14 @@ contract('SortitionSumTreeFactory', () =>
     )
 
     // Set Alice to 14 to draw her with 13 and then set her back to 10 to draw Bob again
-    let aliceSetThrew = false
-    try {
-      await sortitionSumTreeFactory._set(
+    await expectThrow(
+      sortitionSumTreeFactory._set(
         tree.key,
         candidates.alice.treeIndex,
         14,
         candidates.bob.address // Only the owner should be able to set the value
       )
-    } catch (err) {
-      aliceSetThrew = err
-    }
-    expect(aliceSetThrew).to.be.an.instanceof(Error)
+    )
     await sortitionSumTreeFactory._set(
       tree.key,
       candidates.alice.treeIndex,
@@ -87,17 +85,13 @@ contract('SortitionSumTreeFactory', () =>
     )
 
     // Remove Carl to draw Dave with 27 and add him back in to draw him again
-    let carlRemoveThrew = false
-    try {
-      await sortitionSumTreeFactory._remove(
+    await expectThrow(
+      sortitionSumTreeFactory._remove(
         tree.key,
         candidates.carl.treeIndex,
         candidates.dave.address // Only the owner should be able to remove the value
       )
-    } catch (err) {
-      carlRemoveThrew = err
-    }
-    expect(carlRemoveThrew).to.be.an.instanceof(Error)
+    )
     await sortitionSumTreeFactory._remove(
       tree.key,
       candidates.carl.treeIndex,
