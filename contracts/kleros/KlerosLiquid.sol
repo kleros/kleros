@@ -3,6 +3,7 @@ pragma solidity ^0.4.24;
 import "kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
 import "kleros-interaction/contracts/standard/arbitration/Arbitrable.sol";
 import "kleros-interaction/contracts/standard/rng/RNG.sol";
+import "kleros-interaction/contracts/standard/rng/ConstantNG.sol"; // Compile for tests
 import { MiniMeTokenERC20 as Pinakion } from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
 import { TokenController } from "minimetoken/contracts/TokenController.sol";
 
@@ -47,6 +48,15 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         // The appeal after the one that reaches this number of jurors will go to the parent court if any, otherwise, no more appeals are possible.
         uint jurorsForJump;
         uint[4] timesPerPeriod; // The time allotted to each dispute period in the form `timesPerPeriod[period]`.
+    }
+    struct ExecutionCache { // Needed to avoid stack depth error in `execute()`.
+        uint winningChoice;
+        uint startIndex;
+        uint endIndex;
+        uint coherentCount;
+        uint incoherentCount;
+        uint tokenReward;
+        uint ETHReward;
     }
 
     // Dispute
@@ -128,6 +138,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     uint public RN;
     uint public minStakingTime;
     uint public maxDrawingTime;
+    ExecutionCache executionCache;
     // General Storage
     Court[] public courts;
 
@@ -530,24 +541,24 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      */
     function execute(uint _disputeID, uint _appeal, uint _iterations) external onlyDuringPeriod(_disputeID, Period.execution) {
         Dispute storage dispute = disputes[_disputeID];
-        uint _winningChoice = dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice;
-        uint _startIndex = dispute.appealRepartitions[_appeal];
-        uint _endIndex = _iterations == 0 ? dispute.votes[_appeal].length : _startIndex + _iterations;
+        executionCache.winningChoice = dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice;
+        executionCache.startIndex = dispute.appealRepartitions[_appeal];
+        executionCache.endIndex = _iterations == 0 ? dispute.votes[_appeal].length : executionCache.startIndex + _iterations;
 
-        uint _coherentCount = dispute.voteCounters[_appeal].counts[_winningChoice];
-        if (_coherentCount != 0) {
-            if (_appeal == 0 && _startIndex == 0) dispute.arbitrated.rule(_disputeID, _winningChoice);
-            uint _incoherentCount = dispute.votes[_appeal].length - _coherentCount;
-            uint _tokenReward = (dispute.jurorAtStake[_appeal] * _incoherentCount) / _coherentCount;
-            uint _ETHReward = dispute.totalJurorFees[_appeal] / _coherentCount;
+        executionCache.coherentCount = dispute.voteCounters[_appeal].counts[executionCache.winningChoice];
+        if (executionCache.coherentCount != 0) {
+            if (_appeal == 0 && executionCache.startIndex == 0) dispute.arbitrated.rule(_disputeID, executionCache.winningChoice);
+            executionCache.incoherentCount = dispute.votes[_appeal].length - executionCache.coherentCount;
+            executionCache.tokenReward = (dispute.jurorAtStake[_appeal] * executionCache.incoherentCount) / executionCache.coherentCount;
+            executionCache.ETHReward = dispute.totalJurorFees[_appeal] / executionCache.coherentCount;
         }
 
-        for (uint i = _startIndex; i < _endIndex; i++) {
+        for (uint i = executionCache.startIndex; i < executionCache.endIndex; i++) {
             Vote storage vote = dispute.votes[_appeal][i];
-            if (vote.choice == _winningChoice) {
-                pinakion.transfer(vote._address, _tokenReward);
-                vote._address.transfer(_ETHReward);
-                emit TokenAndETHShift(_disputeID, vote._address, int(_tokenReward), int(_ETHReward));
+            if (vote.choice == executionCache.winningChoice) {
+                pinakion.transfer(vote._address, executionCache.tokenReward);
+                vote._address.transfer(executionCache.ETHReward);
+                emit TokenAndETHShift(_disputeID, vote._address, int(executionCache.tokenReward), int(executionCache.ETHReward));
             } else {
                 pinakion.transferFrom(vote._address, this, dispute.jurorAtStake[_appeal]);
                 emit TokenAndETHShift(_disputeID, vote._address, -int(dispute.jurorAtStake[_appeal]), 0);
@@ -575,24 +586,15 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         bytes _extraData
     ) public payable requireArbitrationFee(_extraData) returns(uint disputeID)  {
         require(_numberOfChoices == 2, "We only support binary disputes for now.");
-        disputeID = disputes.push(Dispute({
-            subcourtID: _subcourtID,
-            arbitrated: Arbitrable(msg.sender),
-            numberOfChoices: _numberOfChoices,
-            period: Period.evidence,
-            // solium-disable-next-line security/no-block-members
-            lastPeriodChange: block.timestamp,
-            votes: new Vote[][](0),
-            voteCounters: new VoteCounter[](0),
-            jurorAtStake: new uint[](0),
-            totalJurorFees: new uint[](0),
-            appealDraws: new uint[](0),
-            appealCommits: new uint[](0),
-            appealVotes: new uint[](0),
-            appealRepartitions: new uint[](0)
-        })) - 1;
+        disputeID = disputes.length++;
         Dispute storage dispute = disputes[disputeID];
-        dispute.votes.push(new Vote[](msg.value / courts[dispute.subcourtID].jurorFee));
+        dispute.subcourtID = _subcourtID;
+        dispute.arbitrated = Arbitrable(msg.sender);
+        dispute.numberOfChoices = _numberOfChoices;
+        dispute.period = Period.evidence;
+        // solium-disable-next-line security/no-block-members
+        dispute.lastPeriodChange = block.timestamp;
+        dispute.votes[dispute.votes.length - 1].length = msg.value / courts[dispute.subcourtID].jurorFee;
         dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.numberOfChoices) }));
         dispute.jurorAtStake.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalJurorFees.push(msg.value);
@@ -617,7 +619,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         if (dispute.votes[dispute.votes.length - 1].length >= courts[dispute.subcourtID].jurorsForJump) // Jump to parent subcourt.
             dispute.subcourtID = courts[dispute.subcourtID].parent;
         dispute.period = Period.evidence;
-        dispute.votes.push(new Vote[](msg.value / courts[dispute.subcourtID].jurorFee));
+        dispute.votes[dispute.votes.length - 1].length = msg.value / courts[dispute.subcourtID].jurorFee;
         dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.numberOfChoices) }));
         dispute.jurorAtStake.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalJurorFees.push(msg.value);
@@ -658,6 +660,14 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     function onApprove(address _owner, address _spender, uint _amount) public returns(bool allowed) { allowed = true; }
 
     /* Public Views */
+
+    /** @dev Implement original `arbitrationCost()` from standard for compilation.
+     *  @param _extraData Additional info about the dispute.
+     *  @return The cost.
+     */
+    function arbitrationCost(bytes _extraData) public view returns(uint cost) {
+        cost = NON_PAYABLE_AMOUNT;
+    }
 
     /** @dev Get the cost of arbitration in a specified subcourt.
      *  @param _subcourtID The ID of the subcourt.
