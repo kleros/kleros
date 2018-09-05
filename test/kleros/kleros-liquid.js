@@ -223,5 +223,59 @@ contract('KlerosLiquid', accounts =>
         ]),
       subcourtMap
     )
+
+    // Test subcourt governance
+    await checkOnlyByGovernor(
+      async () => (await klerosLiquid.courts(0))[1],
+      subcourtTree.hiddenVotes,
+      (nextValue, ...args) =>
+        klerosLiquid.changeSubcourtHiddenVotes(0, nextValue, ...args),
+      true,
+      accounts[2]
+    )
+    await checkOnlyByGovernor(
+      async () => (await klerosLiquid.courts(0))[2],
+      subcourtTree.minStake,
+      (nextValue, ...args) =>
+        klerosLiquid.changeSubcourtMinStake(0, nextValue, ...args),
+      0,
+      accounts[2]
+    )
+    await checkOnlyByGovernor(
+      async () => (await klerosLiquid.courts(0))[3],
+      subcourtTree.alpha,
+      (nextValue, ...args) =>
+        klerosLiquid.changeSubcourtAlpha(0, nextValue, ...args),
+      0,
+      accounts[2]
+    )
+    await checkOnlyByGovernor(
+      async () => (await klerosLiquid.courts(0))[4],
+      subcourtTree.jurorFee,
+      (nextValue, ...args) =>
+        klerosLiquid.changeSubcourtJurorFee(0, nextValue, ...args),
+      0,
+      accounts[2]
+    )
+    await checkOnlyByGovernor(
+      async () => (await klerosLiquid.courts(0))[5],
+      subcourtTree.minJurors,
+      (nextValue, ...args) =>
+        klerosLiquid.changeSubcourtMinJurors(0, nextValue, ...args),
+      0,
+      accounts[2]
+    )
+    await checkOnlyByGovernor(
+      async () => (await klerosLiquid.courts(0))[6],
+      subcourtTree.jurorsForJump,
+      (nextValue, ...args) =>
+        klerosLiquid.changeSubcourtJurorsForJump(0, nextValue, ...args),
+      0,
+      accounts[2]
+    )
+    await klerosLiquid.changeSubcourtTimesPerPeriod(
+      0,
+      subcourtTree.timesPerPeriod
+    )
   })
 )
