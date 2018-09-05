@@ -7,7 +7,7 @@ const Pinakion = artifacts.require(
 const ConstantNG = artifacts.require(
   'kleros-interaction/contracts/standard/rng/ConstantNG.sol'
 )
-const KlerosLiquid = artifacts.require('./data-structures/KlerosLiquid.sol')
+const KlerosLiquid = artifacts.require('./kleros/KlerosLiquid.sol')
 
 // Helpers
 const randomInt = (max, min = 1) =>
