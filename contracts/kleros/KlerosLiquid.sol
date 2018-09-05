@@ -585,7 +585,11 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint _subcourtID,
         uint _numberOfChoices,
         bytes _extraData
-    ) public payable requireArbitrationFee(_extraData) returns(uint disputeID)  {
+    ) public payable returns(uint disputeID)  {
+        require(
+            msg.value >= arbitrationCost(_subcourtID, _extraData),
+            "There is not enough ETH to pay the minimum number of jurors for disputes in this subcourt."
+        );
         require(_numberOfChoices == 2, "We only support binary disputes for now.");
         disputeID = disputes.length++;
         Dispute storage dispute = disputes[disputeID];
