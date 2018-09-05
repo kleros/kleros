@@ -320,6 +320,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             if (courts[courts[_subcourtID].parent].children[i] == _subcourtID) {
                 delete courts[courts[_subcourtID].parent].children[i];
                 courts[courts[_subcourtID].parent].vacantChildrenIndexes.push(i);
+                break;
             }
         
         // Set the new parent.
