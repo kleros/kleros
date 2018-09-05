@@ -5,8 +5,8 @@ const ExposedKArySumTreeFactory = artifacts.require(
 
 // Helpers
 const generateValues = K =>
-  [...new Array(Math.floor(K ** 2 + Math.random() * K))].map(
-    _ => Math.floor(Math.random() * 100) + 1
+  [...new Array(Math.floor(K ** 2 + Math.random() * K))].map(_ =>
+    Math.ceil(Math.random() * 100)
   )
 const checkTree = async (kArySumTreeFactory, key) => {
   // Fetch tree
