@@ -12,23 +12,49 @@ const KlerosLiquid = artifacts.require('./kleros/KlerosLiquid.sol')
 // Helpers
 const randomInt = (max, min = 1) =>
   Math.max(min, Math.ceil(Math.random() * max))
-const generateSubcourts = (K, depth, ID = 0) => ({
-  ID,
-  hiddenVotes: Math.random() < 0.5,
-  minStake: randomInt(100),
-  alpha: randomInt(1000),
-  jurorFee: randomInt(100),
-  minJurors: randomInt(5, 3),
-  jurorsForJump: randomInt(15, 3),
-  timesPerPeriod: [...new Array(4)].map(_ => randomInt(5)),
-  sortitionSumTreeK: randomInt(5),
-  children:
-    depth > 1
-      ? [...new Array(K)].map((_, i) =>
-          generateSubcourts(K, depth - 1, K * ID + i)
-        )
-      : undefined
-})
+const generateSubcourts = (
+  K,
+  depth,
+  ID = 0,
+  minStake = 0,
+  subcourtMap = {}
+) => {
+  const newMinStake = Math.max(randomInt(100), minStake)
+  const subcourtTree = {
+    ID,
+    hiddenVotes: Math.random() < 0.5,
+    minStake: newMinStake,
+    alpha: randomInt(1000),
+    jurorFee: randomInt(100),
+    minJurors: randomInt(5, 3),
+    jurorsForJump: randomInt(15, 3),
+    timesPerPeriod: [...new Array(4)].map(_ => randomInt(5)),
+    sortitionSumTreeK: randomInt(5),
+    children:
+      depth > 1
+        ? [...new Array(K)].map((_, i) =>
+            generateSubcourts(
+              K,
+              depth - 1,
+              K * ID + i + 1,
+              newMinStake,
+              subcourtMap
+            )
+          )
+        : undefined
+  }
+  if (ID === 0) subcourtTree.parent = 0
+  else {
+    subcourtTree.parent = Math.floor((ID - 1) / K)
+    subcourtMap[subcourtTree.ID] = {
+      ...subcourtTree,
+      children:
+        subcourtTree.children &&
+        subcourtTree.children.map(child => child.subcourtTree.ID)
+    }
+  }
+  return { subcourtTree, subcourtMap }
+}
 const checkOnlyByGovernor = async (
   getter,
   value,
@@ -43,6 +69,10 @@ const checkOnlyByGovernor = async (
   ) // Check it was set properly
   await expectThrow(method(value, { from: invalidFrom })) // Throw when setting from a non governor address
   await method(value, nextFrom && { from: nextFrom }) // Set back to the original value
+}
+const asyncForEach = async (method, iterable) => {
+  const array = Array.isArray(iterable) ? iterable : Object.values(iterable)
+  for (const item of array) await method(item)
 }
 
 contract('KlerosLiquid', accounts =>
@@ -62,7 +92,7 @@ contract('KlerosLiquid', accounts =>
     const governor = accounts[0]
     const minStakingTime = 1
     const maxDrawingTime = 1
-    const subcourtTree = generateSubcourts(randomInt(5, 2), randomInt(5, 3))
+    const { subcourtTree, subcourtMap } = generateSubcourts(randomInt(4, 2), 3)
     const klerosLiquid = await KlerosLiquid.new(
       governor,
       pinakion.address,
@@ -115,6 +145,23 @@ contract('KlerosLiquid', accounts =>
       klerosLiquid.changeMaxDrawingTime,
       0,
       accounts[2]
+    )
+
+    // Create subcourts and check hierarchy
+    await asyncForEach(
+      subcourt =>
+        klerosLiquid.createSubcourt(
+          subcourt.parent,
+          subcourt.hiddenVotes,
+          subcourt.minStake,
+          subcourt.alpha,
+          subcourt.jurorFee,
+          subcourt.minJurors,
+          subcourt.jurorsForJump,
+          subcourt.timesPerPeriod,
+          subcourt.sortitionSumTreeK
+        ),
+      subcourtMap
     )
   })
 )
