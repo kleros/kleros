@@ -62,7 +62,7 @@ contract('KlerosLiquid', accounts =>
     const governor = accounts[0]
     const minStakingTime = 1
     const maxDrawingTime = 1
-    const subcourtTree = generateSubcourts(2, 3)
+    const subcourtTree = generateSubcourts(randomInt(5, 2), randomInt(5, 3))
     const klerosLiquid = await KlerosLiquid.new(
       governor,
       pinakion.address,

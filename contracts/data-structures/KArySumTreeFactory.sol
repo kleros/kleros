@@ -26,6 +26,7 @@ contract KArySumTreeFactory {
      *  @param _K The number of children each node in the tree should have.
      */
     function createTree(bytes32 _key, uint _K) internal {
+        require(_K > 0, "K must be greater than zero.");
         kArySumTrees[_key].K = _K;
         kArySumTrees[_key].stack.length = 0;
         kArySumTrees[_key].tree.length = 0;
