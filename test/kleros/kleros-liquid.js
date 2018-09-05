@@ -163,5 +163,18 @@ contract('KlerosLiquid', accounts =>
         ),
       subcourtMap
     )
+    await asyncForEach(
+      async subcourt =>
+        expect(await klerosLiquid.courts(subcourt.ID)).to.deep.equal([
+          web3.toBigNumber(subcourt.parent),
+          subcourt.hiddenVotes,
+          web3.toBigNumber(subcourt.minStake),
+          web3.toBigNumber(subcourt.alpha),
+          web3.toBigNumber(subcourt.jurorFee),
+          web3.toBigNumber(subcourt.minJurors),
+          web3.toBigNumber(subcourt.jurorsForJump)
+        ]),
+      subcourtMap
+    )
   })
 )
