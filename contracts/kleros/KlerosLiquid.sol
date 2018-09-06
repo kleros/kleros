@@ -489,7 +489,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param _disputeID The ID of the dispute.
      *  @param _iterations The number of iterations to run.
      */
-    function draw(uint _disputeID, uint _iterations) external onlyDuringPeriod(_disputeID, Period.evidence) {
+    function draw(uint _disputeID, uint _iterations) external onlyDuringPhase(Phase.drawing) onlyDuringPeriod(_disputeID, Period.evidence) {
         Dispute storage dispute = disputes[_disputeID];
         uint _startIndex = dispute.appealDraws[dispute.appealDraws.length - 1];
         uint _endIndex = _iterations == 0 ? dispute.votes[dispute.votes.length - 1].length : _startIndex + _iterations;
@@ -599,7 +599,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         dispute.period = Period.evidence;
         // solium-disable-next-line security/no-block-members
         dispute.lastPeriodChange = block.timestamp;
-        dispute.votes[dispute.votes.length - 1].length = msg.value / courts[dispute.subcourtID].jurorFee;
+        dispute.votes[dispute.votes.length++].length = msg.value / courts[dispute.subcourtID].jurorFee;
         dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.numberOfChoices) }));
         dispute.jurorAtStake.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalJurorFees.push(msg.value);
@@ -624,7 +624,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         if (dispute.votes[dispute.votes.length - 1].length >= courts[dispute.subcourtID].jurorsForJump) // Jump to parent subcourt.
             dispute.subcourtID = courts[dispute.subcourtID].parent;
         dispute.period = Period.evidence;
-        dispute.votes[dispute.votes.length - 1].length = msg.value / courts[dispute.subcourtID].jurorFee;
+        dispute.votes[dispute.votes.length++].length = msg.value / courts[dispute.subcourtID].jurorFee;
         dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.numberOfChoices) }));
         dispute.jurorAtStake.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalJurorFees.push(msg.value);

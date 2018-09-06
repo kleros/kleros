@@ -277,5 +277,51 @@ contract('KlerosLiquid', accounts =>
       0,
       subcourtTree.timesPerPeriod
     )
+
+    // Test the dispute resolution flow
+    const disputes = [
+      {
+        subcourtID: subcourtTree.children[0].children[0].ID,
+        voteRatios: [0, 1, 2],
+        appeals: 0
+      },
+      {
+        subcourtID: subcourtTree.children[0].children[1].ID,
+        voteRatios: [0, 2, 1],
+        appeals: 1
+      },
+      {
+        subcourtID: subcourtTree.children[1].children[0].ID,
+        voteRatios: [1, 1, 2],
+        appeals: 2
+      },
+      {
+        subcourtID: subcourtTree.children[1].children[1].ID,
+        voteRatios: [1, 2, 1],
+        appeals: 3
+      }
+    ]
+
+    // Create the disputes and set stakes
+    await pinakion.generateTokens(
+      governor,
+      disputes.reduce((acc, d) => acc + subcourtMap[d.subcourtID].minStake, 0)
+    )
+    for (const dispute of disputes) {
+      await klerosLiquid.createDispute(
+        dispute.subcourtID,
+        2,
+        '0x0000000000000000000000000000000000000000',
+        {
+          value:
+            subcourtMap[dispute.subcourtID].jurorFee *
+            (subcourtMap[dispute.subcourtID].minJurors + 1)
+        }
+      )
+      await klerosLiquid.setStake(
+        dispute.subcourtID,
+        subcourtMap[dispute.subcourtID].minStake
+      )
+    }
   })
 )
