@@ -87,9 +87,9 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
 
     // Juror
     struct Juror {
-        uint[] subcourtIDS; // The IDs of subcourts where the juror has activation path ends.
-        mapping(uint => bool) currentSubcourtIDSMap; // Map for efficient lookups of the subcourt IDs list.
-        mapping(uint => bool) subcourtIDSMap; // Map for efficient lookups of the subcourt IDs list.
+        uint[] subcourtIDs; // The IDs of subcourts where the juror has activation path ends.
+        mapping(uint => bool) currentSubcourtIDsMap; // Map for efficient lookups of the subcourt IDs list.
+        mapping(uint => bool) subcourtIDsMap; // Map for efficient lookups of the subcourt IDs list.
         uint atStake; // The juror's total amount of PNK at stake in disputes.
     }
 
@@ -461,13 +461,13 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
 
         Juror storage juror = jurors[msg.sender];
         if (_stake == 0) {
-            if (juror.currentSubcourtIDSMap[_subcourtID]) juror.currentSubcourtIDSMap[_subcourtID] = false;
+            if (juror.currentSubcourtIDsMap[_subcourtID]) juror.currentSubcourtIDsMap[_subcourtID] = false;
         }
-        else if (!juror.subcourtIDSMap[_subcourtID]) {
-            juror.subcourtIDS.push(_subcourtID);
-            juror.currentSubcourtIDSMap[_subcourtID] = true;
-            juror.subcourtIDSMap[_subcourtID] = true;
-        } else if (!juror.currentSubcourtIDSMap[_subcourtID]) juror.currentSubcourtIDSMap[_subcourtID] = true;
+        else if (!juror.subcourtIDsMap[_subcourtID]) {
+            juror.subcourtIDs.push(_subcourtID);
+            juror.currentSubcourtIDsMap[_subcourtID] = true;
+            juror.subcourtIDsMap[_subcourtID] = true;
+        } else if (!juror.currentSubcourtIDsMap[_subcourtID]) juror.currentSubcourtIDsMap[_subcourtID] = true;
 
         bool _finished = false;
         uint _currentSubcourtID = _subcourtID;
