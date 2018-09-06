@@ -109,9 +109,9 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param disputeID The ID of the dispute.
      *  @param arbitrable The arbitrable contract that is ruled by the dispute.
      *  @param _address The drawn address.
-     *  @param _voteID The vote ID.
+     *  @param voteID The vote ID.
      */
-    event Draw(uint indexed disputeID, Arbitrable indexed arbitrable, address indexed _address, uint _voteID);
+    event Draw(uint indexed disputeID, Arbitrable indexed arbitrable, address indexed _address, uint voteID);
 
     /** @dev Emitted when a juror wins or loses tokens and ETH from a dispute.
      *  @param disputeID The ID of the dispute.
