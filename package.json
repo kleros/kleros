@@ -38,7 +38,8 @@
     "kleros-scripts": "^0.10.0",
     "npm-run-all": "^4.1.3",
     "standard-version": "^4.4.0",
-    "truffle": "^4.1.13"
+    "truffle": "^4.1.13",
+    "web3-utils": "^1.0.0-beta.36"
   },
   "dependencies": {
     "kleros-interaction": "^0.0.25",
