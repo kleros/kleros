@@ -1,5 +1,9 @@
 /* globals artifacts, contract, expect, web3 */
-const { expectThrow } = require('kleros-interaction/helpers/utils')
+const { soliditySha3 } = require('web3-utils')
+const {
+  increaseTime,
+  expectThrow
+} = require('kleros-interaction/helpers/utils')
 
 const Pinakion = artifacts.require(
   'kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol'
@@ -22,7 +26,7 @@ const generateSubcourts = (
   const newMinStake = Math.max(randomInt(100), minStake)
   const subcourtTree = {
     ID,
-    hiddenVotes: Math.random() < 0.5,
+    hiddenVotes: ID % 2 === 0,
     minStake: newMinStake,
     alpha: randomInt(1000),
     jurorFee: randomInt(100),
@@ -281,24 +285,28 @@ contract('KlerosLiquid', accounts =>
     // Test the dispute resolution flow
     const disputes = [
       {
+        ID: 0,
         subcourtID: subcourtTree.children[0].children[0].ID,
         voteRatios: [0, 1, 2],
         appeals: 0
       },
       {
+        ID: 1,
         subcourtID: subcourtTree.children[0].children[1].ID,
         voteRatios: [0, 2, 1],
         appeals: 1
       },
       {
+        ID: 2,
         subcourtID: subcourtTree.children[1].children[0].ID,
         voteRatios: [1, 1, 2],
         appeals: 2
       },
       {
+        ID: 3,
         subcourtID: subcourtTree.children[1].children[1].ID,
         voteRatios: [1, 2, 1],
-        appeals: 3
+        appeals: 2
       }
     ]
 
@@ -313,15 +321,92 @@ contract('KlerosLiquid', accounts =>
         2,
         '0x0000000000000000000000000000000000000000',
         {
-          value:
-            subcourtMap[dispute.subcourtID].jurorFee *
-            (subcourtMap[dispute.subcourtID].minJurors + 1)
+          value: await klerosLiquid.arbitrationCost(
+            dispute.subcourtID,
+            '0x0000000000000000000000000000000000000000'
+          )
         }
       )
       await klerosLiquid.setStake(
         dispute.subcourtID,
         subcourtMap[dispute.subcourtID].minStake
       )
+    }
+
+    // Resolve disputes
+    for (const dispute of disputes) {
+      const voteRatioDivisor = dispute.voteRatios.reduce((acc, v) => acc + v, 0)
+      for (let i = 0; i <= dispute.appeals; i++) {
+        // Generate random number
+        increaseTime(minStakingTime)
+        await klerosLiquid.passPhase()
+        await klerosLiquid.passPhase()
+
+        // Draw
+        const drawBlockNumber = (await klerosLiquid.draw(dispute.ID, 0)).receipt
+          .blockNumber
+        const numberOfDraws = (await new Promise((resolve, reject) =>
+          klerosLiquid
+            .Draw({ disputeID: dispute.ID }, { fromBlock: drawBlockNumber })
+            .get((err, logs) => (err ? reject(err) : resolve(logs)))
+        )).length
+        increaseTime(subcourtMap[dispute.subcourtID].timesPerPeriod[0])
+        await klerosLiquid.passPeriod(dispute.ID)
+
+        // Decide votes
+        const votes = dispute.voteRatios
+          .map((voteRatio, i) =>
+            [
+              ...new Array(
+                Math.floor(numberOfDraws * (voteRatio / voteRatioDivisor))
+              )
+            ].map(_ => i)
+          )
+          .reduce((acc, a) => [...acc, ...a], [])
+
+        // Commit
+        if (subcourtMap[dispute.subcourtID].hiddenVotes) {
+          for (let i = 0; i < votes.length; i++)
+            await klerosLiquid.commit(
+              dispute.ID,
+              i,
+              soliditySha3(dispute.ID, i, votes[i], i)
+            )
+          increaseTime(subcourtMap[dispute.subcourtID].timesPerPeriod[1])
+          await klerosLiquid.passPeriod(dispute.ID)
+        }
+
+        // Vote
+        for (let i = 0; i < votes.length; i++)
+          await klerosLiquid.vote(dispute.ID, i, votes[i], i)
+        increaseTime(subcourtMap[dispute.subcourtID].timesPerPeriod[2])
+        await klerosLiquid.passPeriod(dispute.ID)
+
+        // Appeal or execute
+        if (i < dispute.appeals) {
+          await klerosLiquid.appeal(
+            dispute.ID,
+            '0x0000000000000000000000000000000000000000',
+            {
+              value: await klerosLiquid.appealCost(
+                dispute.ID,
+                '0x0000000000000000000000000000000000000000'
+              )
+            }
+          )
+          dispute.subcourtID = (await klerosLiquid.disputes(
+            dispute.ID
+          ))[0].toNumber()
+        } else {
+          increaseTime(subcourtMap[dispute.subcourtID].timesPerPeriod[3])
+          await klerosLiquid.passPeriod(dispute.ID)
+          for (let i = 0; i <= dispute.appeals; i++)
+            await klerosLiquid.execute(dispute.ID, i, 0)
+        }
+
+        // Continue
+        await klerosLiquid.passPhase()
+      }
     }
   })
 )
