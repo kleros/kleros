@@ -335,8 +335,12 @@ contract('KlerosLiquid', accounts =>
 
     // Resolve disputes
     for (const dispute of disputes) {
+      const numberOfDraws = []
+      const totalJurorFees = []
       const voteRatioDivisor = dispute.voteRatios.reduce((acc, v) => acc + v, 0)
       for (let i = 0; i <= dispute.appeals; i++) {
+        const subcourt = subcourtMap[dispute.subcourtID] || subcourtTree
+
         // Generate random number
         increaseTime(minStakingTime)
         await klerosLiquid.passPhase()
@@ -345,41 +349,44 @@ contract('KlerosLiquid', accounts =>
         // Draw
         const drawBlockNumber = (await klerosLiquid.draw(dispute.ID, 0)).receipt
           .blockNumber
-        const numberOfDraws = (await new Promise((resolve, reject) =>
-          klerosLiquid
-            .Draw({ disputeID: dispute.ID }, { fromBlock: drawBlockNumber })
-            .get((err, logs) => (err ? reject(err) : resolve(logs)))
-        )).length
-        increaseTime(subcourtMap[dispute.subcourtID].timesPerPeriod[0])
+        numberOfDraws.push(
+          (await new Promise((resolve, reject) =>
+            klerosLiquid
+              .Draw({ disputeID: dispute.ID }, { fromBlock: drawBlockNumber })
+              .get((err, logs) => (err ? reject(err) : resolve(logs)))
+          )).length
+        )
+        totalJurorFees.push(subcourt.jurorFee * numberOfDraws[i])
+        increaseTime(subcourt.timesPerPeriod[0])
         await klerosLiquid.passPeriod(dispute.ID)
 
         // Decide votes
         const votes = dispute.voteRatios
-          .map((voteRatio, i) =>
+          .map((voteRatio, index) =>
             [
               ...new Array(
-                Math.floor(numberOfDraws * (voteRatio / voteRatioDivisor))
+                Math.floor(numberOfDraws[i] * (voteRatio / voteRatioDivisor))
               )
-            ].map(_ => i)
+            ].map(_ => index)
           )
           .reduce((acc, a) => [...acc, ...a], [])
 
         // Commit
-        if (subcourtMap[dispute.subcourtID].hiddenVotes) {
+        if (subcourt.hiddenVotes) {
           for (let i = 0; i < votes.length; i++)
             await klerosLiquid.commit(
               dispute.ID,
               i,
               soliditySha3(dispute.ID, i, votes[i], i)
             )
-          increaseTime(subcourtMap[dispute.subcourtID].timesPerPeriod[1])
+          increaseTime(subcourt.timesPerPeriod[1])
           await klerosLiquid.passPeriod(dispute.ID)
         }
 
         // Vote
         for (let i = 0; i < votes.length; i++)
           await klerosLiquid.vote(dispute.ID, i, votes[i], i)
-        increaseTime(subcourtMap[dispute.subcourtID].timesPerPeriod[2])
+        increaseTime(subcourt.timesPerPeriod[2])
         await klerosLiquid.passPeriod(dispute.ID)
 
         // Appeal or execute
@@ -398,10 +405,32 @@ contract('KlerosLiquid', accounts =>
             dispute.ID
           ))[0].toNumber()
         } else {
-          increaseTime(subcourtMap[dispute.subcourtID].timesPerPeriod[3])
+          increaseTime(subcourt.timesPerPeriod[3])
           await klerosLiquid.passPeriod(dispute.ID)
-          for (let i = 0; i <= dispute.appeals; i++)
-            await klerosLiquid.execute(dispute.ID, i, 0)
+          for (let i = 0; i <= dispute.appeals; i++) {
+            const PNKBefore = await pinakion.balanceOf(governor)
+            const executeBlockNumber = (await klerosLiquid.execute(
+              dispute.ID,
+              i,
+              0
+            )).receipt.blockNumber
+            expect(PNKBefore).to.deep.equal(await pinakion.balanceOf(governor))
+            expect(
+              (await new Promise((resolve, reject) =>
+                klerosLiquid
+                  .TokenAndETHShift(
+                    { disputeID: dispute.ID },
+                    { fromBlock: executeBlockNumber }
+                  )
+                  .get((err, logs) => (err ? reject(err) : resolve(logs)))
+              ))
+                .reduce(
+                  (acc, e) => acc.plus(e.args.ETHAmount),
+                  web3.toBigNumber(0)
+                )
+                .toNumber()
+            ).to.be.closeTo(totalJurorFees[i], numberOfDraws[i])
+          }
         }
 
         // Continue
