@@ -523,7 +523,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     function vote(uint _disputeID, uint _voteID, uint _choice, uint _salt) external onlyDuringPeriod(_disputeID, Period.vote) {
         Dispute storage dispute = disputes[_disputeID];
         require(dispute.votes[dispute.votes.length - 1][_voteID]._address == msg.sender, "The caller has to own the vote.");
-        require(dispute.numberOfChoices > _choice, "The choice has to be less than the number of choices for the dispute.");
+        require(dispute.numberOfChoices >= _choice, "The choice has to be less than or equal to the number of choices for the dispute.");
         require(
             !courts[dispute.subcourtID].hiddenVotes || dispute.votes[dispute.votes.length - 1][_voteID].commit == keccak256(_disputeID, _voteID, _choice, _salt),
             "The commit must match the choice in subcourts with hidden votes."
@@ -548,7 +548,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
 
         executionCache.coherentCount = dispute.voteCounters[_appeal].counts[executionCache.winningChoice];
         if (executionCache.coherentCount != 0) {
-            if (_appeal == 0 && executionCache.startIndex == 0) dispute.arbitrated.rule(_disputeID, executionCache.winningChoice);
+            if (_appeal == 0 && executionCache.startIndex == 0 && isContract(dispute.arbitrated)) dispute.arbitrated.rule(_disputeID, executionCache.winningChoice);
             executionCache.incoherentCount = dispute.votes[_appeal].length - executionCache.coherentCount;
             executionCache.tokenReward = (dispute.jurorAtStake[_appeal] * executionCache.incoherentCount) / executionCache.coherentCount;
             executionCache.ETHReward = dispute.totalJurorFees[_appeal] / executionCache.coherentCount;
@@ -600,7 +600,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         // solium-disable-next-line security/no-block-members
         dispute.lastPeriodChange = block.timestamp;
         dispute.votes[dispute.votes.length++].length = msg.value / courts[dispute.subcourtID].jurorFee;
-        dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.numberOfChoices) }));
+        dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.numberOfChoices + 1) }));
         dispute.jurorAtStake.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalJurorFees.push(msg.value);
         dispute.appealDraws.push(0);
@@ -625,7 +625,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             dispute.subcourtID = courts[dispute.subcourtID].parent;
         dispute.period = Period.evidence;
         dispute.votes[dispute.votes.length++].length = msg.value / courts[dispute.subcourtID].jurorFee;
-        dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.numberOfChoices) }));
+        dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.numberOfChoices + 1) }));
         dispute.jurorAtStake.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalJurorFees.push(msg.value);
         dispute.appealDraws.push(0);
@@ -726,7 +726,18 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
 
     /* Internal Views */
 
-
+    /** @dev Check if the specified address is a contract address.
+     *  @param _address The address to check.
+     *  @return Wether the address is a contract address or not.
+     */
+    function isContract(address _address) internal view returns(bool isContract) {
+        uint32 size;
+        // solium-disable-next-line security/no-inline-assembly
+        assembly {
+            size := extcodesize(_address)
+        }
+        isContract = size > 0;
+    }
 
     /* Private */
 
