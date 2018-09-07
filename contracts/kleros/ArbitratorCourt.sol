@@ -57,7 +57,7 @@ contract ArbitratorCourt is Arbitrator {
      *  @dev Makes a function only callable by the owner of this contract.
      */
     modifier onlyOwner {
-        require(owner == msg.sender);
+        require(owner == msg.sender, "Only the owner can call this function.");
         _;
     }
 
@@ -102,7 +102,7 @@ contract ArbitratorCourt is Arbitrator {
      * @param _subCourtIndex The subcourt's index.
      */
     function removeSubCourt(uint256 _subCourtIndex) external onlyOwner {
-        require(_subCourtIndex >= 0 && _subCourtIndex < subCourts.length);
+        require(_subCourtIndex >= 0 && _subCourtIndex < subCourts.length, "Index out of range.");
 
         emit OnSubCourtRemove(_subCourtIndex, subCourts[_subCourtIndex].name, subCourts[_subCourtIndex]._address);
 

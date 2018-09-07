@@ -24,5 +24,19 @@ contract KlerosPOCCourt is KlerosCourt, KlerosPOC {
      *  @param _timePerPeriod The minimal time for each period.
      *  @param _governor Address of the governor contract.
      */
-    function KlerosPOCCourt(string _parentName, Arbitrator _parentAddress, Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod, address _governor) KlerosCourt(_parentName, _parentAddress, _pinakion, _rng, _timePerPeriod, _governor) KlerosPOC(_pinakion, _rng, _timePerPeriod, _governor) public {}
+    function KlerosPOCCourt(
+        string _parentName,
+        Arbitrator _parentAddress,
+        Pinakion _pinakion,
+        RNG _rng,
+        uint[5] _timePerPeriod,
+        address _governor
+    ) public KlerosCourt(
+        _parentName,
+        _parentAddress,
+        _pinakion,
+        _rng,
+        _timePerPeriod,
+        _governor
+    ) KlerosPOC(_pinakion, _rng, _timePerPeriod, _governor) {}
 }
