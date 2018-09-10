@@ -561,8 +561,10 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
                 vote._address.transfer(executionCache.ETHReward);
                 emit TokenAndETHShift(_disputeID, vote._address, int(executionCache.tokenReward), int(executionCache.ETHReward));
             } else {
-                pinakion.transferFrom(vote._address, this, dispute.jurorAtStake[_appeal]);
-                emit TokenAndETHShift(_disputeID, vote._address, -int(dispute.jurorAtStake[_appeal]), 0);
+                uint _balance = pinakion.balanceOf(vote._address);
+                uint _penalty = dispute.jurorAtStake[_appeal] > _balance ? _balance : dispute.jurorAtStake[_appeal];
+                pinakion.transferFrom(vote._address, this, _penalty);
+                emit TokenAndETHShift(_disputeID, vote._address, -int(_penalty), 0);
             }
             jurors[vote._address].atStake -= dispute.jurorAtStake[_appeal];
             dispute.appealRepartitions[_appeal]++;
