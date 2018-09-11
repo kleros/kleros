@@ -49,9 +49,11 @@ contract PolicyRegistry {
      */
     function createPolicy(address _address, uint _subcourtID, string _fileURL, bytes32 _fileHash) external onlyByGovernor {
         PolicyList storage policyList = policyLists[_address][_subcourtID];
-        if (policyList.vacantPoliciesListIndexes.length > 0)
-            policyList.policies[policyList.vacantPoliciesListIndexes[--policyList.vacantPoliciesListIndexes.length]] = Policy({ fileURL: _fileURL, fileHash: _fileHash });
-        else
+        if (policyList.vacantPoliciesListIndexes.length > 0) {
+            uint _vacantIndex = policyList.vacantPoliciesListIndexes[policyList.vacantPoliciesListIndexes.length - 1];
+            policyList.vacantPoliciesListIndexes.length--;
+            policyList.policies[_vacantIndex] = Policy({ fileURL: _fileURL, fileHash: _fileHash });
+        } else
             policyList.policies.push(Policy({ fileURL: _fileURL, fileHash: _fileHash }));
     }
 
