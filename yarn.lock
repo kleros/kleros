@@ -4047,9 +4047,9 @@ kleros-interaction@^0.0.25:
     minimetoken "^0.2.0"
     zeppelin-solidity "^1.7.0"
 
-kleros-scripts@^0.10.0:
-  version "0.10.0"
-  resolved "https://registry.yarnpkg.com/kleros-scripts/-/kleros-scripts-0.10.0.tgz#4c9dfbe6f7e177a05428ec20ab25d02c055fb49b"
+kleros-scripts@^0.10.1:
+  version "0.10.1"
+  resolved "https://registry.yarnpkg.com/kleros-scripts/-/kleros-scripts-0.10.1.tgz#a767a51e0691950630680003c64fa9dde6bee030"
   dependencies:
     "@commitlint/cli" "^6.1.0"
     "@commitlint/config-conventional" "^6.1.0"
