@@ -26,9 +26,11 @@ contract KArySumTreeFactory {
      *  @param _K The number of children each node in the tree should have.
      */
     function createTree(bytes32 _key, uint _K) internal {
+        require(_K > 0, "K must be greater than zero.");
         kArySumTrees[_key].K = _K;
         kArySumTrees[_key].stack.length = 0;
         kArySumTrees[_key].tree.length = 0;
+        kArySumTrees[_key].tree.push(0);
     }
 
     /**
@@ -51,19 +53,19 @@ contract KArySumTreeFactory {
     function append(bytes32 _key, uint _value) internal returns(uint treeIndex) {
         KArySumTree storage tree = kArySumTrees[_key];
 
-        if (tree.stack.length == 0) { // No vacant spots
-            // Get the index and append the value
+        if (tree.stack.length == 0) { // No vacant spots.
+            // Get the index and append the value.
             treeIndex = tree.tree.length;
             tree.tree.length++;
             tree.tree[treeIndex] = _value;
 
-            // Potentially append a new node and make the parent a sum node
-            if (treeIndex != 0 && (treeIndex - 1) % tree.K == 0) { // Is first child
+            // Potentially append a new node and make the parent a sum node.
+            if (treeIndex != 1 && (treeIndex - 1) % tree.K == 0) { // Is first child.
                 tree.tree.length++;
                 tree.tree[treeIndex + 1] = tree.tree[treeIndex / tree.K];
             }
-        } else { // Some vacant spot
-            // Pop the stack and append the value
+        } else { // Some vacant spot.
+            // Pop the stack and append the value.
             treeIndex = tree.stack[tree.stack.length - 1];
             tree.stack.length--;
             tree.tree[treeIndex] = _value;
@@ -78,13 +80,14 @@ contract KArySumTreeFactory {
      *  @param _treeIndex The index of the value to remove.
      */
     function remove(bytes32 _key, uint _treeIndex) internal {
+        require(_treeIndex != 0, "Cannot remove the root node.");
         KArySumTree storage tree = kArySumTrees[_key];
 
-        // Remember value and set to 0
+        // Remember value and set to 0.
         uint _value = tree.tree[_treeIndex];
         tree.tree[_treeIndex] = 0;
 
-        // Push to stack
+        // Push to stack.
         tree.stack.length++;
         tree.stack[tree.stack.length - 1] = _treeIndex;
 
@@ -98,6 +101,7 @@ contract KArySumTreeFactory {
      *  @param _value The new value.
      */
     function set(bytes32 _key, uint _treeIndex, uint _value) internal {
+        require(_treeIndex != 0, "Cannot set the root node.");
         KArySumTree storage tree = kArySumTrees[_key];
         bool _plusOrMinus = tree.tree[_treeIndex] <= _value;
         uint _plusOrMinusValue = _plusOrMinus ? _value - tree.tree[_treeIndex] : tree.tree[_treeIndex] - _value;
@@ -117,7 +121,7 @@ contract KArySumTreeFactory {
     function queryLeafs(bytes32 _key, uint _cursor, uint _count) internal view returns(uint startIndex, uint[] values, bool hasMore) {
         KArySumTree storage tree = kArySumTrees[_key];
 
-        // Find the start index
+        // Find the start index.
         for (uint i = 0; i < tree.tree.length; i++) {
             if ((tree.K * i) + 1 >= tree.tree.length) {
                 startIndex = i;
@@ -125,7 +129,7 @@ contract KArySumTreeFactory {
             }
         }
 
-        // Get the values
+        // Get the values.
         uint _startIndex = startIndex + _cursor;
         values = new uint[](_startIndex + _count > tree.tree.length ? tree.tree.length - _startIndex : _count);
         uint _valuesIndex = 0;

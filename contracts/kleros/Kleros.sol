@@ -55,7 +55,8 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
 
     struct Juror {
         uint balance;      // The amount of tokens the contract holds for this juror.
-        uint atStake;      // Total number of tokens the jurors can loose in disputes they are drawn in. Those tokens are locked. Note that we can have atStake > balance but it should be statistically unlikely and does not pose issues.
+        // Total number of tokens the jurors can loose in disputes they are drawn in. Those tokens are locked. Note that we can have atStake > balance but it should be statistically unlikely and does not pose issues.
+        uint atStake;
         uint lastSession;  // Last session the tokens were activated.
         uint segmentStart; // Start of the segment of activated tokens.
         uint segmentEnd;   // End of the segment of activated tokens.
@@ -141,9 +142,9 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     // **************************** //
     // *         Modifiers        * //
     // **************************** //
-    modifier onlyBy(address _account) {require(msg.sender == _account); _;}
-    modifier onlyDuring(Period _period) {require(period == _period); _;}
-    modifier onlyGovernor() {require(msg.sender == governor); _;}
+    modifier onlyBy(address _account) {require(msg.sender == _account, "Wrong caller."); _;}
+    modifier onlyDuring(Period _period) {require(period == _period, "Wrong period."); _;}
+    modifier onlyGovernor() {require(msg.sender == governor, "Only callable by the governor."); _;}
 
 
     /** @dev Constructor.
@@ -155,7 +156,8 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     constructor(Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod, address _governor) public {
         pinakion = _pinakion;
         rng = _rng;
-        lastPeriodChange = now;
+        // solium-disable-next-line security/no-block-members
+        lastPeriodChange = block.timestamp;
         timePerPeriod = _timePerPeriod;
         governor = _governor;
     }
@@ -170,7 +172,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      *  @param _amount Amount of tokens to transfer to Kleros (in basic units).
      */
     function receiveApproval(address _from, uint _amount, address, bytes) public onlyBy(pinakion) {
-        require(pinakion.transferFrom(_from, this, _amount));
+        require(pinakion.transferFrom(_from, this, _amount), "Transfer failed.");
 
         jurors[_from].balance += _amount;
     }
@@ -182,12 +184,13 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      */
     function withdraw(uint _value) public {
         Juror storage juror = jurors[msg.sender];
-        require(juror.atStake <= juror.balance); // Make sure that there is no more at stake than owned to avoid overflow.
-        require(_value <= juror.balance-juror.atStake);
-        require(juror.lastSession != session);
+        // Make sure that there is no more at stake than owned to avoid overflow.
+        require(juror.atStake <= juror.balance, "Balance is less than stake.");
+        require(_value <= juror.balance-juror.atStake, "Value is more than free balance.");
+        require(juror.lastSession != session, "You have deposited in this session.");
 
         juror.balance -= _value;
-        require(pinakion.transfer(msg.sender,_value));
+        require(pinakion.transfer(msg.sender,_value), "Transfer failed.");
     }
 
     // **************************** //
@@ -198,7 +201,8 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     /** @dev To call to go to a new period. TRUSTED.
      */
     function passPeriod() public {
-        require(now-lastPeriodChange >= timePerPeriod[uint8(period)]);
+        // solium-disable-next-line security/no-block-members
+        require(block.timestamp - lastPeriodChange >= timePerPeriod[uint8(period)], "Not enough time has passed.");
 
         if (period == Period.Activation) {
             rnBlock = block.number + 1;
@@ -206,7 +210,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
             period = Period.Draw;
         } else if (period == Period.Draw) {
             randomNumber = rng.getUncorrelatedRN(rnBlock);
-            require(randomNumber != 0);
+            require(randomNumber != 0, "Random number not ready yet.");
             period = Period.Vote;
         } else if (period == Period.Vote) {
             period = Period.Appeal;
@@ -220,8 +224,8 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
             randomNumber = 0;
         }
 
-
-        lastPeriodChange = now;
+        // solium-disable-next-line security/no-block-members
+        lastPeriodChange = block.timestamp;
         emit NewPeriod(period, session);
     }
 
@@ -232,9 +236,10 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      */
     function activateTokens(uint _value) public onlyDuring(Period.Activation) {
         Juror storage juror = jurors[msg.sender];
-        require(_value <= juror.balance);
-        require(_value >= minActivatedToken);
-        require(juror.lastSession != session); // Verify that tokens were not already activated for this session.
+        require(_value <= juror.balance, "Not enough balance.");
+        require(_value >= minActivatedToken, "Value is less than the minimum stake.");
+        // Verify that tokens were not already activated for this session.
+        require(juror.lastSession != session, "You have already activated in this session.");
 
         juror.lastSession = session;
         juror.segmentStart = segmentSize;
@@ -255,10 +260,10 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
         Dispute storage dispute = disputes[_disputeID];
         Juror storage juror = jurors[msg.sender];
         VoteCounter storage voteCounter = dispute.voteCounter[dispute.appeals];
-        require(dispute.lastSessionVote[msg.sender] != session); // Make sure juror hasn't voted yet.
-        require(_ruling <= dispute.choices);
+        require(dispute.lastSessionVote[msg.sender] != session, "You have already voted."); // Make sure juror hasn't voted yet.
+        require(_ruling <= dispute.choices, "Invalid ruling.");
         // Note that it throws if the draws are incorrect.
-        require(validDraws(msg.sender, _disputeID, _draws));
+        require(validDraws(msg.sender, _disputeID, _draws), "Invalid draws.");
 
         dispute.lastSessionVote[msg.sender] = session;
         voteCounter.voteCount[_ruling] += _draws.length;
@@ -292,12 +297,13 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     function penalizeInactiveJuror(address _jurorAddress, uint _disputeID, uint[] _draws) public {
         Dispute storage dispute = disputes[_disputeID];
         Juror storage inactiveJuror = jurors[_jurorAddress];
-        require(period > Period.Vote);
-        require(dispute.lastSessionVote[_jurorAddress] != session); // Verify the juror hasn't voted.
+        require(period > Period.Vote, "Must be called after the vote period.");
+        require(dispute.lastSessionVote[_jurorAddress] != session, "Juror did vote."); // Verify the juror hasn't voted.
         dispute.lastSessionVote[_jurorAddress] = session; // Update last session to avoid penalizing multiple times.
-        require(validDraws(_jurorAddress, _disputeID, _draws));
+        require(validDraws(_jurorAddress, _disputeID, _draws), "Invalid draws.");
         uint penality = _draws.length * minActivatedToken * 2 * alpha / ALPHA_DIVISOR;
-        penality = (penality < inactiveJuror.balance) ? penality : inactiveJuror.balance; // Make sure the penality is not higher than the balance.
+        // Make sure the penality is not higher than the balance.
+        penality = (penality < inactiveJuror.balance) ? penality : inactiveJuror.balance;
         inactiveJuror.balance -= penality;
         emit TokenShift(_jurorAddress, _disputeID, -int(penality));
         jurors[msg.sender].balance += penality / 2; // Give half of the penalty to the caller.
@@ -316,8 +322,8 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      */
     function oneShotTokenRepartition(uint _disputeID) public onlyDuring(Period.Execution) {
         Dispute storage dispute = disputes[_disputeID];
-        require(dispute.state == DisputeState.Open);
-        require(dispute.session+dispute.appeals <= session);
+        require(dispute.state == DisputeState.Open, "Dispute is not open.");
+        require(dispute.session + dispute.appeals <= session, "Dispute is still active.");
 
         uint winningChoice = dispute.voteCounter[dispute.appeals].winningChoice;
         uint amountShift = getStakePerDraw();
@@ -375,8 +381,8 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      */
     function multipleShotTokenRepartition(uint _disputeID, uint _maxIterations) public onlyDuring(Period.Execution) {
         Dispute storage dispute = disputes[_disputeID];
-        require(dispute.state <= DisputeState.Resolving);
-        require(dispute.session+dispute.appeals <= session);
+        require(dispute.state <= DisputeState.Resolving, "Dispute is not open.");
+        require(dispute.session+dispute.appeals <= session, "Dispute is still active.");
         dispute.state = DisputeState.Resolving; // Mark as resolving so oneShotTokenRepartition cannot be called on dispute.
 
         uint winningChoice = dispute.voteCounter[dispute.appeals].winningChoice;
@@ -510,8 +516,8 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
             draw = _draws[i];
             if (draw > nbJurors) return false;
             uint position = uint(keccak256(randomNumber, _disputeID, draw)) % segmentSize; // Random position on the segment for draw.
-            require(position >= juror.segmentStart);
-            require(position < juror.segmentEnd);
+            require(position >= juror.segmentStart, "Invalid draw.");
+            require(position < juror.segmentEnd, "Invalid draw.");
         }
 
         return true;
@@ -530,7 +536,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      */
     function createDispute(uint _choices, bytes _extraData) public payable returns (uint disputeID) {
         uint16 nbJurors = extraDataToNbJurors(_extraData);
-        require(msg.value >= arbitrationCost(_extraData));
+        require(msg.value >= arbitrationCost(_extraData), "Not enough ETH to pay arbitration fees.");
 
         disputeID = disputes.length++;
         Dispute storage dispute = disputes[disputeID];
@@ -541,7 +547,8 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
             dispute.session = session+1;
         dispute.choices = _choices;
         dispute.initialNumberJurors = nbJurors;
-        dispute.arbitrationFeePerJuror = arbitrationFeePerJuror; // We store it as the general fee can be changed through the governance mechanism.
+        // We store it as the general fee can be changed through the governance mechanism.
+        dispute.arbitrationFeePerJuror = arbitrationFeePerJuror;
         dispute.votes.length++;
         dispute.voteCounter.length++;
 
@@ -556,9 +563,9 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     function appeal(uint _disputeID, bytes _extraData) public payable onlyDuring(Period.Appeal) {
         super.appeal(_disputeID,_extraData);
         Dispute storage dispute = disputes[_disputeID];
-        require(msg.value >= appealCost(_disputeID, _extraData));
-        require(dispute.session+dispute.appeals == session); // Dispute of the current session.
-        require(dispute.arbitrated == msg.sender);
+        require(msg.value >= appealCost(_disputeID, _extraData), "Not enough ETH to pay appeal fees.");
+        require(dispute.session+dispute.appeals == session, "Dispute is no longer active."); // Dispute of the current session.
+        require(dispute.arbitrated == msg.sender, "Caller is not the arbitrated contract.");
         
         dispute.appeals++;
         dispute.votes.length++;
@@ -570,7 +577,7 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
      */
     function executeRuling(uint disputeID) public {
         Dispute storage dispute = disputes[disputeID];
-        require(dispute.state == DisputeState.Executable);
+        require(dispute.state == DisputeState.Executable, "Dispute is not executable.");
 
         dispute.state = DisputeState.Executed;
         dispute.arbitrated.rule(disputeID, dispute.voteCounter[dispute.appeals].winningChoice);
@@ -693,12 +700,8 @@ contract Kleros is Arbitrator, ApproveAndCallFallBack {
     function isDrawn(uint _disputeID, address _juror, uint _draw) public view returns (bool drawn) {
         Dispute storage dispute = disputes[_disputeID];
         Juror storage juror = jurors[_juror];
-        if (juror.lastSession != session
-        || (dispute.session+dispute.appeals != session)
-        || period<=Period.Draw
-        || _draw>amountJurors(_disputeID)
-        || _draw==0
-        || segmentSize==0
+        if (
+            juror.lastSession != session || (dispute.session + dispute.appeals != session) || period <= Period.Draw || _draw > amountJurors(_disputeID) || _draw == 0 || segmentSize == 0
         ) {
             return false;
         } else {

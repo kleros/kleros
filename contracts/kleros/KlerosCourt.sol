@@ -14,7 +14,14 @@ contract KlerosCourt is Kleros, ArbitratorCourt {
      *  @param _timePerPeriod The minimal time for each period.
      *  @param _governor Address of the governor contract.
      */
-    constructor(string _parentName, Arbitrator _parentAddress, Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod, address _governor) Kleros(_pinakion, _rng, _timePerPeriod, _governor) ArbitratorCourt(_parentName, _parentAddress)  public {}
+    constructor(
+        string _parentName,
+        Arbitrator _parentAddress,
+        Pinakion _pinakion,
+        RNG _rng,
+        uint[5] _timePerPeriod,
+        address _governor
+    ) Kleros(_pinakion, _rng, _timePerPeriod, _governor) ArbitratorCourt(_parentName, _parentAddress)  public {}
 
     /* Public */
 
@@ -27,7 +34,10 @@ contract KlerosCourt is Kleros, ArbitratorCourt {
             super.appeal(_disputeID, _extraData); // Regular appeal
         } else { // Appeal to `parent`
             // Checks
-            require(disputes[_disputeID].session + disputes[_disputeID].appeals == session); // Dispute of the current session
+            require(
+                disputes[_disputeID].session + disputes[_disputeID].appeals == session,
+                "Dispute must be active in the current session."
+            ); // Dispute of the current session
 
             // Effects
             disputes[_disputeID].appeals++;

@@ -1,4 +1,6 @@
-/* globals artifacts, contract, expect */
+/* globals artifacts, contract, expect, web3 */
+const { expectThrow } = require('kleros-interaction/helpers/utils')
+
 const ExposedSortitionSumTreeFactory = artifacts.require(
   './data-structures/ExposedSortitionSumTreeFactory.sol'
 )
@@ -11,15 +13,15 @@ contract('SortitionSumTreeFactory', () =>
     // Create tree and populate with 4 candidates
     const tree = { key: '0x01', K: 2 }
     const candidates = {
-      dave: {
-        address: '0x0000000000000000000000000000000000000004',
-        treeIndex: 0,
-        value: 5
-      },
       bob: {
         address: '0x0000000000000000000000000000000000000002',
         treeIndex: 0,
         value: 15
+      },
+      dave: {
+        address: '0x0000000000000000000000000000000000000004',
+        treeIndex: 0,
+        value: 5
       },
       alice: {
         address: '0x0000000000000000000000000000000000000001',
@@ -55,18 +57,14 @@ contract('SortitionSumTreeFactory', () =>
     )
 
     // Set Alice to 14 to draw her with 13 and then set her back to 10 to draw Bob again
-    let aliceSetThrew = false
-    try {
-      await sortitionSumTreeFactory._set(
+    await expectThrow(
+      sortitionSumTreeFactory._set(
         tree.key,
         candidates.alice.treeIndex,
         14,
         candidates.bob.address // Only the owner should be able to set the value
       )
-    } catch (err) {
-      aliceSetThrew = err
-    }
-    expect(aliceSetThrew).to.be.an.instanceof(Error)
+    )
     await sortitionSumTreeFactory._set(
       tree.key,
       candidates.alice.treeIndex,
@@ -87,17 +85,13 @@ contract('SortitionSumTreeFactory', () =>
     )
 
     // Remove Carl to draw Dave with 27 and add him back in to draw him again
-    let carlRemoveThrew = false
-    try {
-      await sortitionSumTreeFactory._remove(
+    await expectThrow(
+      sortitionSumTreeFactory._remove(
         tree.key,
         candidates.carl.treeIndex,
         candidates.dave.address // Only the owner should be able to remove the value
       )
-    } catch (err) {
-      carlRemoveThrew = err
-    }
-    expect(carlRemoveThrew).to.be.an.instanceof(Error)
+    )
     await sortitionSumTreeFactory._remove(
       tree.key,
       candidates.carl.treeIndex,
@@ -116,9 +110,36 @@ contract('SortitionSumTreeFactory', () =>
       candidates.carl.value,
       candidates.carl.address
     )
+    // Setting to 0 should also remove him
+    await sortitionSumTreeFactory._set(
+      tree.key,
+      candidates.carl.treeIndex,
+      0,
+      candidates.carl.address
+    )
+    // Should not be able to append 0
+    await expectThrow(
+      sortitionSumTreeFactory._append(tree.key, 0, candidates.carl.address)
+    )
+    candidates.carl.treeIndex = await sortitionSumTreeFactory._append.call(
+      tree.key,
+      candidates.carl.value,
+      candidates.carl.address
+    )
+    await sortitionSumTreeFactory._append(
+      tree.key,
+      candidates.carl.value,
+      candidates.carl.address
+    )
     expect(await sortitionSumTreeFactory._draw(tree.key, 27)).to.equal(
       candidates.carl.address
     )
+
+    // Test stake view
+    for (const candidate of Object.values(candidates))
+      expect(
+        await sortitionSumTreeFactory._stakeOf(tree.key, candidate.address)
+      ).to.deep.equal(web3.toBigNumber(candidate.value))
 
     // Delete the tree
     await sortitionSumTreeFactory._deleteTree(tree.key)

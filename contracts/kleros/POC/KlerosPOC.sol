@@ -20,7 +20,12 @@ contract KlerosPOC is Kleros, TokenController {
      *  @param _timePerPeriod The minimal time for each period.
      *  @param _governor Address of the governor contract.
      */
-    function KlerosPOC(Pinakion _pinakion, RNG _rng, uint[5] _timePerPeriod, address _governor) Kleros(_pinakion, _rng, _timePerPeriod, _governor) public {}
+    function KlerosPOC(
+        Pinakion _pinakion,
+        RNG _rng,
+        uint[5] _timePerPeriod,
+        address _governor
+    ) public Kleros(_pinakion, _rng, _timePerPeriod, _governor) {}
 
     // **************************** //
     // *    Functions required    * //
@@ -65,7 +70,7 @@ contract KlerosPOC is Kleros, TokenController {
      */
     function buyPinakion() public payable {
         Juror storage juror = jurors[msg.sender];
-        juror.balance+=msg.value;
+        juror.balance += msg.value;
         pinakion.generateTokens(this,msg.value);
     }
 }

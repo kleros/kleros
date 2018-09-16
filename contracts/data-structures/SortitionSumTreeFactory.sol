@@ -39,13 +39,14 @@ contract SortitionSumTreeFactory is KArySumTreeFactory {
      */
     function append(bytes32 _key, uint _value, address _address) internal returns(uint treeIndex) {
         require(sortitionSumTrees[_key].addressesToTreeIndexes[_address] == 0, "Address already has a value in this tree.");
+        require(_value > 0, "The value must be greater than zero.");
         KArySumTree storage tree = kArySumTrees[_key];
         treeIndex = super.append(_key, _value);
         sortitionSumTrees[_key].addressesToTreeIndexes[_address] = treeIndex;
         sortitionSumTrees[_key].treeIndexesToAddresses[treeIndex] = _address;
 
-        // Parent could have been turned into a sum node
-        if (treeIndex != 0 && (treeIndex - 1) % tree.K == 0) { // Is first child
+        // Parent could have been turned into a sum node.
+        if (treeIndex != 1 && (treeIndex - 1) % tree.K == 0) { // Is first child.
             uint _parentIndex = treeIndex / tree.K;
             address _parentAddress = sortitionSumTrees[_key].treeIndexesToAddresses[_parentIndex];
             uint _newIndex = treeIndex + 1;
@@ -76,8 +77,11 @@ contract SortitionSumTreeFactory is KArySumTreeFactory {
      *  @param _address The candidate's address.
      */
     function set(bytes32 _key, uint _treeIndex, uint _value, address _address) internal {
-        require(sortitionSumTrees[_key].treeIndexesToAddresses[_treeIndex] == _address, "Address does not own this value.");
-        super.set(_key, _treeIndex, _value);
+        if (_value == 0) remove(_key, _treeIndex, _address);
+        else {
+            require(sortitionSumTrees[_key].treeIndexesToAddresses[_treeIndex] == _address, "Address does not own this value.");
+            super.set(_key, _treeIndex, _value);
+        }
     }
 
     /* Internal Views */
@@ -93,18 +97,29 @@ contract SortitionSumTreeFactory is KArySumTreeFactory {
         uint _treeIndex = 0;
         uint _currentDrawnNumber = _drawnNumber % tree.tree[0];
 
-        while ((tree.K * _treeIndex) + 1 < tree.tree.length)  // While it still has children
-            for (uint i = 1; i <= tree.K; i++) { // Loop over children
+        while ((tree.K * _treeIndex) + 1 < tree.tree.length)  // While it still has children.
+            for (uint i = 1; i <= tree.K; i++) { // Loop over children.
                 uint _nodeIndex = (tree.K * _treeIndex) + i;
                 uint _nodeValue = tree.tree[_nodeIndex];
 
-                if (_currentDrawnNumber >= _nodeValue) _currentDrawnNumber -= _nodeValue; // Go to the next child
-                else { // Pick this child
+                if (_currentDrawnNumber >= _nodeValue) _currentDrawnNumber -= _nodeValue; // Go to the next child.
+                else { // Pick this child.
                     _treeIndex = _nodeIndex;
                     break;
                 }
             }
         
         _address = sortitionSumTrees[_key].treeIndexesToAddresses[_treeIndex];
+    }
+
+    /** @dev Gets a specified candidate's associated value.
+     *  @param _key The key of the tree.
+     *  @param _address The candidate's address.
+     */
+    function stakeOf(bytes32 _key, address _address) internal view returns(uint value) {
+        KArySumTree storage tree = kArySumTrees[_key];
+        uint _treeIndex = sortitionSumTrees[_key].addressesToTreeIndexes[_address];
+        if (_treeIndex == 0) value = 0;
+        else value = tree.tree[_treeIndex];
     }
 }
