@@ -80,7 +80,7 @@ contract Governance {
     // *          Modifiers         * //
     // ****************************** //
 
-    modifier onlyWhenProposalInNew(bytes32 _id) {
+    modifier onlyWhenProposalIsNew(bytes32 _id) {
         require(proposals[_id].state == ProposalState.New, "Only when proposal in New state.");
         _;
     }
@@ -174,7 +174,7 @@ contract Governance {
     /** @dev Request registering a proposal to the proposal list
      *  @param _id ID of a proposal
      */
-    function requestRegisteringProposal(bytes32 _id) public payable onlyWhenProposalInNew(_id) {
+    function requestRegisteringProposal(bytes32 _id) public payable onlyWhenProposalIsNew(_id) {
         proposalList.requestRegistration.value(msg.value)(_id);
     }
 
@@ -182,7 +182,7 @@ contract Governance {
     /** @dev Put proposal to support voting only when a new proposal is permitted.
      *  @param _id ID of a proposal
      */
-    function putProposalToSupport(bytes32 _id) public onlyWhenProposalInNew(_id) onlyWhenPermitted(_id) {
+    function putProposalToSupport(bytes32 _id) public onlyWhenProposalIsNew(_id) onlyWhenPermitted(_id) {
         Proposal storage proposal = proposals[_id];
 
         address cloneToken = pinakion.createCloneToken({_cloneTokenName: quorumTokenName, _cloneDecimalUnits: DECIMALS, _cloneTokenSymbol: quorumTokenSymbol, _snapshotBlock: block.number, _transfersEnabled: true});
@@ -248,7 +248,7 @@ contract Governance {
     }
 
 
-    /** @dev Makes necessary resets when a proposal reaches quorumToken
+    /** @dev Makes necessary resets when a proposal reaches quorum
      */
     function resetSettings() internal {
         lastTimeQuorumReached = block.timestamp; // Necessary when calculating required quorum as it is halved periodically.
