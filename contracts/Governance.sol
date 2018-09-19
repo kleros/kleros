@@ -1,3 +1,10 @@
+/**
+ *  @title Governance
+ *  @author Ferit Tunçer - <ferit@cryptolab.net>
+ *  This contract implements the governance mechanism of Kleros Athena release.
+ *  Bug Bounties: This code hasn't undertaken a bug bounty program yet.
+ */
+
 pragma solidity ^0.4.24;
 
 import "kleros-interaction/contracts/standard/permission/ArbitrablePermissionList.sol";
@@ -156,12 +163,14 @@ contract Governance {
         proposals[_id].argumentsHash = keccak256(proposals[_id].uriArguments);
     }
 
+
     /** @dev Request registering a proposal to the proposal list
      *  @param _id ID of a proposal
      */
     function requestRegisteringProposal(bytes32 _id) public payable onlyWhenProposalInNew(_id) {
         proposalList.requestRegistration.value(msg.value)(_id);
     }
+
 
     /** @dev Put proposal to support voting only when a new proposal is permitted.
      *  @param _id ID of a proposal
@@ -193,7 +202,6 @@ contract Governance {
      *  @param _id ID of a proposal
      */
     function putProposalToVote(bytes32 _id) public onlyWhenProposalPutToSupport(_id) onlyWhenQuorumReached(_id) {
-
         Proposal storage proposal = proposals[_id];
 
         proposal.whenPutToVote = block.timestamp;
@@ -201,7 +209,6 @@ contract Governance {
         address cloneToken = pinakion.createCloneToken({_cloneTokenName: voteTokenName, _cloneDecimalUnits: DECIMALS, _cloneTokenSymbol: voteTokenSymbol, _snapshotBlock: block.number, _transfersEnabled: true});
         proposal.voteToken = MiniMeToken(cloneToken);
         proposal.voteToken.changeController(tokenController);
-
 
         proposal.state = ProposalState.PutToVote;
 
@@ -220,6 +227,7 @@ contract Governance {
 
         emit ProposalDecided(_id, proposals[_id].approved);
     }
+
 
     /** @dev General purpose call function for executing a proposal UNTRUSTED
      *  @param _id ID of a proposal
@@ -251,6 +259,7 @@ contract Governance {
         proposalQuorum = _proposalQuorum;
     }
 
+
     /** @dev Setter for votingTime
      *  @param _votingTime Value to be set.
      */
@@ -258,12 +267,11 @@ contract Governance {
         votingTime = _votingTime;
     }
 
+
     /** @dev Setter for quorumDivideTime
      *  @param _quorumDivideTime Value to be set.
      */
     function setQuorumDivideTime(uint _quorumDivideTime) internal {
         quorumDivideTime = _quorumDivideTime;
     }
-
-
 }
