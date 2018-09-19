@@ -151,6 +151,9 @@ contract Governance {
         proposals[_id].data = _data;
         proposals[_id].uriDescription = _uriDescription;
         proposals[_id].uriArguments = _uriArguments;
+
+        proposals[_id].descriptionHash = keccak256(proposals[_id].uriDescription);
+        proposals[_id].argumentsHash = keccak256(proposals[_id].uriArguments);
     }
 
     /** @dev Request registering a proposal to the proposal list
