@@ -110,7 +110,7 @@ contract Governance {
     }
 
     modifier onlyWhenVotingPeriodPassed(bytes32 _id) {
-        require(block.timestamp > proposals[_id].whenPutToVote + votingTime, "Only when voting period passed.");
+        require(block.timestamp > proposals[_id].whenPutToVote + currentVotingTime, "Only when voting period passed.");
         _;
     }
 
