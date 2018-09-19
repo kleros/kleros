@@ -1,9 +1,9 @@
 /* eslint-disable no-undef */ // Avoid the linter considering truffle elements as undef.
 
 const BigNumber = web3.BigNumber
-const {
-  expectThrow
-} = require('openzeppelin-solidity/test/helpers/expectThrow')
+// const {
+//   expectThrow
+// } = require('openzeppelin-solidity/test/helpers/expectThrow')
 const {
   increaseTime
 } = require('openzeppelin-solidity/test/helpers/increaseTime')
@@ -188,19 +188,7 @@ contract('Governance', function(accounts) {
     assert.equal(await tokenController.governor(), governance.address) // Make sure that governance contract is the governor of kleros liquid contract
   })
 
-  it('should not let to set proposal quorum time other than itself(governor)', async function() {
-    await expectThrow(governance.setProposalQuorum(0, { from: CREATOR }))
-  })
-
-  it('should not let to set voting time other than itself(governor)', async function() {
-    await expectThrow(governance.setVotingTime(0, { from: CREATOR }))
-  })
-
-  it('should not let to set quorum divide time other than itself(governor)', async function() {
-    await expectThrow(governance.setQuorumDivideTime(0, { from: CREATOR }))
-  })
-
-  it('should request registration of a proposal to the proposal list', async function() {
+  it('should be possible to request registration of a proposal to the proposal list', async function() {
     await governance.requestRegisteringProposal(ARBITRARY_STRING, {
       from: accounts[3],
       value: 10000000
@@ -217,7 +205,7 @@ contract('Governance', function(accounts) {
     assert.equal(ACTUAL, EXPECTED)
   })
 
-  it('should put proposal to support', async function() {
+  it('should be possible to put a proposal to support', async function() {
     await governance.requestRegisteringProposal(ARBITRARY_STRING, {
       from: accounts[3],
       value: 10000000
@@ -262,7 +250,7 @@ contract('Governance', function(accounts) {
     assert.equal(ACTUAL, EXPECTED)
   })
 
-  it('should getRequiredQuorum', async function() {
+  it('should be possible to get required quorum for a proposal', async function() {
     await governance.requestRegisteringProposal(ARBITRARY_STRING, {
       from: accounts[3],
       value: 10000000

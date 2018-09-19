@@ -73,11 +73,6 @@ contract Governance {
     // *          Modifiers         * //
     // ****************************** //
 
-    modifier onlyItself() {
-        require(msg.sender == address(this), "Only the contract itself can call this.");
-        _;
-    }
-
     modifier onlyWhenProposalInNew(bytes32 _id) {
         require(proposals[_id].state == ProposalState.New, "Only when proposal in New state.");
         _;
@@ -249,21 +244,21 @@ contract Governance {
     /** @dev Setter for proposalQuorum
      *  @param _proposalQuorum Value to be set.
      */
-    function setProposalQuorum(uint _proposalQuorum) public onlyItself {
+    function setProposalQuorum(uint _proposalQuorum) internal {
         proposalQuorum = _proposalQuorum;
     }
 
     /** @dev Setter for votingTime
      *  @param _votingTime Value to be set.
      */
-    function setVotingTime(uint _votingTime) public onlyItself {
+    function setVotingTime(uint _votingTime) internal {
         votingTime = _votingTime;
     }
 
     /** @dev Setter for quorumDivideTime
      *  @param _quorumDivideTime Value to be set.
      */
-    function setQuorumDivideTime(uint _quorumDivideTime) public onlyItself {
+    function setQuorumDivideTime(uint _quorumDivideTime) internal {
         quorumDivideTime = _quorumDivideTime;
     }
 
