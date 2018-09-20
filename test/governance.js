@@ -371,7 +371,7 @@ contract('Governance', function(accounts) {
     const QUORUM_TOKEN = miniMeToken.at(QUORUM_TOKEN_ADDRESS)
     let DEPOSIT_ADDRESS = await governance.supportDeposit()
     let TRANSFER_AMOUNT
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 7; i++) {
       TRANSFER_AMOUNT = await QUORUM_TOKEN.balanceOf(accounts[i])
       await QUORUM_TOKEN.transfer(DEPOSIT_ADDRESS, TRANSFER_AMOUNT, {
         from: accounts[i],
