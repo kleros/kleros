@@ -198,10 +198,9 @@ contract Governance {
     /** @dev Calculate and return required quorum for a given proposal.
      *  @param _id ID of a proposal
      */
-    function getRequiredQuorum(bytes32 _id) public view onlyWhenProposalPutToSupport(_id) returns (uint effectiveQuorum){ // Maybe use fixed point numbers here
+    function getRequiredQuorum(bytes32 _id) public view onlyWhenProposalPutToSupport(_id) returns (uint effectiveQuorum){
         uint numberOfDividePeriodsPassed = (block.timestamp - lastTimeQuorumReached) / quorumDivideTime;
-        uint effectiveQuorumPercentage = currentProposalQuorum / (2 ** numberOfDividePeriodsPassed);
-        effectiveQuorum = effectiveQuorumPercentage * proposals[_id].quorumToken.totalSupply() / 100;
+        effectiveQuorum = currentProposalQuorum * proposals[_id].quorumToken.totalSupply() / (2 ** numberOfDividePeriodsPassed) / 100;
     }
 
 
