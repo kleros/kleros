@@ -112,7 +112,7 @@ contract Governance {
     }
 
     modifier onlyWhenQuorumReached(bytes32 _id) {
-        require(proposals[_id].quorumToken.balanceOf(supportDeposit) > getRequiredQuorum(_id), "Only when propsal has quorum.");
+        require(proposals[_id].quorumToken.balanceOf(supportDeposit) >= getRequiredQuorum(_id), "Only when propsal has quorum.");
         _;
     }
 
