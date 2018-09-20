@@ -1,9 +1,9 @@
 /* eslint-disable no-undef */ // Avoid the linter considering truffle elements as undef.
 
 const BigNumber = web3.BigNumber
-// const {
-//   expectThrow
-// } = require('openzeppelin-solidity/test/helpers/expectThrow')
+const {
+  expectThrow
+} = require('openzeppelin-solidity/test/helpers/expectThrow')
 const {
   increaseTime
 } = require('openzeppelin-solidity/test/helpers/increaseTime')
@@ -41,8 +41,6 @@ contract('Governance', function(accounts) {
   let tokenController
   let tokenFactory
   let RNG
-
-  const ARBITRARY_STRING = 'ARBITRARY_STRING'
 
   const ITEM_STATUS = {
     ABSENT: 0,
@@ -141,12 +139,12 @@ contract('Governance', function(accounts) {
         from: CREATOR
       }
     )
-
-    pinakion.generateTokens(
-      CREATOR,
-      (await web3.eth.getBalance(CREATOR)).toNumber(),
-      { from: CREATOR }
-    )
+    for (let index = 0; index < 10; index++)
+      pinakion.generateTokens(
+        accounts[index],
+        (await web3.eth.getBalance(CREATOR)).toNumber(),
+        { from: CREATOR }
+      )
 
     const RANDOM_NUMBER = 10
     RNG = await ConstantNG.new(RANDOM_NUMBER)
@@ -189,7 +187,7 @@ contract('Governance', function(accounts) {
   })
 
   it('should be possible to request registration of a proposal to the proposal list', async function() {
-    await governance.requestRegisteringProposal(ARBITRARY_STRING, {
+    await governance.requestRegisteringProposal('PROPOSAL_0', {
       from: accounts[3],
       value: 10000000
     })
@@ -200,41 +198,39 @@ contract('Governance', function(accounts) {
     )
     const PROPOSAL_LIST = arbitrablePermissionList.at(PROPOSAL_LIST_ADDRESS)
 
-    const ACTUAL = (await PROPOSAL_LIST.items(ARBITRARY_STRING))[0].toNumber()
+    const ACTUAL = (await PROPOSAL_LIST.items('PROPOSAL_0'))[0].toNumber()
     const EXPECTED = ITEM_STATUS.SUBMITTED
     assert.equal(ACTUAL, EXPECTED)
   })
 
   it('should be possible to put a proposal to support', async function() {
-    await governance.requestRegisteringProposal(ARBITRARY_STRING, {
+    await governance.requestRegisteringProposal('PROPOSAL_0', {
       from: accounts[3],
       value: 10000000
     })
 
-    await governance.putProposalToSupport(ARBITRARY_STRING, {
+    await governance.putProposalToSupport('PROPOSAL_0', {
       from: CREATOR,
       gas: 3000000
     })
 
-    const ACTUAL = (await governance.proposals(ARBITRARY_STRING))[7].toNumber()
+    const ACTUAL = (await governance.proposals('PROPOSAL_0'))[7].toNumber()
     const EXPECTED = PROPOSAL_STATE.PUT_TO_SUPPORT
     assert.equal(ACTUAL, EXPECTED)
   })
 
   it('should be possible support a proposal', async function() {
-    await governance.requestRegisteringProposal(ARBITRARY_STRING, {
+    await governance.requestRegisteringProposal('PROPOSAL_0', {
       from: accounts[3],
       value: 10000000
     })
 
-    await governance.putProposalToSupport(ARBITRARY_STRING, {
+    await governance.putProposalToSupport('PROPOSAL_0', {
       from: CREATOR,
       gas: 3000000
     })
 
-    const QUORUM_TOKEN_ADDRESS = (await governance.proposals(
-      ARBITRARY_STRING
-    ))[9]
+    const QUORUM_TOKEN_ADDRESS = (await governance.proposals('PROPOSAL_0'))[9]
     const miniMeToken = web3.eth.contract(MINIME_TOKEN.abi)
     const QUORUM_TOKEN = miniMeToken.at(QUORUM_TOKEN_ADDRESS)
 
@@ -251,97 +247,101 @@ contract('Governance', function(accounts) {
   })
 
   it('should be possible to get required quorum for a proposal', async function() {
-    await governance.requestRegisteringProposal(ARBITRARY_STRING, {
+    await governance.requestRegisteringProposal('PROPOSAL_0', {
       from: accounts[3],
       value: 10000000
     })
 
-    await governance.putProposalToSupport(ARBITRARY_STRING, {
+    await governance.putProposalToSupport('PROPOSAL_0', {
       from: CREATOR,
       gas: 3000000
     })
 
+    const MULTIPLIER = 26
+
+    await increaseTime(QUORUM_DIVIDE_TIME * MULTIPLIER)
+
     const ACTUAL = new BigNumber(
-      await governance.getRequiredQuorum(ARBITRARY_STRING, {
+      await governance.getRequiredQuorum('PROPOSAL_0', {
         from: CREATOR
       })
     )
-    const QUORUM_TOKEN_ADDRESS = (await governance.proposals(
-      ARBITRARY_STRING
-    ))[9]
+    const QUORUM_TOKEN_ADDRESS = (await governance.proposals('PROPOSAL_0'))[9]
     const miniMeToken = web3.eth.contract(MINIME_TOKEN.abi)
     const QUORUM_TOKEN = miniMeToken.at(QUORUM_TOKEN_ADDRESS)
     const EXPECTED = new BigNumber(await QUORUM_TOKEN.totalSupply())
       .div(100)
       .mul(PROPOSAL_QUORUM)
-    assert(ACTUAL.equals(EXPECTED))
+      .div(2 ** MULTIPLIER)
+
+    assert(ACTUAL.equals(EXPECTED.toFixed(0)))
   })
 
   it('should be possible to put a proposal to vote', async function() {
-    // TODO ASSERTS
-    await governance.requestRegisteringProposal(ARBITRARY_STRING, {
+    await governance.requestRegisteringProposal('PROPOSAL_0', {
       from: accounts[3],
       value: 10000000
     })
 
-    await governance.putProposalToSupport(ARBITRARY_STRING, {
+    await governance.putProposalToSupport('PROPOSAL_0', {
       from: CREATOR,
       gas: 3000000
     })
 
-    const QUORUM_TOKEN_ADDRESS = (await governance.proposals(
-      ARBITRARY_STRING
-    ))[9]
+    const QUORUM_TOKEN_ADDRESS = (await governance.proposals('PROPOSAL_0'))[9]
     const miniMeToken = web3.eth.contract(MINIME_TOKEN.abi)
     const QUORUM_TOKEN = miniMeToken.at(QUORUM_TOKEN_ADDRESS)
     const DEPOSIT_ADDRESS = await governance.supportDeposit()
-    const TRANSFER_AMOUNT = await QUORUM_TOKEN.balanceOf(CREATOR)
-    await QUORUM_TOKEN.transfer(DEPOSIT_ADDRESS, TRANSFER_AMOUNT, {
-      from: CREATOR,
+    let TRANSFER_AMOUNT
+
+    for (let i = 0; i < 6; i++) {
+      TRANSFER_AMOUNT = await QUORUM_TOKEN.balanceOf(accounts[i])
+      await QUORUM_TOKEN.transfer(DEPOSIT_ADDRESS, TRANSFER_AMOUNT, {
+        from: accounts[i],
+        gas: 3000000
+      })
+    }
+
+    await governance.putProposalToVote('PROPOSAL_0', {
+      from: accounts[9],
       gas: 3000000
     })
 
-    await governance.putProposalToVote(ARBITRARY_STRING, {
-      from: CREATOR,
-      gas: 3000000
-    })
-
-    const ACTUAL = (await governance.proposals(ARBITRARY_STRING))[7].toNumber()
+    const ACTUAL = (await governance.proposals('PROPOSAL_0'))[7].toNumber()
     const EXPECTED = PROPOSAL_STATE.PUT_TO_VOTE
     assert.equal(ACTUAL, EXPECTED)
   })
 
   it('should be possible to vote a proposal', async function() {
-    await governance.requestRegisteringProposal(ARBITRARY_STRING, {
+    await governance.requestRegisteringProposal('PROPOSAL_0', {
       from: accounts[3],
       value: 10000000
     })
 
-    await governance.putProposalToSupport(ARBITRARY_STRING, {
+    await governance.putProposalToSupport('PROPOSAL_0', {
       from: CREATOR,
       gas: 3000000
     })
 
-    const QUORUM_TOKEN_ADDRESS = (await governance.proposals(
-      ARBITRARY_STRING
-    ))[9]
+    const QUORUM_TOKEN_ADDRESS = (await governance.proposals('PROPOSAL_0'))[9]
     const miniMeToken = web3.eth.contract(MINIME_TOKEN.abi)
     const QUORUM_TOKEN = miniMeToken.at(QUORUM_TOKEN_ADDRESS)
     let DEPOSIT_ADDRESS = await governance.supportDeposit()
-    let TRANSFER_AMOUNT = await QUORUM_TOKEN.balanceOf(CREATOR)
-    await QUORUM_TOKEN.transfer(DEPOSIT_ADDRESS, TRANSFER_AMOUNT, {
+    let TRANSFER_AMOUNT
+    for (let i = 0; i < 6; i++) {
+      TRANSFER_AMOUNT = await QUORUM_TOKEN.balanceOf(accounts[i])
+      await QUORUM_TOKEN.transfer(DEPOSIT_ADDRESS, TRANSFER_AMOUNT, {
+        from: accounts[i],
+        gas: 3000000
+      })
+    }
+
+    await governance.putProposalToVote('PROPOSAL_0', {
       from: CREATOR,
       gas: 3000000
     })
 
-    await governance.putProposalToVote(ARBITRARY_STRING, {
-      from: CREATOR,
-      gas: 3000000
-    })
-
-    const VOTE_TOKEN_ADDRESS = (await governance.proposals(
-      ARBITRARY_STRING
-    ))[10]
+    const VOTE_TOKEN_ADDRESS = (await governance.proposals('PROPOSAL_0'))[10]
     const VOTE_TOKEN = miniMeToken.at(VOTE_TOKEN_ADDRESS)
     DEPOSIT_ADDRESS = await governance.approvalDeposit()
     TRANSFER_AMOUNT = await VOTE_TOKEN.balanceOf(CREATOR)
@@ -356,36 +356,35 @@ contract('Governance', function(accounts) {
   })
 
   it('should be possible to finalize a voting', async function() {
-    await governance.requestRegisteringProposal(ARBITRARY_STRING, {
+    await governance.requestRegisteringProposal('PROPOSAL_0', {
       from: accounts[3],
       value: 10000000
     })
 
-    await governance.putProposalToSupport(ARBITRARY_STRING, {
+    await governance.putProposalToSupport('PROPOSAL_0', {
       from: CREATOR,
       gas: 3000000
     })
 
-    const QUORUM_TOKEN_ADDRESS = (await governance.proposals(
-      ARBITRARY_STRING
-    ))[9]
+    const QUORUM_TOKEN_ADDRESS = (await governance.proposals('PROPOSAL_0'))[9]
     const miniMeToken = web3.eth.contract(MINIME_TOKEN.abi)
     const QUORUM_TOKEN = miniMeToken.at(QUORUM_TOKEN_ADDRESS)
     let DEPOSIT_ADDRESS = await governance.supportDeposit()
-    let TRANSFER_AMOUNT = await QUORUM_TOKEN.balanceOf(CREATOR)
-    await QUORUM_TOKEN.transfer(DEPOSIT_ADDRESS, TRANSFER_AMOUNT, {
+    let TRANSFER_AMOUNT
+    for (let i = 0; i < 6; i++) {
+      TRANSFER_AMOUNT = await QUORUM_TOKEN.balanceOf(accounts[i])
+      await QUORUM_TOKEN.transfer(DEPOSIT_ADDRESS, TRANSFER_AMOUNT, {
+        from: accounts[i],
+        gas: 3000000
+      })
+    }
+
+    await governance.putProposalToVote('PROPOSAL_0', {
       from: CREATOR,
       gas: 3000000
     })
 
-    await governance.putProposalToVote(ARBITRARY_STRING, {
-      from: CREATOR,
-      gas: 3000000
-    })
-
-    const VOTE_TOKEN_ADDRESS = (await governance.proposals(
-      ARBITRARY_STRING
-    ))[10]
+    const VOTE_TOKEN_ADDRESS = (await governance.proposals('PROPOSAL_0'))[10]
     const VOTE_TOKEN = miniMeToken.at(VOTE_TOKEN_ADDRESS)
     DEPOSIT_ADDRESS = await governance.approvalDeposit()
     TRANSFER_AMOUNT = await VOTE_TOKEN.balanceOf(CREATOR)
@@ -394,16 +393,252 @@ contract('Governance', function(accounts) {
       gas: 3000000
     })
 
-    await increaseTime(2000)
+    await increaseTime(VOTING_TIME)
 
-    await governance.finalizeVoting(ARBITRARY_STRING)
+    await governance.finalizeVoting('PROPOSAL_0')
 
-    const ACTUAL = (await governance.proposals(ARBITRARY_STRING))[7].toNumber()
+    const ACTUAL = (await governance.proposals('PROPOSAL_0'))[7].toNumber()
     const EXPECTED = PROPOSAL_STATE.DECIDED
     assert.equal(ACTUAL, EXPECTED)
   })
 
-  // For this test I need web3 1.0.0-beta36 for encoding function call.
+  it('should be possible to execute a complex scenario with 3 proposals, 5 participants and 10 accounts.', async function() {
+    /* Proposals */
+    await governance.requestRegisteringProposal('PROPOSAL_0', {
+      from: accounts[0],
+      value: 10000000
+    })
+
+    await governance.requestRegisteringProposal('PROPOSAL_1', {
+      from: accounts[1],
+      value: 10000000
+    })
+
+    await governance.requestRegisteringProposal('PROPOSAL_2', {
+      from: accounts[2],
+      value: 10000000
+    })
+
+    await governance.putProposalToSupport('PROPOSAL_0', {
+      from: accounts[0],
+      gas: 3000000
+    })
+
+    await governance.putProposalToSupport('PROPOSAL_1', {
+      from: accounts[0],
+      gas: 3000000
+    })
+
+    await governance.putProposalToSupport('PROPOSAL_2', {
+      from: accounts[0],
+      gas: 3000000
+    })
+
+    /* Define MiniMeToken and support address */
+    const miniMeToken = web3.eth.contract(MINIME_TOKEN.abi)
+    const SUPPORT_DEPOSIT_ADDRESS = await governance.supportDeposit()
+
+    /* Define target quorum token */
+    const PROPOSAL0_QUORUM_TOKEN_ADDRESS = (await governance.proposals(
+      'PROPOSAL_0'
+    ))[9]
+    const PROPOSAL0_QUORUM_TOKEN = miniMeToken.at(
+      PROPOSAL0_QUORUM_TOKEN_ADDRESS
+    )
+
+    let TRANSFER_AMOUNT
+    let sender
+
+    /* Make transfers for supporting */
+
+    for (let i = 0; i < 3; i++) {
+      sender = accounts[i]
+      TRANSFER_AMOUNT = await PROPOSAL0_QUORUM_TOKEN.balanceOf(sender)
+      await PROPOSAL0_QUORUM_TOKEN.transfer(
+        SUPPORT_DEPOSIT_ADDRESS,
+        TRANSFER_AMOUNT,
+        {
+          from: sender,
+          gas: 3000000
+        }
+      )
+    }
+
+    /* Define target quorum token */
+    const PROPOSAL1_QUORUM_TOKEN_ADDRESS = (await governance.proposals(
+      'PROPOSAL_1'
+    ))[9]
+    const PROPOSAL1_QUORUM_TOKEN = miniMeToken.at(
+      PROPOSAL1_QUORUM_TOKEN_ADDRESS
+    )
+
+    /* Make transfers for supporting */
+
+    for (let i = 0; i < 5; i++) {
+      sender = accounts[i]
+      TRANSFER_AMOUNT = await PROPOSAL1_QUORUM_TOKEN.balanceOf(sender)
+      await PROPOSAL1_QUORUM_TOKEN.transfer(
+        SUPPORT_DEPOSIT_ADDRESS,
+        TRANSFER_AMOUNT,
+        {
+          from: sender,
+          gas: 3000000
+        }
+      )
+    }
+
+    /* Define target quorum token */
+    const PROPOSAL2_QUORUM_TOKEN_ADDRESS = (await governance.proposals(
+      'PROPOSAL_2'
+    ))[9]
+    const PROPOSAL2_QUORUM_TOKEN = miniMeToken.at(
+      PROPOSAL2_QUORUM_TOKEN_ADDRESS
+    )
+    /* Make transfers for supporting */
+
+    for (let i = 0; i < 6; i++) {
+      sender = accounts[i]
+      TRANSFER_AMOUNT = await PROPOSAL2_QUORUM_TOKEN.balanceOf(sender)
+      await PROPOSAL2_QUORUM_TOKEN.transfer(
+        SUPPORT_DEPOSIT_ADDRESS,
+        TRANSFER_AMOUNT,
+        {
+          from: sender,
+          gas: 3000000
+        }
+      )
+    }
+
+    // Increase time to lower required quorum for proposal 1
+    await increaseTime(QUORUM_DIVIDE_TIME)
+
+    await governance.putProposalToVote('PROPOSAL_0', {
+      from: accounts[9],
+      gas: 3000000
+    })
+
+    // Quorum required reset because we put proposal 1 to support, so this will revert
+    await expectThrow(governance.putProposalToVote('PROPOSAL_1'), {
+      from: accounts[9],
+      gas: 3000000
+    })
+
+    await (governance.putProposalToVote('PROPOSAL_2'),
+    {
+      from: accounts[9],
+      gas: 3000000
+    })
+
+    /* Define vote address */
+    const APPROVAL_DEPOSIT_ADDRESS = await governance.approvalDeposit()
+    const REJECTION_DEPOSIT_ADDRESS = await governance.rejectionDeposit()
+
+    /* Define target vote token */
+    const PROPOSAL0_VOTE_TOKEN_ADDRESS = (await governance.proposals(
+      'PROPOSAL_0'
+    ))[10]
+    const PROPOSAL0_VOTE_TOKEN = miniMeToken.at(PROPOSAL0_VOTE_TOKEN_ADDRESS)
+
+    /* Make transfers for voting */
+
+    for (let i = 0; i < 3; i++) {
+      sender = accounts[i]
+      TRANSFER_AMOUNT = await PROPOSAL0_VOTE_TOKEN.balanceOf(sender)
+      await PROPOSAL0_VOTE_TOKEN.transfer(
+        APPROVAL_DEPOSIT_ADDRESS,
+        TRANSFER_AMOUNT,
+        {
+          from: sender,
+          gas: 3000000
+        }
+      )
+    }
+
+    for (let i = 3; i < 5; i++) {
+      sender = accounts[i]
+      TRANSFER_AMOUNT = await PROPOSAL0_VOTE_TOKEN.balanceOf(sender)
+      await PROPOSAL0_VOTE_TOKEN.transfer(
+        REJECTION_DEPOSIT_ADDRESS,
+        TRANSFER_AMOUNT,
+        {
+          from: sender,
+          gas: 3000000
+        }
+      )
+    }
+
+    /* Define target vote token */
+    const PROPOSAL1_VOTE_TOKEN_ADDRESS = (await governance.proposals(
+      'PROPOSAL_1'
+    ))[10]
+
+    assert.equal(
+      PROPOSAL1_VOTE_TOKEN_ADDRESS,
+      '0x0000000000000000000000000000000000000000'
+    )
+
+    /* Define target vote token */
+    const PROPOSAL2_VOTE_TOKEN_ADDRESS = (await governance.proposals(
+      'PROPOSAL_2'
+    ))[10]
+    const PROPOSAL2_VOTE_TOKEN = miniMeToken.at(PROPOSAL2_VOTE_TOKEN_ADDRESS)
+
+    /* Make transfers for voting */
+
+    for (let i = 0; i < 4; i++) {
+      sender = accounts[i]
+      TRANSFER_AMOUNT = await PROPOSAL2_VOTE_TOKEN.balanceOf(sender)
+      await PROPOSAL2_VOTE_TOKEN.transfer(
+        APPROVAL_DEPOSIT_ADDRESS,
+        TRANSFER_AMOUNT,
+        {
+          from: sender,
+          gas: 3000000
+        }
+      )
+    }
+
+    for (let i = 4; i < 9; i++) {
+      sender = accounts[i]
+      TRANSFER_AMOUNT = await PROPOSAL2_VOTE_TOKEN.balanceOf(sender)
+      await PROPOSAL2_VOTE_TOKEN.transfer(
+        REJECTION_DEPOSIT_ADDRESS,
+        TRANSFER_AMOUNT,
+        {
+          from: sender,
+          gas: 3000000
+        }
+      )
+    }
+
+    await increaseTime(VOTING_TIME)
+
+    await governance.finalizeVoting('PROPOSAL_0')
+    await expectThrow(governance.finalizeVoting('PROPOSAL_1'))
+    await governance.finalizeVoting('PROPOSAL_2')
+
+    let ACTUAL = (await governance.proposals('PROPOSAL_0'))[7].toNumber()
+    let EXPECTED = PROPOSAL_STATE.DECIDED
+    assert.equal(ACTUAL, EXPECTED)
+
+    ACTUAL = (await governance.proposals('PROPOSAL_0'))[11]
+    EXPECTED = true
+    assert.equal(ACTUAL, EXPECTED)
+
+    ACTUAL = (await governance.proposals('PROPOSAL_1'))[7].toNumber()
+    EXPECTED = PROPOSAL_STATE.PUT_TO_SUPPORT
+    assert.equal(ACTUAL, EXPECTED)
+
+    ACTUAL = (await governance.proposals('PROPOSAL_2'))[7].toNumber()
+    EXPECTED = PROPOSAL_STATE.DECIDED
+    assert.equal(ACTUAL, EXPECTED)
+
+    ACTUAL = (await governance.proposals('PROPOSAL_2'))[11]
+    EXPECTED = PROPOSAL_STATE.DECIDED
+    assert.equal(ACTUAL, false)
+  })
+
+  // For this test I need web3 1.0.0-beta36 for encoding function call. // Update, try using this: myContract.myMethod.getData(...args)
   //   it('should be possible to execute a proposal', async function() {
   //     const DESTINATION = governance.address
   //     const AMOUNT = 0
@@ -420,28 +655,28 @@ contract('Governance', function(accounts) {
   //     const URI_DESCRIPTION = "description"
   //     const URI_ARGUMENTS = "arguments"
   //
-  //     await governance.createProposal(ARBITRARY_STRING, )
+  //     await governance.createProposal("PROPOSAL_0", )
   //
-  //     await governance.requestRegisteringProposal(ARBITRARY_STRING, {
+  //     await governance.requestRegisteringProposal("PROPOSAL_0", {
   //       from: accounts[3], value: 10000000
   //     })
   //
-  //     await governance.putProposalToSupport(ARBITRARY_STRING, {
+  //     await governance.putProposalToSupport("PROPOSAL_0", {
   //         from: CREATOR, gas: 3000000
   //     })
   //
-  //     const QUORUM_TOKEN_ADDRESS = (await governance.proposals(ARBITRARY_STRING))[9]
+  //     const QUORUM_TOKEN_ADDRESS = (await governance.proposals("PROPOSAL_0"))[9]
   //     let miniMeToken = web3.eth.contract(MINIME_TOKEN.abi)
   //     const QUORUM_TOKEN = miniMeToken.at(QUORUM_TOKEN_ADDRESS)
   //     let DEPOSIT_ADDRESS = await governance.supportDeposit()
   //     let TRANSFER_AMOUNT = await QUORUM_TOKEN.balanceOf(CREATOR)
   //     await QUORUM_TOKEN.transfer(DEPOSIT_ADDRESS, TRANSFER_AMOUNT, {from: CREATOR, gas: 3000000})
   //
-  //     await governance.putProposalToVote(ARBITRARY_STRING, {
+  //     await governance.putProposalToVote("PROPOSAL_0", {
   //       from: CREATOR, gas: 3000000
   //     })
   //
-  //     const VOTE_TOKEN_ADDRESS = (await governance.proposals(ARBITRARY_STRING))[10]
+  //     const VOTE_TOKEN_ADDRESS = (await governance.proposals("PROPOSAL_0"))[10]
   //     const VOTE_TOKEN = miniMeToken.at(QUORUM_TOKEN_ADDRESS)
   //     DEPOSIT_ADDRESS = await governance.approvalDeposit()
   //     TRANSFER_AMOUNT = await VOTE_TOKEN.balanceOf(CREATOR)
@@ -449,8 +684,8 @@ contract('Governance', function(accounts) {
   //
   //     await increaseTime(2000)
   //
-  //     await governance.finalizeVoting(ARBITRARY_STRING)
+  //     await governance.finalizeVoting("PROPOSAL_0")
   //
-  //     await governance.executeProposal(ARBITRARY_STRING)
+  //     await governance.executeProposal("PROPOSAL_0")
   //   })
 })
