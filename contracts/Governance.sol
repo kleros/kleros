@@ -47,9 +47,9 @@ contract Governance {
         address destination; // The governed contract.
         uint amount; // The amount of ETH to send (in most cases it should be 0).
         bytes data; // The data (similar to a multisig mechanism).
-        string uriDescription; // URI to a natural language description of the proposal. Also used as ID in mappings.
+        string descriptionURI; // URI to a natural language description of the proposal. Also used as ID in mappings.
         bytes32 descriptionHash; // Hash of the description.
-        string uriArguments; // URI to arguments for the proposal.
+        string argumentsURI; // URI to arguments for the proposal.
         bytes32 argumentsHash; // Hash of the arguments.
         ProposalState state; // State of proposal.
         uint whenPutToVote; // Records the time when a proposal put to vote to be able to calculate voting period.
@@ -81,12 +81,12 @@ contract Governance {
     // ****************************** //
 
     modifier onlyWhenProposalIsNew(bytes32 _id) {
-        require(proposals[_id].state == ProposalState.New, "Only when proposal in New state.");
+        require(proposals[_id].state == ProposalState.New, "Proposal must be in New state.");
         _;
     }
 
     modifier onlyWhenProposalPutToSupport(bytes32 _id) {
-        require(proposals[_id].state == ProposalState.PutToSupport, "Only when proposal in PutToSupport state.");
+        require(proposals[_id].state == ProposalState.PutToSupport, "Proposal must be in PutToSupport state.");
         _;
     }
 
@@ -118,19 +118,19 @@ contract Governance {
      *  @param _destination Destination contract of the execution
      *  @param _amount Value of the execution
      *  @param _data Data of the execution
-     *  @param _uriDescription URI of the description of the proposal
-     *  @param _uriArguments URI of the arguments of the proposal
+     *  @param _descriptionURI URI of the description of the proposal
+     *  @param _argumentsURI URI of the arguments of the proposal
      */
-    function createAndRegisterProposal(bytes32 _id, address _destination, uint _amount, bytes _data, string _uriDescription, bytes32 _descriptionHash, string _uriArguments, bytes32 _argumentsHash) public {
-        require(proposals[_id].destination == address(0), "There is already a proposal with this id");
+    function createAndRegisterProposal(bytes32 _id, address _destination, uint _amount, bytes _data, string _descriptionURI, bytes32 _descriptionHash, string _argumentsURI, bytes32 _argumentsHash) public {
+        require(proposals[_id].destination == address(0), "There must not a proposal with given id already.");
 
         proposals[_id].destination = _destination;
         proposals[_id].amount = _amount;
         proposals[_id].data = _data;
-        proposals[_id].uriDescription = _uriDescription;
+        proposals[_id].descriptionURI = _descriptionURI;
         proposals[_id].descriptionHash = _descriptionHash;
+        proposals[_id].argumentsURI = _argumentsURI;
         proposals[_id].argumentsHash = _argumentsHash;
-        proposals[_id].uriArguments = _uriArguments;
 
         emit ProposalCreated(_id, _destination);
 
@@ -151,7 +151,7 @@ contract Governance {
      *  @param _id ID of a proposal
      */
     function putProposalToSupport(bytes32 _id) public onlyWhenProposalIsNew(_id) {
-        require(proposalList.isPermitted(_id), "Only when proposal is permitted.");
+        require(proposalList.isPermitted(_id), "Proposal must be permitted in the proposal list.");
 
         Proposal storage proposal = proposals[_id];
 
@@ -178,7 +178,7 @@ contract Governance {
      *  @param _id ID of a proposal
      */
     function putProposalToVote(bytes32 _id) public onlyWhenProposalPutToSupport(_id) {
-        require(proposals[_id].quorumToken.balanceOf(supportDeposit) >= getRequiredQuorum(_id), "Only when propsal has quorum.");
+        require(proposals[_id].quorumToken.balanceOf(supportDeposit) >= getRequiredQuorum(_id), "Proposal must to have quorum.");
 
         Proposal storage proposal = proposals[_id];
 
@@ -202,8 +202,8 @@ contract Governance {
      *  @param _id ID of a proposal
      */
     function finalizeVoting(bytes32 _id) public  {
-        require(proposals[_id].state == ProposalState.PutToVote, "Only when proposal in PutToVote state.");
-        require(now - proposals[_id].whenPutToVote >= currentVotingTime, "Only when voting period passed.");
+        require(proposals[_id].state == ProposalState.PutToVote, "Proposal must be in PutToVote state");
+        require(now - proposals[_id].whenPutToVote >= currentVotingTime, "Voting period must be ended.");
 
         proposals[_id].state = ProposalState.Decided;
         proposals[_id].approved = proposals[_id].voteToken.balanceOf(approvalDeposit) > proposals[_id].voteToken.balanceOf(rejectionDeposit);
@@ -216,8 +216,8 @@ contract Governance {
      *  @param _id ID of a proposal
      */
     function executeProposal(bytes32 _id) public {
-        require(proposals[_id].state == ProposalState.Decided, "Only when proposal in Decided state.");
-        require(proposals[_id].approved, "Only when proposal is approved.");
+        require(proposals[_id].state == ProposalState.Decided, "Proposal must be in Decided state.");
+        require(proposals[_id].approved, "Proposal must be approved.");
 
         Proposal storage proposal = proposals[_id];
 
