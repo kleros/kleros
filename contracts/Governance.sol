@@ -134,7 +134,7 @@ contract Governance {
 
     event ProposalCreated(bytes32 indexed _id, address _destination);
 
-    event ProposalRegisteringRequested(bytes32 indexed _id);
+    event ProposalRequestedToRegister(bytes32 indexed _id);
 
     event ProposalPutToSupport(bytes32 indexed _id);
 
@@ -158,7 +158,7 @@ contract Governance {
      *  @param _uriDescription URI of the description of the proposal
      *  @param _uriArguments URI of the arguments of the proposal
      */
-    function createProposal(bytes32 _id, address _destination, uint _amount, bytes _data, string _uriDescription, string _uriArguments) public {
+    function createAndRegisterProposal(bytes32 _id, address _destination, uint _amount, bytes _data, string _uriDescription, string _uriArguments) public {
         require(proposals[_id].destination == address(0), "There is already a proposal with this id");
 
         proposals[_id].destination = _destination;
@@ -181,7 +181,7 @@ contract Governance {
      */
     function requestRegisteringProposal(bytes32 _id) public payable onlyWhenProposalIsNew(_id) {
         proposalList.requestRegistration.value(msg.value)(_id);
-        emit ProposalRegisteringRequested(_id);
+        emit ProposalRequestedToRegister(_id);
     }
 
 
@@ -226,7 +226,9 @@ contract Governance {
 
         emit ProposalPutToVote(_id);
 
-        resetSettings(); // Reset global variables as quorum has reached
+        lastTimeQuorumReached = block.timestamp; // Necessary when calculating required quorum as it is halved periodically.
+        currentProposalQuorum = proposalQuorum; // Update required quorum percent, which will be constant during new quorum phase.
+        currentVotingTime = votingTime; // Update allowed voting time, which will be constant during new quorum phase.
     }
 
 
@@ -251,16 +253,6 @@ contract Governance {
 
         emit ProposalExecuted(_id);
     }
-
-
-    /** @dev Makes necessary resets when a proposal reaches quorum
-     */
-    function resetSettings() internal {
-        lastTimeQuorumReached = block.timestamp; // Necessary when calculating required quorum as it is halved periodically.
-        currentProposalQuorum = proposalQuorum; // Update required quorum percent, which will be constant during new quorum phase.
-        currentVotingTime = votingTime; // Update allowed voting time, which will be constant during new quorum phase.
-    }
-
 
     // ***************** //
     // *    Setters    * //
