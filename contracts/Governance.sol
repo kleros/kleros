@@ -102,7 +102,7 @@ contract Governance {
 
     modifier onlyWhenVotingPeriod(bytes32 _id) {
         require(proposals[_id].state == ProposalState.PutToVote, "Only when proposal in PutToVote state.");
-        require(block.timestamp <= proposals[_id].whenPutToVote + currentVotingTime, "Only when voting period.");
+        require(now - proposals[_id].whenPutToVote < currentVotingTime, "Only when voting period.");
         _;
     }
 
@@ -118,7 +118,7 @@ contract Governance {
 
     modifier onlyWhenVotingPeriodPassed(bytes32 _id) {
         require(proposals[_id].state == ProposalState.PutToVote, "Only when proposal in PutToVote state.");
-        require(block.timestamp > proposals[_id].whenPutToVote + currentVotingTime, "Only when voting period passed.");
+        require(now - proposals[_id].whenPutToVote >= currentVotingTime, "Only when voting period passed.");
         _;
     }
 
