@@ -121,17 +121,16 @@ contract Governance {
      *  @param _uriDescription URI of the description of the proposal
      *  @param _uriArguments URI of the arguments of the proposal
      */
-    function createAndRegisterProposal(bytes32 _id, address _destination, uint _amount, bytes _data, string _uriDescription, string _uriArguments) public {
+    function createAndRegisterProposal(bytes32 _id, address _destination, uint _amount, bytes _data, string _uriDescription, bytes32 _descriptionHash, string _uriArguments, bytes32 _argumentsHash) public {
         require(proposals[_id].destination == address(0), "There is already a proposal with this id");
 
         proposals[_id].destination = _destination;
         proposals[_id].amount = _amount;
         proposals[_id].data = _data;
         proposals[_id].uriDescription = _uriDescription;
+        proposals[_id].descriptionHash = _descriptionHash;
+        proposals[_id].argumentsHash = _argumentsHash;
         proposals[_id].uriArguments = _uriArguments;
-
-        proposals[_id].descriptionHash = keccak256(proposals[_id].uriDescription);
-        proposals[_id].argumentsHash = keccak256(proposals[_id].uriArguments);
 
         emit ProposalCreated(_id, _destination);
 
