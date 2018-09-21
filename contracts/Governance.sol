@@ -132,6 +132,8 @@ contract Governance {
     // *           Events           * //
     // ****************************** //
 
+    event ProposalCreated(bytes32 indexed _id, address _destination);
+
     event ProposalPutToSupport(bytes32 indexed _id);
 
     event ProposalPutToVote(bytes32 indexed _id);
@@ -140,7 +142,6 @@ contract Governance {
 
     event ProposalExecuted(bytes32 indexed _id);
 
-    event ProposalCreated(bytes32 indexed _id, address _destination, uint _amount, bytes _data, string _uriDescription, bytes32 _descriptionHash, string _uriArguments, bytes32 _argumentsHash);
 
 
     // ****************************** //
@@ -167,7 +168,7 @@ contract Governance {
         proposals[_id].descriptionHash = keccak256(proposals[_id].uriDescription);
         proposals[_id].argumentsHash = keccak256(proposals[_id].uriArguments);
 
-        emit ProposalCreated(_id, _destination, _amount, _data, _uriDescription, proposals[_id].descriptionHash, _uriArguments, proposals[_id].argumentsHash);
+        emit ProposalCreated(_id, _destination);
     }
 
 
