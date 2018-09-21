@@ -134,6 +134,8 @@ contract Governance {
 
     event ProposalCreated(bytes32 indexed _id, address _destination);
 
+    event ProposalRegisteringRequested(bytes32 indexed _id);
+
     event ProposalPutToSupport(bytes32 indexed _id);
 
     event ProposalPutToVote(bytes32 indexed _id);
@@ -148,7 +150,7 @@ contract Governance {
     // *    Governance Mechanism    * //
     // ****************************** //
 
-    /** @dev Creates a proposal and adds to ProposalState
+    /** @dev Creates a proposal, adds to proposals and requests registering to proposalList
      *  @param _id ID of the proposalList
      *  @param _destination Destination contract of the execution
      *  @param _amount Value of the execution
@@ -169,6 +171,8 @@ contract Governance {
         proposals[_id].argumentsHash = keccak256(proposals[_id].uriArguments);
 
         emit ProposalCreated(_id, _destination);
+
+        requestRegisteringProposal(_id);
     }
 
 
@@ -177,6 +181,7 @@ contract Governance {
      */
     function requestRegisteringProposal(bytes32 _id) public payable onlyWhenProposalIsNew(_id) {
         proposalList.requestRegistration.value(msg.value)(_id);
+        emit ProposalRegisteringRequested(_id);
     }
 
 
