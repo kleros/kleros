@@ -90,43 +90,6 @@ contract Governance {
         _;
     }
 
-    modifier onlyWhenProposalPutToVote(bytes32 _id) {
-        require(proposals[_id].state == ProposalState.PutToVote, "Only when proposal in PutToVote state.");
-        _;
-    }
-
-    modifier onlyWhenProposalIsDecided(bytes32 _id) {
-        require(proposals[_id].state == ProposalState.Decided, "Only when proposal in Decided state.");
-        _;
-    }
-
-    modifier onlyWhenVotingPeriod(bytes32 _id) {
-        require(proposals[_id].state == ProposalState.PutToVote, "Only when proposal in PutToVote state.");
-        require(now - proposals[_id].whenPutToVote < currentVotingTime, "Only when voting period.");
-        _;
-    }
-
-    modifier onlyWhenPermitted(bytes32 _id) {
-        require(proposalList.isPermitted(_id), "Only when proposal is permitted.");
-        _;
-    }
-
-    modifier onlyWhenQuorumReached(bytes32 _id) {
-        require(proposals[_id].quorumToken.balanceOf(supportDeposit) >= getRequiredQuorum(_id), "Only when propsal has quorum.");
-        _;
-    }
-
-    modifier onlyWhenVotingPeriodPassed(bytes32 _id) {
-        require(proposals[_id].state == ProposalState.PutToVote, "Only when proposal in PutToVote state.");
-        require(now - proposals[_id].whenPutToVote >= currentVotingTime, "Only when voting period passed.");
-        _;
-    }
-
-    modifier onlyWhenApproved(bytes32 _id) {
-        require(proposals[_id].approved, "Only when proposal is approved.");
-        _;
-    }
-
 
     // ****************************** //
     // *           Events           * //
@@ -188,7 +151,9 @@ contract Governance {
     /** @dev Put proposal to support voting only when a new proposal is permitted.
      *  @param _id ID of a proposal
      */
-    function putProposalToSupport(bytes32 _id) public onlyWhenProposalIsNew(_id) onlyWhenPermitted(_id) {
+    function putProposalToSupport(bytes32 _id) public onlyWhenProposalIsNew(_id) {
+        require(proposalList.isPermitted(_id), "Only when proposal is permitted.");
+
         Proposal storage proposal = proposals[_id];
 
         address cloneToken = pinakion.createCloneToken({_cloneTokenName: quorumTokenName, _cloneDecimalUnits: DECIMALS, _cloneTokenSymbol: quorumTokenSymbol, _snapshotBlock: block.number, _transfersEnabled: true});
@@ -213,7 +178,9 @@ contract Governance {
     /** @dev Put given proposal to vote.
      *  @param _id ID of a proposal
      */
-    function putProposalToVote(bytes32 _id) public onlyWhenProposalPutToSupport(_id) onlyWhenQuorumReached(_id) {
+    function putProposalToVote(bytes32 _id) public onlyWhenProposalPutToSupport(_id) {
+        require(proposals[_id].quorumToken.balanceOf(supportDeposit) >= getRequiredQuorum(_id), "Only when propsal has quorum.");
+
         Proposal storage proposal = proposals[_id];
 
         proposal.whenPutToVote = block.timestamp;
@@ -235,7 +202,10 @@ contract Governance {
     /** @dev Ends a voting, moves proposal to decided state, sets the decision
      *  @param _id ID of a proposal
      */
-    function finalizeVoting(bytes32 _id) public onlyWhenProposalPutToVote(_id) onlyWhenVotingPeriodPassed(_id) {
+    function finalizeVoting(bytes32 _id) public  {
+        require(proposals[_id].state == ProposalState.PutToVote, "Only when proposal in PutToVote state.");
+        require(now - proposals[_id].whenPutToVote >= currentVotingTime, "Only when voting period passed.");
+
         proposals[_id].state = ProposalState.Decided;
         proposals[_id].approved = proposals[_id].voteToken.balanceOf(approvalDeposit) > proposals[_id].voteToken.balanceOf(rejectionDeposit);
 
@@ -246,7 +216,10 @@ contract Governance {
     /** @dev General purpose call function for executing a proposal UNTRUSTED
      *  @param _id ID of a proposal
      */
-    function executeProposal(bytes32 _id) public onlyWhenApproved(_id) {
+    function executeProposal(bytes32 _id) public {
+        require(proposals[_id].state == ProposalState.Decided, "Only when proposal in Decided state.");
+        require(proposals[_id].approved, "Only when proposal is approved.");
+
         Proposal storage proposal = proposals[_id];
 
         proposal.destination.call.value(proposal.amount)(proposal.data); // solium-disable-line security/no-call-value
