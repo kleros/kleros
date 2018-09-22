@@ -42,15 +42,15 @@ contract('Governance', function(accounts) {
   let tokenFactory
   let RNG
 
-  const ITEM_STATUS = {
-    ABSENT: 0,
-    CLEARED: 1,
-    RESUBMITTED: 2,
-    REGISTERED: 3,
-    SUBMITTED: 4,
-    CLEARING_REQUESTED: 5,
-    PREVENTIVE_CLEARING_REQUESTED: 6
-  }
+  // const ITEM_STATUS = {
+  //   ABSENT: 0,
+  //   CLEARED: 1,
+  //   RESUBMITTED: 2,
+  //   REGISTERED: 3,
+  //   SUBMITTED: 4,
+  //   CLEARING_REQUESTED: 5,
+  //   PREVENTIVE_CLEARING_REQUESTED: 6
+  // }
 
   const PROPOSAL_STATE = {
     NEW: 0,
@@ -184,31 +184,60 @@ contract('Governance', function(accounts) {
     await tokenController.changeGovernor(governance.address, { from: CREATOR })
 
     assert.equal(await tokenController.governor(), governance.address) // Make sure that governance contract is the governor of kleros liquid contract
-  })
 
-  it('should be possible to request registration of a proposal to the proposal list', async function() {
-    await governance.requestRegisteringProposal('PROPOSAL_0', {
-      from: accounts[3],
-      value: 10000000
-    })
-
-    const PROPOSAL_LIST_ADDRESS = await governance.proposalList()
-    const arbitrablePermissionList = web3.eth.contract(
-      ARBITRABLE_PERMISSION_LIST.abi
+    await governance.createAndRegisterProposal(
+      'PROPOSAL_0',
+      governance.address,
+      0,
+      'data',
+      'descriptionURI',
+      'descriptionHash',
+      'argumentsURI',
+      'argumentsHash',
+      { from: CREATOR, gas: 3000000, value: 10000000 }
     )
-    const PROPOSAL_LIST = arbitrablePermissionList.at(PROPOSAL_LIST_ADDRESS)
-
-    const ACTUAL = (await PROPOSAL_LIST.items('PROPOSAL_0'))[0].toNumber()
-    const EXPECTED = ITEM_STATUS.SUBMITTED
-    assert.equal(ACTUAL, EXPECTED)
+    await governance.createAndRegisterProposal(
+      'PROPOSAL_1',
+      governance.address,
+      0,
+      'data',
+      'descriptionURI',
+      'descriptionHash',
+      'argumentsURI',
+      'argumentsHash',
+      { from: CREATOR, gas: 3000000, value: 10000000 }
+    )
+    await governance.createAndRegisterProposal(
+      'PROPOSAL_2',
+      governance.address,
+      0,
+      'data',
+      'descriptionURI',
+      'descriptionHash',
+      'argumentsURI',
+      'argumentsHash',
+      { from: CREATOR, gas: 3000000, value: 10000000 }
+    )
   })
+
+  // it('should be possible to request registration of a proposal to the proposal list', async function() {
+  //   await governance.requestRegisteringProposal('PROPOSAL_0', {
+  //     from: accounts[3],
+  //     value: 10000000
+  //   })
+  //
+  //   const PROPOSAL_LIST_ADDRESS = await governance.proposalList()
+  //   const arbitrablePermissionList = web3.eth.contract(
+  //     ARBITRABLE_PERMISSION_LIST.abi
+  //   )
+  //   const PROPOSAL_LIST = arbitrablePermissionList.at(PROPOSAL_LIST_ADDRESS)
+  //
+  //   const ACTUAL = (await PROPOSAL_LIST.items('PROPOSAL_0'))[0].toNumber()
+  //   const EXPECTED = ITEM_STATUS.SUBMITTED
+  //   assert.equal(ACTUAL, EXPECTED)
+  // })
 
   it('should be possible to put a proposal to support', async function() {
-    await governance.requestRegisteringProposal('PROPOSAL_0', {
-      from: accounts[3],
-      value: 10000000
-    })
-
     await governance.putProposalToSupport('PROPOSAL_0', {
       from: CREATOR,
       gas: 3000000
@@ -220,11 +249,6 @@ contract('Governance', function(accounts) {
   })
 
   it('should be possible support a proposal', async function() {
-    await governance.requestRegisteringProposal('PROPOSAL_0', {
-      from: accounts[3],
-      value: 10000000
-    })
-
     await governance.putProposalToSupport('PROPOSAL_0', {
       from: CREATOR,
       gas: 3000000
@@ -247,11 +271,6 @@ contract('Governance', function(accounts) {
   })
 
   it('should be possible to get required quorum for a proposal', async function() {
-    await governance.requestRegisteringProposal('PROPOSAL_0', {
-      from: accounts[3],
-      value: 10000000
-    })
-
     await governance.putProposalToSupport('PROPOSAL_0', {
       from: CREATOR,
       gas: 3000000
@@ -274,15 +293,12 @@ contract('Governance', function(accounts) {
       .mul(PROPOSAL_QUORUM)
       .div(2 ** MULTIPLIER)
 
+    // console.log(ACTUAL.toNumber())
+    // console.log(EXPECTED.toFixed(0))
     assert(ACTUAL.equals(EXPECTED.toFixed(0)))
   })
 
   it('should be possible to put a proposal to vote', async function() {
-    await governance.requestRegisteringProposal('PROPOSAL_0', {
-      from: accounts[3],
-      value: 10000000
-    })
-
     await governance.putProposalToSupport('PROPOSAL_0', {
       from: CREATOR,
       gas: 3000000
@@ -313,11 +329,6 @@ contract('Governance', function(accounts) {
   })
 
   it('should be possible to vote a proposal', async function() {
-    await governance.requestRegisteringProposal('PROPOSAL_0', {
-      from: accounts[3],
-      value: 10000000
-    })
-
     await governance.putProposalToSupport('PROPOSAL_0', {
       from: CREATOR,
       gas: 3000000
@@ -356,11 +367,6 @@ contract('Governance', function(accounts) {
   })
 
   it('should be possible to finalize a voting', async function() {
-    await governance.requestRegisteringProposal('PROPOSAL_0', {
-      from: accounts[3],
-      value: 10000000
-    })
-
     await governance.putProposalToSupport('PROPOSAL_0', {
       from: CREATOR,
       gas: 3000000
@@ -403,22 +409,6 @@ contract('Governance', function(accounts) {
   })
 
   it('should be possible to execute a complex scenario with 3 proposals, 5 participants and 10 accounts.', async function() {
-    /* Proposals */
-    await governance.requestRegisteringProposal('PROPOSAL_0', {
-      from: accounts[0],
-      value: 10000000
-    })
-
-    await governance.requestRegisteringProposal('PROPOSAL_1', {
-      from: accounts[1],
-      value: 10000000
-    })
-
-    await governance.requestRegisteringProposal('PROPOSAL_2', {
-      from: accounts[2],
-      value: 10000000
-    })
-
     await governance.putProposalToSupport('PROPOSAL_0', {
       from: accounts[0],
       gas: 3000000

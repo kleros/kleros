@@ -19,7 +19,6 @@ contract Governance {
     ArbitrablePermissionList public proposalList;
 
     uint public proposalQuorum;
-    uint public currentProposalQuorum;
 
     uint public quorumDivideTime;
     uint public lastTimeQuorumReached;
@@ -59,6 +58,7 @@ contract Governance {
     }
 
     mapping(bytes32 => Proposal) public proposals;
+    mapping(bytes32 => uint) public quorumRequirement; // The quorum requirement that is constant during a proposals lifecycle
 
 
     constructor (uint _proposalQuorum, uint _quorumDivideTime, uint _votingTime, ArbitrablePermissionList _arbitrablePermissionList, Pinakion _pinakion, TokenController _tokenController) public {
@@ -69,7 +69,6 @@ contract Governance {
         tokenController = _tokenController;
 
         proposalQuorum = _proposalQuorum;
-        currentProposalQuorum = proposalQuorum;
 
         quorumDivideTime = _quorumDivideTime;
         votingTime = _votingTime;
@@ -113,15 +112,17 @@ contract Governance {
     // *    Governance Mechanism    * //
     // ****************************** //
 
-    /** @dev Creates a proposal, adds to proposals and requests registering to proposalList
+    /** @dev Creates a proposal and requests registering to proposalList
      *  @param _id ID of the proposalList
      *  @param _destination Destination contract of the execution
      *  @param _amount Value of the execution
      *  @param _data Data of the execution
      *  @param _descriptionURI URI of the description of the proposal
+     *  @param _descriptionHash Hash of the description content
      *  @param _argumentsURI URI of the arguments of the proposal
+     *  @param _argumentsHash Hash of the arguments content
      */
-    function createAndRegisterProposal(bytes32 _id, address _destination, uint _amount, bytes _data, string _descriptionURI, bytes32 _descriptionHash, string _argumentsURI, bytes32 _argumentsHash) public {
+    function createAndRegisterProposal(bytes32 _id, address _destination, uint _amount, bytes _data, string _descriptionURI, bytes32 _descriptionHash, string _argumentsURI, bytes32 _argumentsHash) payable onlyWhenProposalIsNew(_id) public {
         require(proposals[_id].destination == address(0), "There must not a proposal with given id already.");
 
         proposals[_id].destination = _destination;
@@ -132,16 +133,10 @@ contract Governance {
         proposals[_id].argumentsURI = _argumentsURI;
         proposals[_id].argumentsHash = _argumentsHash;
 
+        quorumRequirement[_id] = proposalQuorum;
+
         emit ProposalCreated(_id, _destination);
 
-        requestRegisteringProposal(_id);
-    }
-
-
-    /** @dev Request registering a proposal to the proposal list
-     *  @param _id ID of a proposal
-     */
-    function requestRegisteringProposal(bytes32 _id) public payable onlyWhenProposalIsNew(_id) {
         proposalList.requestRegistration.value(msg.value)(_id);
         emit ProposalRequestedToRegister(_id);
     }
@@ -170,7 +165,7 @@ contract Governance {
      */
     function getRequiredQuorum(bytes32 _id) public view onlyWhenProposalPutToSupport(_id) returns (uint effectiveQuorum){
         uint numberOfDividePeriodsPassed = (block.timestamp - lastTimeQuorumReached) / quorumDivideTime;
-        effectiveQuorum = currentProposalQuorum * proposals[_id].quorumToken.totalSupply() / (2 ** numberOfDividePeriodsPassed) / 100;
+        effectiveQuorum = quorumRequirement[_id] * proposals[_id].quorumToken.totalSupply() / (2 ** numberOfDividePeriodsPassed) / 100;
     }
 
 
@@ -193,7 +188,6 @@ contract Governance {
         emit ProposalPutToVote(_id);
 
         lastTimeQuorumReached = block.timestamp; // Necessary when calculating required quorum as it is halved periodically.
-        currentProposalQuorum = proposalQuorum; // Update required quorum percent, which will be constant during new quorum phase.
         currentVotingTime = votingTime; // Update allowed voting time, which will be constant during new quorum phase.
     }
 
