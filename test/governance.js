@@ -167,9 +167,8 @@ contract('Governance', function(accounts) {
       subcourtTree.sortitionSumTreeK
     )
 
-    await pinakion.changeController(tokenController.address, { from: CREATOR })
-
-    assert.equal(await pinakion.controller(), tokenController.address) // Make sure that kleros liquid contract is the controller of the pinakion token
+    // await pinakion.changeController(tokenController.address, { from: CREATOR })
+    // assert.equal(await pinakion.controller(), tokenController.address) // Make sure that kleros liquid contract is the controller of the pinakion token
 
     governance = await GOVERNANCE.new(
       PROPOSAL_QUORUM,
