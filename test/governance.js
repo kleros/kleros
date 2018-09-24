@@ -257,7 +257,7 @@ contract('Governance', function(accounts) {
     const miniMeToken = web3.eth.contract(MINIME_TOKEN.abi)
     const QUORUM_TOKEN = miniMeToken.at(QUORUM_TOKEN_ADDRESS)
 
-    const DEPOSIT_ADDRESS = await governance.supportDeposit()
+    const DEPOSIT_ADDRESS = await governance.SUPPORT_DEPOSIT()
     const TRANSFER_AMOUNT = await QUORUM_TOKEN.balanceOf(CREATOR)
     await QUORUM_TOKEN.transfer(DEPOSIT_ADDRESS, TRANSFER_AMOUNT, {
       from: CREATOR,
@@ -306,7 +306,7 @@ contract('Governance', function(accounts) {
     const QUORUM_TOKEN_ADDRESS = (await governance.proposals('PROPOSAL_0'))[9]
     const miniMeToken = web3.eth.contract(MINIME_TOKEN.abi)
     const QUORUM_TOKEN = miniMeToken.at(QUORUM_TOKEN_ADDRESS)
-    const DEPOSIT_ADDRESS = await governance.supportDeposit()
+    const DEPOSIT_ADDRESS = await governance.SUPPORT_DEPOSIT()
     let TRANSFER_AMOUNT
 
     for (let i = 0; i < 6; i++) {
@@ -336,7 +336,7 @@ contract('Governance', function(accounts) {
     const QUORUM_TOKEN_ADDRESS = (await governance.proposals('PROPOSAL_0'))[9]
     const miniMeToken = web3.eth.contract(MINIME_TOKEN.abi)
     const QUORUM_TOKEN = miniMeToken.at(QUORUM_TOKEN_ADDRESS)
-    let DEPOSIT_ADDRESS = await governance.supportDeposit()
+    let DEPOSIT_ADDRESS = await governance.SUPPORT_DEPOSIT()
     let TRANSFER_AMOUNT
     for (let i = 0; i < 6; i++) {
       TRANSFER_AMOUNT = await QUORUM_TOKEN.balanceOf(accounts[i])
@@ -353,7 +353,7 @@ contract('Governance', function(accounts) {
 
     const VOTE_TOKEN_ADDRESS = (await governance.proposals('PROPOSAL_0'))[10]
     const VOTE_TOKEN = miniMeToken.at(VOTE_TOKEN_ADDRESS)
-    DEPOSIT_ADDRESS = await governance.approvalDeposit()
+    DEPOSIT_ADDRESS = await governance.APPROVAL_DEPOSIT()
     TRANSFER_AMOUNT = await VOTE_TOKEN.balanceOf(CREATOR)
     await VOTE_TOKEN.transfer(DEPOSIT_ADDRESS, TRANSFER_AMOUNT, {
       from: CREATOR,
@@ -374,7 +374,7 @@ contract('Governance', function(accounts) {
     const QUORUM_TOKEN_ADDRESS = (await governance.proposals('PROPOSAL_0'))[9]
     const miniMeToken = web3.eth.contract(MINIME_TOKEN.abi)
     const QUORUM_TOKEN = miniMeToken.at(QUORUM_TOKEN_ADDRESS)
-    let DEPOSIT_ADDRESS = await governance.supportDeposit()
+    let DEPOSIT_ADDRESS = await governance.SUPPORT_DEPOSIT()
     let TRANSFER_AMOUNT
     for (let i = 0; i < 7; i++) {
       TRANSFER_AMOUNT = await QUORUM_TOKEN.balanceOf(accounts[i])
@@ -391,7 +391,7 @@ contract('Governance', function(accounts) {
 
     const VOTE_TOKEN_ADDRESS = (await governance.proposals('PROPOSAL_0'))[10]
     const VOTE_TOKEN = miniMeToken.at(VOTE_TOKEN_ADDRESS)
-    DEPOSIT_ADDRESS = await governance.approvalDeposit()
+    DEPOSIT_ADDRESS = await governance.APPROVAL_DEPOSIT()
     TRANSFER_AMOUNT = await VOTE_TOKEN.balanceOf(CREATOR)
     await VOTE_TOKEN.transfer(DEPOSIT_ADDRESS, TRANSFER_AMOUNT, {
       from: CREATOR,
@@ -425,7 +425,7 @@ contract('Governance', function(accounts) {
 
     /* Define MiniMeToken and support address */
     const miniMeToken = web3.eth.contract(MINIME_TOKEN.abi)
-    const SUPPORT_DEPOSIT_ADDRESS = await governance.supportDeposit()
+    const SUPPORT_DEPOSIT_ADDRESS = await governance.SUPPORT_DEPOSIT()
 
     /* Define target quorum token */
     const PROPOSAL0_QUORUM_TOKEN_ADDRESS = (await governance.proposals(
@@ -519,8 +519,8 @@ contract('Governance', function(accounts) {
     })
 
     /* Define vote address */
-    const APPROVAL_DEPOSIT_ADDRESS = await governance.approvalDeposit()
-    const REJECTION_DEPOSIT_ADDRESS = await governance.rejectionDeposit()
+    const APPROVAL_DEPOSIT_ADDRESS = await governance.APPROVAL_DEPOSIT()
+    const REJECTION_DEPOSIT_ADDRESS = await governance.REJECTION_DEPOSIT()
 
     /* Define target vote token */
     const PROPOSAL0_VOTE_TOKEN_ADDRESS = (await governance.proposals(
@@ -657,7 +657,7 @@ contract('Governance', function(accounts) {
   //     const QUORUM_TOKEN_ADDRESS = (await governance.proposals("PROPOSAL_0"))[9]
   //     let miniMeToken = web3.eth.contract(MINIME_TOKEN.abi)
   //     const QUORUM_TOKEN = miniMeToken.at(QUORUM_TOKEN_ADDRESS)
-  //     let DEPOSIT_ADDRESS = await governance.supportDeposit()
+  //     let DEPOSIT_ADDRESS = await governance.SUPPORT_DEPOSIT()
   //     let TRANSFER_AMOUNT = await QUORUM_TOKEN.balanceOf(CREATOR)
   //     await QUORUM_TOKEN.transfer(DEPOSIT_ADDRESS, TRANSFER_AMOUNT, {from: CREATOR, gas: 3000000})
   //
@@ -667,7 +667,7 @@ contract('Governance', function(accounts) {
   //
   //     const VOTE_TOKEN_ADDRESS = (await governance.proposals("PROPOSAL_0"))[10]
   //     const VOTE_TOKEN = miniMeToken.at(QUORUM_TOKEN_ADDRESS)
-  //     DEPOSIT_ADDRESS = await governance.approvalDeposit()
+  //     DEPOSIT_ADDRESS = await governance.APPROVAL_DEPOSIT()
   //     TRANSFER_AMOUNT = await VOTE_TOKEN.balanceOf(CREATOR)
   //     await VOTE_TOKEN.transfer(DEPOSIT_ADDRESS, TRANSFER_AMOUNT, {from: CREATOR, gas: 3000000})
   //

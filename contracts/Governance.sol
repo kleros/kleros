@@ -8,7 +8,7 @@
 pragma solidity ^0.4.24;
 
 import "kleros-interaction/contracts/standard/permission/ArbitrablePermissionList.sol";
-import "kleros-interaction/contracts/standard/arbitration/CentralizedArbitrator.sol"; // I need this contract to be deployed for tests, Truffle issue
+import "kleros-interaction/contracts/standard/arbitration/CentralizedArbitrator.sol"; // I need this contract to be deployed for tests, Truffle issue.
 import { ApproveAndCallFallBack, MiniMeToken, MiniMeTokenFactory, TokenController } from "minimetoken/contracts/MiniMeToken.sol";
 import { MiniMeTokenERC20 as Pinakion } from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
 
@@ -26,9 +26,9 @@ contract Governance is TokenController{
     uint public votingTime;
     uint public currentVotingTime;
 
-    address public constant supportDeposit = 0x707574546F566F74650000000000000000000000; // When this address reaches quorum proposal gets put to vote.
-    address public constant approvalDeposit =  0x617070726f76616c000000000000000000000000; // This address represents yes votes.
-    address public constant rejectionDeposit = 0x72656a656374696F6E0000000000000000000000; // This address represents no votes.
+    address public constant SUPPORT_DEPOSIT = 0x707574546F566F74650000000000000000000000; // When this address reaches quorum proposal gets put to vote.
+    address public constant APPROVAL_DEPOSIT =  0x617070726f76616c000000000000000000000000; // This address represents yes votes.
+    address public constant REJECTION_DEPOSIT = 0x72656a656374696F6E0000000000000000000000; // This address represents no votes.
 
     enum ProposalState {
         New,
@@ -53,7 +53,7 @@ contract Governance is TokenController{
     }
 
     mapping(bytes32 => Proposal) public proposals;
-    mapping(bytes32 => uint) public quorumRequirement; // The quorum requirement that is constant during a proposals lifecycle
+    mapping(bytes32 => uint) public quorumRequirement; // The quorum requirement that is constant during a proposals lifecycle.
 
 
     constructor (uint _proposalQuorum, uint _quorumDivideTime, uint _votingTime, ArbitrablePermissionList _arbitrablePermissionList, Pinakion _pinakion, TokenController _tokenController) public {
@@ -102,22 +102,21 @@ contract Governance is TokenController{
     event ProposalExecuted(bytes32 indexed _id);
 
 
-
     // ****************************** //
     // *    Governance Mechanism    * //
     // ****************************** //
 
-    /** @dev Creates a proposal and requests registering to proposalList
-     *  @param _id ID of the proposalList
-     *  @param _destination Destination contract of the execution
-     *  @param _amount Value of the execution
-     *  @param _data Data of the execution
-     *  @param _descriptionURI URI of the description of the proposal
-     *  @param _descriptionHash Hash of the description content
-     *  @param _argumentsURI URI of the arguments of the proposal
-     *  @param _argumentsHash Hash of the arguments content
+    /** @dev Creates a proposal and requests registering to proposalList.
+     *  @param _id ID of the proposalList.
+     *  @param _destination Destination contract of the execution.
+     *  @param _amount Value of the execution.
+     *  @param _data Data of the execution.
+     *  @param _descriptionURI URI of the description of the proposal.
+     *  @param _descriptionHash Hash of the description content.
+     *  @param _argumentsURI URI of the arguments of the proposal.
+     *  @param _argumentsHash Hash of the arguments content.
      */
-    function createAndRegisterProposal(bytes32 _id, address _destination, uint _amount, bytes _data, string _descriptionURI, bytes32 _descriptionHash, string _argumentsURI, bytes32 _argumentsHash) payable onlyWhenProposalIsNew(_id) public {
+    function createAndRegisterProposal(bytes32 _id, address _destination, uint _amount, bytes _data, string _descriptionURI, bytes32 _descriptionHash, string _argumentsURI, bytes32 _argumentsHash) public payable onlyWhenProposalIsNew(_id)  {
         require(proposals[_id].destination == address(0), "There must not a proposal with given id already.");
 
         proposals[_id].destination = _destination;
@@ -138,7 +137,7 @@ contract Governance is TokenController{
 
 
     /** @dev Put proposal to support voting only when a new proposal is permitted.
-     *  @param _id ID of a proposal
+     *  @param _id ID of a proposal.
      */
     function putProposalToSupport(bytes32 _id) public onlyWhenProposalIsNew(_id) {
         require(proposalList.isPermitted(_id), "Proposal must be permitted in the proposal list.");
@@ -155,7 +154,7 @@ contract Governance is TokenController{
 
 
     /** @dev Calculate and return required quorum for a given proposal.
-     *  @param _id ID of a proposal
+     *  @param _id ID of a proposal.
      */
     function getRequiredQuorum(bytes32 _id) public view onlyWhenProposalPutToSupport(_id) returns (uint effectiveQuorum){
         uint numberOfDividePeriodsPassed = (block.timestamp - lastTimeQuorumReached) / quorumDivideTime;
@@ -164,10 +163,10 @@ contract Governance is TokenController{
 
 
     /** @dev Put given proposal to vote.
-     *  @param _id ID of a proposal
+     *  @param _id ID of a proposal.
      */
     function putProposalToVote(bytes32 _id) public onlyWhenProposalPutToSupport(_id) {
-        require(proposals[_id].quorumToken.balanceOf(supportDeposit) >= getRequiredQuorum(_id), "Proposal must to have quorum.");
+        require(proposals[_id].quorumToken.balanceOf(SUPPORT_DEPOSIT) >= getRequiredQuorum(_id), "Proposal must to have quorum.");
 
         Proposal storage proposal = proposals[_id];
 
@@ -185,39 +184,40 @@ contract Governance is TokenController{
     }
 
 
-    /** @dev Ends a voting, moves proposal to decided state, sets the decision
-     *  @param _id ID of a proposal
+    /** @dev Ends a voting, moves proposal to decided state, sets the decision.
+     *  @param _id ID of a proposal.
      */
     function finalizeVoting(bytes32 _id) public  {
         require(proposals[_id].state == ProposalState.PutToVote, "Proposal must be in PutToVote state");
         require(now - proposals[_id].whenPutToVote >= currentVotingTime, "Voting period must be ended.");
 
         proposals[_id].state = ProposalState.Decided;
-        proposals[_id].approved = proposals[_id].voteToken.balanceOf(approvalDeposit) > proposals[_id].voteToken.balanceOf(rejectionDeposit);
+        proposals[_id].approved = proposals[_id].voteToken.balanceOf(APPROVAL_DEPOSIT) > proposals[_id].voteToken.balanceOf(REJECTION_DEPOSIT);
 
         emit ProposalDecided(_id, proposals[_id].approved);
     }
 
 
-    /** @dev General purpose call function for executing a proposal UNTRUSTED
-     *  @param _id ID of a proposal
+    /** @dev General purpose call function for executing a proposal UNTRUSTED.
+     *  @param _id ID of a proposal.
      */
     function executeProposal(bytes32 _id) public {
-        require(proposals[_id].state == ProposalState.Decided, "Proposal must be in Decided state.");
-        require(proposals[_id].approved, "Proposal must be approved.");
-
         Proposal storage proposal = proposals[_id];
+
+        require(proposal.state == ProposalState.Decided, "Proposal must be in Decided state.");
+        require(proposal.approved, "Proposal must be approved.");
 
         proposal.destination.call.value(proposal.amount)(proposal.data); // solium-disable-line security/no-call-value
 
         emit ProposalExecuted(_id);
     }
 
+
     // ***************** //
     // *    Setters    * //
     // ***************** //
 
-    /** @dev Setter for proposalQuorum
+    /** @dev Setter for proposalQuorum.
      *  @param _proposalQuorum Value to be set.
      */
     function setProposalQuorum(uint _proposalQuorum) internal {
@@ -225,7 +225,7 @@ contract Governance is TokenController{
     }
 
 
-    /** @dev Setter for votingTime
+    /** @dev Setter for votingTime.
      *  @param _votingTime Value to be set.
      */
     function setVotingTime(uint _votingTime) internal {
@@ -233,7 +233,7 @@ contract Governance is TokenController{
     }
 
 
-    /** @dev Setter for quorumDivideTime
+    /** @dev Setter for quorumDivideTime.
      *  @param _quorumDivideTime Value to be set.
      */
     function setQuorumDivideTime(uint _quorumDivideTime) internal {
@@ -245,31 +245,28 @@ contract Governance is TokenController{
     // *    Token Controller    * //
     // ************************** //
 
-    /// @notice Called when `_owner` sends ether to the MiniMe Token contract
-    /// @param _owner The address that sent the ether to create tokens
-    /// @return True if the ether is accepted, false if it throws
+    /// @notice Called when `_owner` sends ether to the MiniMe Token contract.
+    /// @param _owner The address that sent the ether to create tokens.
+    /// @return True if the ether is accepted, false if it throws.
     function proxyPayment(address _owner) public payable returns(bool){
         return true;
     }
 
-    /// @notice Notifies the controller about a token transfer allowing the
-    ///  controller to react if desired
-    /// @param _from The origin of the transfer
-    /// @param _to The destination of the transfer
-    /// @param _amount The amount of the transfer
-    /// @return False if the controller does not authorize the transfer
+    /// @notice Notifies the controller about a token transfer allowing the controller to react if desired.
+    /// @param _from The origin of the transfer.
+    /// @param _to The destination of the transfer.
+    /// @param _amount The amount of the transfer.
+    /// @return False if the controller does not authorize the transfer.
     function onTransfer(address _from, address _to, uint _amount) public returns(bool){
         return true;
     }
 
-    /// @notice Notifies the controller about an approval allowing the
-    ///  controller to react if desired
-    /// @param _owner The address that calls `approve()`
-    /// @param _spender The spender in the `approve()` call
-    /// @param _amount The amount in the `approve()` call
-    /// @return False if the controller does not authorize the approval
-    function onApprove(address _owner, address _spender, uint _amount) public
-    returns(bool){
+    /// @notice Notifies the controller about an approval allowing the controller to react if desired.
+    /// @param _owner The address that calls `approve()`.
+    /// @param _spender The spender in the `approve()` call.
+    /// @param _amount The amount in the `approve()` call.
+    /// @return False if the controller does not authorize the approval.
+    function onApprove(address _owner, address _spender, uint _amount) public returns(bool){
         return true;
     }
 }
