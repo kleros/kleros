@@ -26,11 +26,6 @@ contract Governance is TokenController{
     uint public votingTime;
     uint public currentVotingTime;
 
-    string constant voteTokenName = "Vote Token";
-    string constant quorumTokenName = "Quorum Token";
-    string constant voteTokenSymbol = "VOTE";
-    string constant quorumTokenSymbol = "QUORUM";
-    uint8 constant DECIMALS = 18;
     address public constant supportDeposit = 0x707574546F566F74650000000000000000000000; // When this address reaches quorum proposal gets put to vote.
     address public constant approvalDeposit =  0x617070726f76616c000000000000000000000000; // This address represents yes votes.
     address public constant rejectionDeposit = 0x72656a656374696F6E0000000000000000000000; // This address represents no votes.
@@ -150,7 +145,7 @@ contract Governance is TokenController{
 
         Proposal storage proposal = proposals[_id];
 
-        address cloneToken = pinakion.createCloneToken({_cloneTokenName: quorumTokenName, _cloneDecimalUnits: DECIMALS, _cloneTokenSymbol: quorumTokenSymbol, _snapshotBlock: block.number, _transfersEnabled: true});
+        address cloneToken = pinakion.createCloneToken({_cloneTokenName: "Quorum Token", _cloneDecimalUnits: pinakion.decimals(), _cloneTokenSymbol: "QUORUM", _snapshotBlock: block.number, _transfersEnabled: true});
         proposal.quorumToken = MiniMeToken(cloneToken);
 
         proposal.state = ProposalState.PutToSupport;
@@ -178,7 +173,7 @@ contract Governance is TokenController{
 
         proposal.whenPutToVote = block.timestamp;
 
-        address cloneToken = pinakion.createCloneToken({_cloneTokenName: voteTokenName, _cloneDecimalUnits: DECIMALS, _cloneTokenSymbol: voteTokenSymbol, _snapshotBlock: block.number, _transfersEnabled: true});
+        address cloneToken = pinakion.createCloneToken({_cloneTokenName: "Vote Token", _cloneDecimalUnits: pinakion.decimals(), _cloneTokenSymbol: "VOTE", _snapshotBlock: block.number, _transfersEnabled: true});
         proposal.voteToken = MiniMeToken(cloneToken);
 
         proposal.state = ProposalState.PutToVote;
