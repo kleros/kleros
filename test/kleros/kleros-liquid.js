@@ -1,9 +1,11 @@
 /* globals artifacts, contract, expect, web3 */
 const { soliditySha3 } = require('web3-utils')
 const {
-  increaseTime,
   expectThrow
-} = require('kleros-interaction/helpers/utils')
+} = require('openzeppelin-solidity/test/helpers/expectThrow')
+const {
+  increaseTime
+} = require('openzeppelin-solidity/test/helpers/increaseTime')
 
 const Pinakion = artifacts.require(
   'kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol'
