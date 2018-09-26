@@ -207,7 +207,7 @@ contract Governance is TokenController{
         require(proposal.state == ProposalState.Decided, "Proposal must be in Decided state.");
         require(proposal.approved, "Proposal must be approved.");
 
-        proposal.destination.call.value(proposal.amount)(proposal.data); // solium-disable-line security/no-call-value
+        require(proposal.destination.call.value(proposal.amount)(proposal.data), "Proposal execution failed!"); // solium-disable-line security/no-call-value
 
         emit ProposalExecuted(_id);
     }
