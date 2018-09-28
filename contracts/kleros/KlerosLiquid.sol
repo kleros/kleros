@@ -453,11 +453,21 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             _stake == 0 || courts[_subcourtID].minStake <= _stake,
             "The juror's stake cannot be lower than the minimum stake for the subcourt."
         );
-        uint _stakeDiff = _stake - stakeOf(bytes32(_subcourtID), msg.sender);
+        int _stakeDiff = int(_stake) - int(stakeOf(bytes32(_subcourtID), msg.sender));
         require(
-            _stake == 0 || pinakion.balanceOf(msg.sender) >= stakeOf(bytes32(0), msg.sender) + _stakeDiff,
+            _stake == 0 || int(pinakion.balanceOf(msg.sender)) >= int(stakeOf(bytes32(0), msg.sender)) + _stakeDiff,
             "The juror's total amount of staked tokens cannot be higher than the juror's balance."
         );
+
+        if (_stakeDiff < 0) {
+            bool _childrenHaveStake = false;
+            for (uint i = 0; i < courts[_subcourtID].children.length; i++)
+                if (courts[_subcourtID].children[i] != 0 && stakeOf(bytes32(courts[_subcourtID].children[i]), msg.sender) > 0) {
+                    _childrenHaveStake = true;
+                    break;
+                }
+            require(!_childrenHaveStake, "Children can not have stake when withdrawing.");
+        }
 
         Juror storage juror = jurors[msg.sender];
         if (_stake == 0) {
@@ -477,7 +487,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             else set(
                 bytes32(_currentSubcourtID),
                 sortitionSumTrees[bytes32(_currentSubcourtID)].addressesToTreeIndexes[msg.sender],
-                _currentSubcourtStake + _stakeDiff,
+                uint(int(_currentSubcourtStake) + _stakeDiff),
                 msg.sender
             );
             if (_currentSubcourtID == 0)  _finished = true;
