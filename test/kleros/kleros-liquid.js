@@ -1,9 +1,11 @@
 /* globals artifacts, contract, expect, web3 */
 const { soliditySha3 } = require('web3-utils')
 const {
-  increaseTime,
   expectThrow
-} = require('kleros-interaction/helpers/utils')
+} = require('openzeppelin-solidity/test/helpers/expectThrow')
+const {
+  increaseTime
+} = require('openzeppelin-solidity/test/helpers/increaseTime')
 
 const Pinakion = artifacts.require(
   'kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol'
@@ -342,7 +344,7 @@ contract('KlerosLiquid', accounts =>
         const subcourt = subcourtMap[dispute.subcourtID] || subcourtTree
 
         // Generate random number
-        increaseTime(minStakingTime)
+        await increaseTime(minStakingTime)
         await klerosLiquid.passPhase()
         await klerosLiquid.passPhase()
 
@@ -357,7 +359,7 @@ contract('KlerosLiquid', accounts =>
           )).length
         )
         totalJurorFees.push(subcourt.jurorFee * numberOfDraws[i])
-        increaseTime(subcourt.timesPerPeriod[0])
+        await increaseTime(subcourt.timesPerPeriod[0])
         await klerosLiquid.passPeriod(dispute.ID)
 
         // Decide votes
@@ -379,14 +381,14 @@ contract('KlerosLiquid', accounts =>
               i,
               soliditySha3(dispute.ID, i, votes[i], i)
             )
-          increaseTime(subcourt.timesPerPeriod[1])
+          await increaseTime(subcourt.timesPerPeriod[1])
           await klerosLiquid.passPeriod(dispute.ID)
         }
 
         // Vote
         for (let i = 0; i < votes.length; i++)
           await klerosLiquid.vote(dispute.ID, i, votes[i], i)
-        increaseTime(subcourt.timesPerPeriod[2])
+        await increaseTime(subcourt.timesPerPeriod[2])
         await klerosLiquid.passPeriod(dispute.ID)
 
         // Appeal or execute
@@ -405,7 +407,7 @@ contract('KlerosLiquid', accounts =>
             dispute.ID
           ))[0].toNumber()
         } else {
-          increaseTime(subcourt.timesPerPeriod[3])
+          await increaseTime(subcourt.timesPerPeriod[3])
           await klerosLiquid.passPeriod(dispute.ID)
           for (let i = 0; i <= dispute.appeals; i++) {
             const PNKBefore = await pinakion.balanceOf(governor)
