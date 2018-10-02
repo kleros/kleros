@@ -555,8 +555,11 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         executionCache.winningChoice = dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice;
         executionCache.startIndex = dispute.appealRepartitions[_appeal];
         executionCache.endIndex = _iterations == 0 ? dispute.votes[_appeal].length : executionCache.startIndex + _iterations;
-
         executionCache.coherentCount = dispute.voteCounters[_appeal].counts[executionCache.winningChoice];
+        executionCache.incoherentCount = 0;
+        executionCache.tokenReward = 0;
+        executionCache.ETHReward = 0;
+
         if (executionCache.coherentCount != 0) {
             if (_appeal == 0 && executionCache.startIndex == 0 && isContract(dispute.arbitrated)) dispute.arbitrated.rule(_disputeID, executionCache.winningChoice);
             executionCache.incoherentCount = dispute.votes[_appeal].length - executionCache.coherentCount;
