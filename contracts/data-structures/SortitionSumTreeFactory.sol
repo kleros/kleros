@@ -41,12 +41,13 @@ contract SortitionSumTreeFactory is KArySumTreeFactory {
         require(sortitionSumTrees[_key].addressesToTreeIndexes[_address] == 0, "Address already has a value in this tree.");
         require(_value > 0, "The value must be greater than zero.");
         KArySumTree storage tree = kArySumTrees[_key];
+        uint _treeStackLength = tree.stack.length;
         treeIndex = super.append(_key, _value);
         sortitionSumTrees[_key].addressesToTreeIndexes[_address] = treeIndex;
         sortitionSumTrees[_key].treeIndexesToAddresses[treeIndex] = _address;
 
         // Parent could have been turned into a sum node.
-        if (treeIndex != 1 && (treeIndex - 1) % tree.K == 0) { // Is first child.
+        if (treeIndex != 1 && _treeStackLength == tree.stack.length && (treeIndex - 1) % tree.K == 0) { // Is first child.
             uint _parentIndex = treeIndex / tree.K;
             address _parentAddress = sortitionSumTrees[_key].treeIndexesToAddresses[_parentIndex];
             uint _newIndex = treeIndex + 1;
