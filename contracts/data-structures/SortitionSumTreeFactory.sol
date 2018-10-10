@@ -29,7 +29,8 @@ contract SortitionSumTreeFactory {
      */
     function createTree(bytes32 _key, uint _K) internal {
         SortitionSumTree storage tree = sortitionSumTrees[_key];
-        require(_K > 0, "K must be greater than zero.");
+        require(tree.K == 0, "Tree already exists.");
+        require(_K > 1, "K must be greater than one.");
         tree.K = _K;
         tree.stack.length = 0;
         tree.tree.length = 0;
@@ -64,13 +65,11 @@ contract SortitionSumTreeFactory {
         if (tree.stack.length == 0) { // No vacant spots.
             // Get the index and append the value.
             treeIndex = tree.tree.length;
-            tree.tree.length++;
-            tree.tree[treeIndex] = _value;
+            tree.tree.push(_value);
 
             // Potentially append a new node and make the parent a sum node.
             if (treeIndex != 1 && (treeIndex - 1) % tree.K == 0) { // Is first child.
-                tree.tree.length++;
-                tree.tree[treeIndex + 1] = tree.tree[treeIndex / tree.K];
+                tree.tree.push(tree.tree[treeIndex / tree.K]);
                 uint _parentIndex = treeIndex / tree.K;
                 address _parentAddress = tree.treeIndexesToAddresses[_parentIndex];
                 uint _newIndex = treeIndex + 1;
@@ -108,8 +107,7 @@ contract SortitionSumTreeFactory {
         tree.tree[_treeIndex] = 0;
 
         // Push to stack.
-        tree.stack.length++;
-        tree.stack[tree.stack.length - 1] = _treeIndex;
+        tree.stack.push(_treeIndex);
 
         // Clear label.
         delete tree.addressesToTreeIndexes[tree.treeIndexesToAddresses[_treeIndex]];
@@ -219,7 +217,7 @@ contract SortitionSumTreeFactory {
      *  @dev Update all the parents of a node.
      *  @param _key The key of the tree to update.
      *  @param _treeIndex The index of the node to start from.
-     *  @param _plusOrMinus Wether to add or substract.
+     *  @param _plusOrMinus Wether to add (true) or substract (false).
      *  @param _value The value to add or substract.
      */
     function updateParents(bytes32 _key, uint _treeIndex, bool _plusOrMinus, uint _value) private {
