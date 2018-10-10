@@ -59,7 +59,6 @@ contract SortitionSumTreeFactory {
     function append(bytes32 _key, uint _value, address _address) internal returns(uint treeIndex) {
         SortitionSumTree storage tree = sortitionSumTrees[_key];
         require(tree.addressesToTreeIndexes[_address] == 0, "Address already has a value in this tree.");
-        require(_value > 0, "The value must be greater than zero.");
         
         // Add node.
         if (tree.stack.length == 0) { // No vacant spots.
@@ -124,18 +123,15 @@ contract SortitionSumTreeFactory {
      *  @param _address The candidate's address.
      */
     function set(bytes32 _key, uint _treeIndex, uint _value, address _address) internal {
-        if (_value == 0) remove(_key, _treeIndex, _address);
-        else {
-            SortitionSumTree storage tree = sortitionSumTrees[_key];
-            require(tree.treeIndexesToAddresses[_treeIndex] == _address, "Address does not own this value.");
-            require(_treeIndex != 0, "Cannot set the root node.");
+        SortitionSumTree storage tree = sortitionSumTrees[_key];
+        require(tree.treeIndexesToAddresses[_treeIndex] == _address, "Address does not own this value.");
+        require(_treeIndex != 0, "Cannot set the root node.");
 
-            bool _plusOrMinus = tree.tree[_treeIndex] <= _value;
-            uint _plusOrMinusValue = _plusOrMinus ? _value - tree.tree[_treeIndex] : tree.tree[_treeIndex] - _value;
-            tree.tree[_treeIndex] = _value;
+        bool _plusOrMinus = tree.tree[_treeIndex] <= _value;
+        uint _plusOrMinusValue = _plusOrMinus ? _value - tree.tree[_treeIndex] : tree.tree[_treeIndex] - _value;
+        tree.tree[_treeIndex] = _value;
 
-            updateParents(_key, _treeIndex, _plusOrMinus, _plusOrMinusValue);
-        }
+        updateParents(_key, _treeIndex, _plusOrMinus, _plusOrMinusValue);
     }
 
     /* Internal Views */

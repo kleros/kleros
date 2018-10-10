@@ -110,27 +110,6 @@ contract('SortitionSumTreeFactory', () =>
       candidates.carl.value,
       candidates.carl.address
     )
-    // Setting to 0 should also remove him
-    await sortitionSumTreeFactory._set(
-      tree.key,
-      candidates.carl.treeIndex,
-      0,
-      candidates.carl.address
-    )
-    // Should not be able to append 0
-    await expectThrow(
-      sortitionSumTreeFactory._append(tree.key, 0, candidates.carl.address)
-    )
-    candidates.carl.treeIndex = await sortitionSumTreeFactory._append.call(
-      tree.key,
-      candidates.carl.value,
-      candidates.carl.address
-    )
-    await sortitionSumTreeFactory._append(
-      tree.key,
-      candidates.carl.value,
-      candidates.carl.address
-    )
     expect(await sortitionSumTreeFactory._draw(tree.key, 27)).to.equal(
       candidates.carl.address
     )
