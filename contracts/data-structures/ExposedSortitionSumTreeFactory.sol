@@ -1,6 +1,5 @@
 pragma solidity ^0.4.24;
 
-import "./ExposedKArySumTreeFactory.sol";
 import "./SortitionSumTreeFactory.sol";
 
 /**
@@ -8,8 +7,28 @@ import "./SortitionSumTreeFactory.sol";
  *  @author Enrique Piqueras - <epiquerass@gmail.com>
  *  @dev Exposed version of SortitionSumTreeFactory for testing.
  */
-contract ExposedSortitionSumTreeFactory is ExposedKArySumTreeFactory, SortitionSumTreeFactory {
+contract ExposedSortitionSumTreeFactory is SortitionSumTreeFactory {
+    /* Storage /*
+
+    /**
+     *  @dev Public getter for sortitionSumTrees.
+     *  @param _key The key of the tree to get.
+     *  @return All of the tree's properties.
+     */
+    function _sortitionSumTrees(bytes32 _key) public view returns(uint K, uint[] stack, uint[] tree) {
+        return (sortitionSumTrees[_key].K, sortitionSumTrees[_key].stack, sortitionSumTrees[_key].tree);
+    }
+
     /* Public */
+
+    /**
+     *  @dev Create a sortition sum tree at the specified key.
+     *  @param _key The key of the new tree.
+     *  @param _K The number of children each node in the tree should have.
+     */
+    function _createTree(bytes32 _key, uint _K) public {
+        return createTree(_key, _K);
+    }
 
     /**
      *  @dev Delete a sortition sum tree at the specified key.
@@ -52,6 +71,17 @@ contract ExposedSortitionSumTreeFactory is ExposedKArySumTreeFactory, SortitionS
     }
 
     /* Public Views */
+
+    /**
+     *  @dev Query the leafs of a tree.
+     *  @param _key The key of the tree to get the leafs from.
+     *  @param _cursor The pagination cursor.
+     *  @param _count The number of items to return.
+     *  @return The index at which leafs start, the values of the returned leafs, and wether there are more for pagination.
+     */
+    function _queryLeafs(bytes32 _key, uint _cursor, uint _count) public view returns(uint startIndex, uint[] values, bool hasMore) {
+        return queryLeafs(_key, _cursor, _count);
+    }
 
     /**
      *  @dev Draw an address from a tree using a number.
