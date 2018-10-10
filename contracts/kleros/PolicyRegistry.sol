@@ -9,18 +9,29 @@ contract PolicyRegistry {
     /* Structs */
 
     struct Policy {
-        string fileURL;
+        string fileURI;
         bytes32 fileHash;
+        bool deleted;
     }
-    struct PolicyList {
-        Policy[] policies;
-        uint[] vacantPoliciesListIndexes;
-    }
+
+    /* Events */
+
+    /** @dev Emitted when a new policy is created.
+     *  @param _subcourtID The ID of the policy's subcourt.
+     *  @param _policyID The ID of the policy.
+     */
+    event PolicyCreation(uint indexed _subcourtID, uint indexed _policyID);
+
+    /** @dev Emitted when a new policy is deleted.
+     *  @param _subcourtID The ID of the policy's subcourt.
+     *  @param _policyID The ID of the policy.
+     */
+    event PolicyDeletion(uint indexed _subcourtID, uint indexed _policyID);
 
     /* Storage */
 
     address public governor;
-    mapping(address => mapping(uint => PolicyList)) internal policyLists;
+    mapping(uint => Policy[]) internal policies;
 
     /* Modifiers */
 
@@ -41,43 +52,41 @@ contract PolicyRegistry {
      */
     function changeGovernor(address _governor) external onlyByGovernor {governor = _governor;}
 
-    /** @dev Creates a policy for the specified subcourt in the specified contract.
-     *  @param _address The address of the specified contract.
+    /** @dev Creates a policy for the specified subcourt.
      *  @param _subcourtID The ID of the specified subcourt.
-     *  @param _fileURL The URL to the file containing the policy text.
+     *  @param _fileURI The URI to the file containing the policy text.
      *  @param _fileHash The hash of the file's contents.
      */
-    function createPolicy(address _address, uint _subcourtID, string _fileURL, bytes32 _fileHash) external onlyByGovernor {
-        PolicyList storage policyList = policyLists[_address][_subcourtID];
-        if (policyList.vacantPoliciesListIndexes.length > 0) {
-            uint _vacantIndex = policyList.vacantPoliciesListIndexes[policyList.vacantPoliciesListIndexes.length - 1];
-            policyList.vacantPoliciesListIndexes.length--;
-            policyList.policies[_vacantIndex] = Policy({ fileURL: _fileURL, fileHash: _fileHash });
-        } else
-            policyList.policies.push(Policy({ fileURL: _fileURL, fileHash: _fileHash }));
+    function createPolicy(uint _subcourtID, string _fileURI, bytes32 _fileHash) external onlyByGovernor {
+        emit PolicyCreation(
+            _subcourtID,
+            policies[_subcourtID].push(Policy({
+                fileURI: _fileURI,
+                fileHash: _fileHash,
+                deleted: false
+            })) - 1
+        );
     }
 
-    /** @dev Deletes the specified policy for the specified subcourt in the specified contract.
-     *  @param _address The address of the specified contract.
+    /** @dev Deletes the specified policy for the specified subcourt.
      *  @param _subcourtID The ID of the specified subcourt.
      *  @param _policyID The ID of the specified policy.
      */
-    function deletePolicy(address _address, uint _subcourtID, uint _policyID) external onlyByGovernor {
-        PolicyList storage policyList = policyLists[_address][_subcourtID];
-        delete policyList.policies[_policyID];
-        policyList.vacantPoliciesListIndexes.push(_policyID);
+    function deletePolicy(uint _subcourtID, uint _policyID) external onlyByGovernor {
+        policies[_subcourtID][_policyID].deleted = true;
+        emit PolicyDeletion(_subcourtID, _policyID);
     }
 
     /* Public Views */
 
-    /** @dev Gets the specified policy for the specified subcourt in the specified contract.
-     *  @param _address The address of the specified contract.
+    /** @dev Gets the specified policy for the specified subcourt.
      *  @param _subcourtID The ID of the specified subcourt.
      *  @param _policyID The ID of the specified policy.
+     *  @return The policy.
      */
-    function policy(address _address, uint _subcourtID, uint _policyID) public view returns(string fileURL, bytes32 fileHash) {
-        Policy storage _policy = policyLists[_address][_subcourtID].policies[_policyID];
-        fileURL = _policy.fileURL;
-        fileHash = _policy.fileHash;
+    function policy(uint _subcourtID, uint _policyID) public view returns(string fileURI, bytes32 fileHash, bool deleted) {
+        fileURI = policies[_subcourtID][_policyID].fileURI;
+        fileHash = policies[_subcourtID][_policyID].fileHash;
+        deleted = policies[_subcourtID][_policyID].deleted;
     }
 }

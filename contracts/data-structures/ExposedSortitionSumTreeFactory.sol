@@ -27,7 +27,7 @@ contract ExposedSortitionSumTreeFactory is SortitionSumTreeFactory {
      *  @param _K The number of children each node in the tree should have.
      */
     function _createTree(bytes32 _key, uint _K) public {
-        return createTree(_key, _K);
+        createTree(_key, _K);
     }
 
     /**
@@ -35,7 +35,7 @@ contract ExposedSortitionSumTreeFactory is SortitionSumTreeFactory {
      *  @param _key The key of the tree to delete.
      */
     function _deleteTree(bytes32 _key) public {
-        return deleteTree(_key);
+        deleteTree(_key);
     }
 
     /**
@@ -52,22 +52,20 @@ contract ExposedSortitionSumTreeFactory is SortitionSumTreeFactory {
     /**
      *  @dev Remove a value from a tree.
      *  @param _key The key of the tree to remove from.
-     *  @param _treeIndex The index of the value to remove.
      *  @param _address The candidate's address.
      */
-    function _remove(bytes32 _key, uint _treeIndex, address _address) public {
-        return remove(_key, _treeIndex, _address);
+    function _remove(bytes32 _key, address _address) public {
+        remove(_key, _address);
     }
 
     /**
      *  @dev Set a value of a tree.
      *  @param _key The key of the tree.
-     *  @param _treeIndex The index of the value.
      *  @param _value The new value.
      *  @param _address The candidate's address.
      */
-    function _set(bytes32 _key, uint _treeIndex, uint _value, address _address) public {
-        return set(_key, _treeIndex, _value, _address);
+    function _set(bytes32 _key, uint _value, address _address) public {
+        set(_key, _value, _address);
     }
 
     /* Public Views */

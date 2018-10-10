@@ -9,7 +9,6 @@ contract('PolicyRegistry', accounts =>
     const policies = [
       {
         ID: 0,
-        address: '0x0000000000000000000000000000000000000001',
         subcourtID: 0,
         fileURL: 'https://a.b.com',
         fileHash:
@@ -17,7 +16,6 @@ contract('PolicyRegistry', accounts =>
       },
       {
         ID: 1,
-        address: '0x0000000000000000000000000000000000000001',
         subcourtID: 0,
         fileURL: 'https://c.d.com',
         fileHash:
@@ -25,7 +23,6 @@ contract('PolicyRegistry', accounts =>
       },
       {
         ID: 0,
-        address: '0x0000000000000000000000000000000000000001',
         subcourtID: 1,
         fileURL: 'https://e.f.com',
         fileHash:
@@ -33,7 +30,6 @@ contract('PolicyRegistry', accounts =>
       },
       {
         ID: 1,
-        address: '0x0000000000000000000000000000000000000001',
         subcourtID: 1,
         fileURL: 'https://g.h.com',
         fileHash:
@@ -44,7 +40,6 @@ contract('PolicyRegistry', accounts =>
     // Create policies
     for (const policy of policies)
       await policyRegistry.createPolicy(
-        policy.address,
         policy.subcourtID,
         policy.fileURL,
         policy.fileHash
@@ -52,13 +47,8 @@ contract('PolicyRegistry', accounts =>
 
     // Delete every policy and create it again
     for (const policy of policies) {
-      await policyRegistry.deletePolicy(
-        policy.address,
-        policy.subcourtID,
-        policy.ID
-      )
+      await policyRegistry.deletePolicy(policy.subcourtID, policy.ID)
       await policyRegistry.createPolicy(
-        policy.address,
         policy.subcourtID,
         policy.fileURL,
         policy.fileHash
@@ -67,11 +57,7 @@ contract('PolicyRegistry', accounts =>
 
     // Verify policies were created correctly
     for (const policy of policies) {
-      const _policy = await policyRegistry.policy(
-        policy.address,
-        policy.subcourtID,
-        policy.ID
-      )
+      const _policy = await policyRegistry.policy(policy.subcourtID, policy.ID)
       expect(_policy[0]).to.equal(policy.fileURL)
       expect(_policy[1]).to.equal(policy.fileHash)
     }

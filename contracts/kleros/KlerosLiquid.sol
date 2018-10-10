@@ -486,7 +486,6 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             if (_currentSubcourtStake == 0) append(bytes32(_currentSubcourtID), _stake, msg.sender);
             else set(
                 bytes32(_currentSubcourtID),
-                sortitionSumTrees[bytes32(_currentSubcourtID)].addressesToTreeIndexes[msg.sender],
                 uint(int(_currentSubcourtStake) + _stakeDiff),
                 msg.sender
             );

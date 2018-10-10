@@ -93,13 +93,12 @@ contract SortitionSumTreeFactory {
     /**
      *  @dev Remove a value from a tree.
      *  @param _key The key of the tree to remove from.
-     *  @param _treeIndex The index of the value to remove.
      *  @param _address The candidate's address.
      */
-    function remove(bytes32 _key, uint _treeIndex, address _address) internal {
+    function remove(bytes32 _key, address _address) internal {
         SortitionSumTree storage tree = sortitionSumTrees[_key];
-        require(tree.treeIndexesToAddresses[_treeIndex] == _address, "Address does not own this value.");
-        require(_treeIndex != 0, "Cannot remove the root node.");
+        uint _treeIndex = tree.addressesToTreeIndexes[_address];
+        require(_treeIndex != 0, "Address does not have a value in this tree.");
 
         // Remember value and set to 0.
         uint _value = tree.tree[_treeIndex];
@@ -118,14 +117,13 @@ contract SortitionSumTreeFactory {
     /**
      *  @dev Set a value of a tree.
      *  @param _key The key of the tree.
-     *  @param _treeIndex The index of the value.
      *  @param _value The new value.
      *  @param _address The candidate's address.
      */
-    function set(bytes32 _key, uint _treeIndex, uint _value, address _address) internal {
+    function set(bytes32 _key, uint _value, address _address) internal {
         SortitionSumTree storage tree = sortitionSumTrees[_key];
-        require(tree.treeIndexesToAddresses[_treeIndex] == _address, "Address does not own this value.");
-        require(_treeIndex != 0, "Cannot set the root node.");
+        uint _treeIndex = tree.addressesToTreeIndexes[_address];
+        require(_treeIndex != 0, "Address does not have a value in this tree.");
 
         bool _plusOrMinus = tree.tree[_treeIndex] <= _value;
         uint _plusOrMinusValue = _plusOrMinus ? _value - tree.tree[_treeIndex] : tree.tree[_treeIndex] - _value;
@@ -171,7 +169,7 @@ contract SortitionSumTreeFactory {
     }
 
     /**
-     *  @dev Draw an address from a tree using a number.
+     *  @dev Draw an address from a tree using a number. Note that this function reverts if the sum of all values in the tree is 0.
      *  @param _key The key of the tree.
      *  @param _drawnNumber The drawn number.
      *  @return The drawn address.
