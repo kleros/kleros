@@ -146,6 +146,7 @@ contract SortitionSumTreeFactory {
      *  @param _cursor The pagination cursor.
      *  @param _count The number of items to return.
      *  @return The index at which leafs start, the values of the returned leafs, and wether there are more for pagination.
+     *  Complexity: This function is O(n) where `n` is the max number of elements ever appended.
      */
     function queryLeafs(bytes32 _key, uint _cursor, uint _count) internal view returns(uint startIndex, uint[] values, bool hasMore) {
         SortitionSumTree storage tree = sortitionSumTrees[_key];
@@ -178,6 +179,7 @@ contract SortitionSumTreeFactory {
      *  @param _key The key of the tree.
      *  @param _drawnNumber The drawn number.
      *  @return The drawn address.
+     *  Complexity: This function is O(n) where `n` is the max number of elements ever appended.
      */
     function draw(bytes32 _key, uint _drawnNumber) internal view returns(address _address) {
         SortitionSumTree storage tree = sortitionSumTrees[_key];
@@ -219,6 +221,7 @@ contract SortitionSumTreeFactory {
      *  @param _treeIndex The index of the node to start from.
      *  @param _plusOrMinus Wether to add (true) or substract (false).
      *  @param _value The value to add or substract.
+     *  Complexity: This function is O(log(k)(n)) where `n` is the max number of elements ever appended.
      */
     function updateParents(bytes32 _key, uint _treeIndex, bool _plusOrMinus, uint _value) private {
         SortitionSumTree storage tree = sortitionSumTrees[_key];
