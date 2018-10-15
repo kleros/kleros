@@ -40,7 +40,8 @@
     "openzeppelin-solidity": "^1.12.0",
     "standard-version": "^4.4.0",
     "truffle": "^4.1.13",
-    "web3-utils": "^1.0.0-beta.36"
+    "web3-utils": "^1.0.0-beta.36",
+    "openzeppelin-solidity": "^1.12.0"
   },
   "dependencies": {
     "kleros-interaction": "^0.0.25",
