@@ -379,7 +379,7 @@ contract('KlerosLiquid', accounts =>
             await klerosLiquid.commit(
               dispute.ID,
               [i],
-              [soliditySha3(dispute.ID, i, votes[i], i)]
+              [soliditySha3(votes[i], i)]
             )
           await increaseTime(subcourt.timesPerPeriod[1])
           await klerosLiquid.passPeriod(dispute.ID)
@@ -387,7 +387,7 @@ contract('KlerosLiquid', accounts =>
 
         // Vote
         for (let i = 0; i < votes.length; i++)
-          await klerosLiquid.vote(dispute.ID, i, votes[i], i)
+          await klerosLiquid.vote(dispute.ID, [i], votes[i], [i])
         await increaseTime(subcourt.timesPerPeriod[2])
         await klerosLiquid.passPeriod(dispute.ID)
 

@@ -511,25 +511,27 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         }
     }
 
-    /** @dev Sets the caller's choice for a specified vote.
+    /** @dev Sets the caller's choices for the specified votes.
      *  @param _disputeID The ID of the dispute.
-     *  @param _voteID The ID of the vote.
+     *  @param _voteIDs The IDs of the votes.
      *  @param _choice The choice.
-     *  @param _salt The salt for the commit if the vote was hidden.
+     *  @param _salts The salts for the commits if the votes were hidden.
      */
-    function vote(uint _disputeID, uint _voteID, uint _choice, uint _salt) external onlyDuringPeriod(_disputeID, Period.vote) {
+    function vote(uint _disputeID, uint[] _voteIDs, uint _choice, uint[] _salts) external onlyDuringPeriod(_disputeID, Period.vote) {
         Dispute storage dispute = disputes[_disputeID];
-        require(dispute.votes[dispute.votes.length - 1][_voteID]._address == msg.sender, "The caller has to own the vote.");
-        require(dispute.numberOfChoices >= _choice, "The choice has to be less than or equal to the number of choices for the dispute.");
-        require(
-            !courts[dispute.subcourtID].hiddenVotes || dispute.votes[dispute.votes.length - 1][_voteID].commit == keccak256(_disputeID, _voteID, _choice, _salt),
-            "The commit must match the choice in subcourts with hidden votes."
-        );
-        dispute.votes[dispute.votes.length - 1][_voteID].choice = _choice;
-        dispute.votesPerRound[dispute.votesPerRound.length - 1]++;
-        VoteCounter storage voteCounter = dispute.voteCounters[dispute.voteCounters.length - 1];
-        voteCounter.counts[_choice]++;
-        if (voteCounter.counts[_choice] > voteCounter.counts[voteCounter.winningChoice]) voteCounter.winningChoice = _choice;
+        for (uint i = 0; i < _voteIDs.length; i++) {
+            require(dispute.votes[dispute.votes.length - 1][_voteIDs[i]]._address == msg.sender, "The caller has to own the vote.");
+            require(dispute.numberOfChoices >= _choice, "The choice has to be less than or equal to the number of choices for the dispute.");
+            require(
+                !courts[dispute.subcourtID].hiddenVotes || dispute.votes[dispute.votes.length - 1][_voteIDs[i]].commit == keccak256(_choice, _salts[i]),
+                "The commit must match the choice in subcourts with hidden votes."
+            );
+            dispute.votes[dispute.votes.length - 1][_voteIDs[i]].choice = _choice;
+            dispute.votesPerRound[dispute.votesPerRound.length - 1]++;
+            VoteCounter storage voteCounter = dispute.voteCounters[dispute.voteCounters.length - 1];
+            voteCounter.counts[_choice]++;
+            if (voteCounter.counts[_choice] > voteCounter.counts[voteCounter.winningChoice]) voteCounter.winningChoice = _choice;
+        }
     }
 
     /* NOTE: Temporary function until solidity increases local variable allowance. */
