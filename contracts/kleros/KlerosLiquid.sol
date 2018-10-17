@@ -497,16 +497,18 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         }
     }
 
-    /** @dev Sets the caller's commit for a specified vote.
+    /** @dev Sets the caller's commits for the specified votes.
      *  @param _disputeID The ID of the dispute.
-     *  @param _voteID The ID of the vote.
-     *  @param _commit The commit.
+     *  @param _voteIDs The IDs of the votes.
+     *  @param _commits The commits.
      */
-    function commit(uint _disputeID, uint _voteID, bytes32 _commit) external onlyDuringPeriod(_disputeID, Period.commit) {
+    function commit(uint _disputeID, uint[] _voteIDs, bytes32[] _commits) external onlyDuringPeriod(_disputeID, Period.commit) {
         Dispute storage dispute = disputes[_disputeID];
-        require(dispute.votes[dispute.votes.length - 1][_voteID]._address == msg.sender, "The caller has to own the vote.");
-        dispute.votes[dispute.votes.length - 1][_voteID].commit = _commit;
-        dispute.commitsPerRound[dispute.commitsPerRound.length - 1]++;
+        for (uint i = 0; i < _voteIDs.length; i++) {
+            require(dispute.votes[dispute.votes.length - 1][_voteIDs[i]]._address == msg.sender, "The caller has to own the vote.");
+            dispute.votes[dispute.votes.length - 1][_voteIDs[i]].commit = _commits[i];
+            dispute.commitsPerRound[dispute.commitsPerRound.length - 1]++;
+        }
     }
 
     /** @dev Sets the caller's choice for a specified vote.
