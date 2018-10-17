@@ -46,15 +46,6 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint jurorsForJump;
         uint[4] timesPerPeriod; // The time allotted to each dispute period in the form `timesPerPeriod[period]`.
     }
-    struct ExecutionCache { // Needed to avoid stack depth error in `execute()`.
-        uint winningChoice;
-        uint startIndex;
-        uint endIndex;
-        uint coherentCount;
-        uint incoherentCount;
-        uint tokenReward;
-        uint ETHReward;
-    }
 
     // Dispute
     struct Vote {
@@ -135,7 +126,6 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     uint public RN;
     uint public minStakingTime;
     uint public maxDrawingTime;
-    ExecutionCache executionCache;
     // General Storage
     Court[] public courts;
 
@@ -535,6 +525,22 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         if (voteCounter.counts[_choice] > voteCounter.counts[voteCounter.winningChoice]) voteCounter.winningChoice = _choice;
     }
 
+    /* NOTE: Temporary function until solidity increases local variable allowance. */
+    /** @dev Computes the token and ETH rewards for a specified case.
+     *  @param _disputeID The ID of the dispute.
+     *  @param _appeal The appeal.
+     *  @return The token and ETH rewards for the specified case.
+     */
+    function computeTokenAndETHRewards(uint _disputeID, uint _appeal) private returns(uint tokenReward, uint ETHReward) {
+        Dispute storage dispute = disputes[_disputeID];
+        uint _winningChoice = dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice;
+        uint _coherentCount = dispute.voteCounters[_appeal].counts[_winningChoice];
+        uint _incoherentCount = dispute.votes[_appeal].length - _coherentCount;
+        tokenReward = (dispute.jurorAtStake[_appeal] * _incoherentCount) / _coherentCount;
+        ETHReward = dispute.totalJurorFees[_appeal] / _coherentCount;
+    }
+    /* NOTE: Temporary function until solidity increases local variable allowance. */
+
     /** @dev Executes a specified dispute's ruling and repartitions tokens and ETH for a specified appeal. Can be called in parts.
      *  @param _disputeID The ID of the dispute.
      *  @param _appeal The appeal.
@@ -542,30 +548,21 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      */
     function execute(uint _disputeID, uint _appeal, uint _iterations) external onlyDuringPeriod(_disputeID, Period.execution) {
         Dispute storage dispute = disputes[_disputeID];
-        executionCache.winningChoice = dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice;
-        executionCache.startIndex = dispute.appealRepartitions[_appeal];
-        executionCache.endIndex = _iterations == 0 ? dispute.votes[_appeal].length : executionCache.startIndex + _iterations;
-        executionCache.coherentCount = dispute.voteCounters[_appeal].counts[executionCache.winningChoice];
-        executionCache.incoherentCount = 0;
-        executionCache.tokenReward = 0;
-        executionCache.ETHReward = 0;
+        uint _winningChoice = dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice;
+        uint _startIndex = dispute.appealRepartitions[_appeal];
+        uint _endIndex = _iterations == 0 ? dispute.votes[_appeal].length : _startIndex + _iterations;
+        (uint _tokenReward, uint _ETHReward) = computeTokenAndETHRewards(_disputeID, _appeal);
 
-        if (executionCache.coherentCount != 0) {
-            if (_appeal == 0 && executionCache.startIndex == 0 && isContract(dispute.arbitrated)) dispute.arbitrated.rule(_disputeID, executionCache.winningChoice);
-            executionCache.incoherentCount = dispute.votes[_appeal].length - executionCache.coherentCount;
-            executionCache.tokenReward = (dispute.jurorAtStake[_appeal] * executionCache.incoherentCount) / executionCache.coherentCount;
-            executionCache.ETHReward = dispute.totalJurorFees[_appeal] / executionCache.coherentCount;
-        }
+        if (_appeal == 0 && _startIndex == 0 && isContract(dispute.arbitrated)) dispute.arbitrated.rule(_disputeID, _winningChoice);
 
-        for (uint i = executionCache.startIndex; i < executionCache.endIndex; i++) {
+        for (uint i = _startIndex; i < _endIndex; i++) {
             Vote storage vote = dispute.votes[_appeal][i];
-            if (vote.choice == executionCache.winningChoice) {
-                pinakion.transfer(vote._address, executionCache.tokenReward);
-                vote._address.transfer(executionCache.ETHReward);
-                emit TokenAndETHShift(_disputeID, vote._address, int(executionCache.tokenReward), int(executionCache.ETHReward));
+            if (vote.choice == _winningChoice) {
+                pinakion.transfer(vote._address, _tokenReward);
+                vote._address.transfer(_ETHReward);
+                emit TokenAndETHShift(_disputeID, vote._address, int(_tokenReward), int(_ETHReward));
             } else {
-                uint _balance = pinakion.balanceOf(vote._address);
-                uint _penalty = dispute.jurorAtStake[_appeal] > _balance ? _balance : dispute.jurorAtStake[_appeal];
+                uint _penalty = dispute.jurorAtStake[_appeal] > pinakion.balanceOf(vote._address) ? pinakion.balanceOf(vote._address) : dispute.jurorAtStake[_appeal];
                 pinakion.transferFrom(vote._address, this, _penalty);
                 emit TokenAndETHShift(_disputeID, vote._address, -int(_penalty), 0);
             }
