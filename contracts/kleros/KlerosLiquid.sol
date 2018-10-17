@@ -54,7 +54,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint choice; // The choice of the juror.
     }
     struct VoteCounter {
-        uint winningChoice; // The choice with the most votes.
+        // The choice with the most votes. Note that in the case of a tie, it is the choice that reached the tied number of votes first.
+        uint winningChoice;
         uint[] counts; // The sum of votes for each choice in the form `counts[choice]`.
     }
     struct Dispute {
