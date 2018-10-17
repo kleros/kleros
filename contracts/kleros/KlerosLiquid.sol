@@ -434,7 +434,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param _subcourtID The ID of the subcourt.
      *  @param _stake The new stake.
      */
-    function setStake(uint _subcourtID, uint _stake) external onlyDuringPhase(Phase.staking) {
+    function setStake(uint _subcourtID, uint128 _stake) external onlyDuringPhase(Phase.staking) {
         require(
             _stake == 0 || courts[_subcourtID].minStake <= _stake,
             "The juror's stake cannot be lower than the minimum stake for the subcourt."
@@ -446,13 +446,10 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         );
 
         if (_stakeDiff < 0) {
-            bool _childrenHaveStake = false;
+            uint _sumOfChildStakes = 0;
             for (uint i = 0; i < courts[_subcourtID].children.length; i++)
-                if (courts[_subcourtID].children[i] != 0 && stakeOf(bytes32(courts[_subcourtID].children[i]), msg.sender) > 0) {
-                    _childrenHaveStake = true;
-                    break;
-                }
-            require(!_childrenHaveStake, "Children can not have stake when withdrawing.");
+                _sumOfChildStakes += stakeOf(bytes32(courts[_subcourtID].children[i]), msg.sender);
+            require(_sumOfChildStakes <= _stake, "Children can not have more stake than the parent.");
         }
 
         Juror storage juror = jurors[msg.sender];
