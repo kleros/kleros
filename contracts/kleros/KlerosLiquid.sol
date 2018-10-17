@@ -77,10 +77,12 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
 
     // Juror
     struct Juror {
-        uint[] subcourtIDs; // The IDs of subcourts where the juror has activation path ends.
-        mapping(uint => bool) currentSubcourtIDsMap; // Map for efficient lookups of the subcourt IDs list.
-        mapping(uint => bool) subcourtIDsMap; // Map for efficient lookups of the subcourt IDs list.
-        uint atStake; // The juror's total amount of PNK at stake in disputes.
+        uint[] subcourtIDs; // The IDs of subcourts where the juror has stake path ends.
+        // Map for efficient lookups of the subcourt IDs list. A subcourt ID will map to true if the juror currently has stake there, and false otherwise.
+        mapping(uint => bool) currentSubcourtIDsMap;
+        // Map for efficient lookups of the subcourt IDs list. A subcourt ID will map to true if the juror has ever had stake there, and false otherwise.
+        mapping(uint => bool) subcourtIDsMap;
+        uint lockedTokens; // The juror's total amount of PNK at stake in disputes.
     }
 
     /* Events */
@@ -489,7 +491,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             address _drawnAddress = super.draw(bytes32(dispute.subcourtID), uint(keccak256(RN, _disputeID, i)));
             dispute.votes[dispute.votes.length - 1][i]._address = _drawnAddress;
             dispute.drawsPerRound[dispute.drawsPerRound.length - 1]++;
-            jurors[msg.sender].atStake += dispute.jurorAtStake[dispute.jurorAtStake.length - 1];
+            jurors[msg.sender].lockedTokens += dispute.jurorAtStake[dispute.jurorAtStake.length - 1];
             emit Draw(_disputeID, dispute.arbitrated, _drawnAddress, i);
         }
     }
@@ -568,7 +570,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
                 pinakion.transferFrom(vote._address, this, _penalty);
                 emit TokenAndETHShift(_disputeID, vote._address, -int(_penalty), 0);
             }
-            jurors[vote._address].atStake -= dispute.jurorAtStake[_appeal];
+            jurors[vote._address].lockedTokens -= dispute.jurorAtStake[_appeal];
             dispute.repartitionsPerRound[_appeal]++;
         }
     }
@@ -656,7 +658,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     function onTransfer(address _from, address _to, uint _amount) public returns(bool allowed) {
         uint _newBalance = pinakion.balanceOf(_from) - _amount;
         require(_newBalance >= stakeOf(bytes32(0), msg.sender), "Cannot transfer an amount that would make balance less than stake.");
-        require(_newBalance >= jurors[_from].atStake, "Cannot transfer an amount that would make balance less than locked stake.");
+        require(_newBalance >= jurors[_from].lockedTokens, "Cannot transfer an amount that would make balance less than locked stake.");
         allowed = true;
     }
 
