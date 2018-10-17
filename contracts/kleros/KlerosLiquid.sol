@@ -57,6 +57,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         // The choice with the most votes. Note that in the case of a tie, it is the choice that reached the tied number of votes first.
         uint winningChoice;
         uint[] counts; // The sum of votes for each choice in the form `counts[choice]`.
+        bool tied; // True if there is a tie.
     }
     struct Dispute { // Note that appeal `0` is equivalent to the first round of the dispute.
         uint subcourtID; // The ID of the subcourt the dispute is in.
@@ -507,8 +508,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         for (uint i = 0; i < _voteIDs.length; i++) {
             require(dispute.votes[dispute.votes.length - 1][_voteIDs[i]]._address == msg.sender, "The caller has to own the vote.");
             dispute.votes[dispute.votes.length - 1][_voteIDs[i]].commit = _commits[i];
-            dispute.commitsPerRound[dispute.commitsPerRound.length - 1]++;
         }
+        dispute.commitsPerRound[dispute.commitsPerRound.length - 1] += _voteIDs.length;
     }
 
     /** @dev Sets the caller's choices for the specified votes.
@@ -527,10 +528,15 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
                 "The commit must match the choice in subcourts with hidden votes."
             );
             dispute.votes[dispute.votes.length - 1][_voteIDs[i]].choice = _choice;
-            dispute.votesPerRound[dispute.votesPerRound.length - 1]++;
-            VoteCounter storage voteCounter = dispute.voteCounters[dispute.voteCounters.length - 1];
-            voteCounter.counts[_choice]++;
-            if (voteCounter.counts[_choice] > voteCounter.counts[voteCounter.winningChoice]) voteCounter.winningChoice = _choice;
+        }
+        dispute.votesPerRound[dispute.votesPerRound.length - 1] += _voteIDs.length;
+        VoteCounter storage voteCounter = dispute.voteCounters[dispute.voteCounters.length - 1];
+        voteCounter.counts[_choice] += _voteIDs.length;
+        if (voteCounter.counts[_choice] == voteCounter.counts[voteCounter.winningChoice]) {
+            if (!voteCounter.tied) voteCounter.tied = true;
+        } else if (voteCounter.counts[_choice] > voteCounter.counts[voteCounter.winningChoice]) {
+            voteCounter.winningChoice = _choice;
+            if (voteCounter.tied) voteCounter.tied = false;
         }
     }
 
@@ -545,8 +551,10 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint _winningChoice = dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice;
         uint _coherentCount = dispute.voteCounters[_appeal].counts[_winningChoice];
         uint _incoherentCount = dispute.votes[_appeal].length - _coherentCount;
-        tokenReward = (dispute.jurorAtStake[_appeal] * _incoherentCount) / _coherentCount;
-        ETHReward = dispute.totalJurorFees[_appeal] / _coherentCount;
+        tokenReward = dispute.voteCounters[dispute.voteCounters.length - 1].tied ? 0
+            : (dispute.jurorAtStake[_appeal] * _incoherentCount) / _coherentCount;
+        ETHReward = dispute.voteCounters[dispute.voteCounters.length - 1].tied ? dispute.totalJurorFees[_appeal] / dispute.votes[_appeal].length
+            : dispute.totalJurorFees[_appeal] / _coherentCount;
     }
     /* NOTE: Temporary function until solidity increases local variable allowance. */
 
@@ -566,7 +574,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
 
         for (uint i = _startIndex; i < _endIndex; i++) {
             Vote storage vote = dispute.votes[_appeal][i];
-            if (vote.choice == _winningChoice) {
+            if (vote.choice == _winningChoice || dispute.voteCounters[dispute.voteCounters.length - 1].tied) {
                 pinakion.transfer(vote._address, _tokenReward);
                 vote._address.transfer(_ETHReward);
                 emit TokenAndETHShift(_disputeID, vote._address, int(_tokenReward), int(_ETHReward));
@@ -611,7 +619,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         // solium-disable-next-line security/no-block-members
         dispute.lastPeriodChange = block.timestamp;
         dispute.votes[dispute.votes.length++].length = msg.value / courts[dispute.subcourtID].jurorFee;
-        dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.numberOfChoices + 1) }));
+        dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.numberOfChoices + 1), tied: true }));
         dispute.jurorAtStake.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalJurorFees.push(msg.value);
         dispute.drawsPerRound.push(0);
@@ -636,7 +644,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             dispute.subcourtID = courts[dispute.subcourtID].parent;
         dispute.period = Period.evidence;
         dispute.votes[dispute.votes.length++].length = msg.value / courts[dispute.subcourtID].jurorFee;
-        dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.numberOfChoices + 1) }));
+        dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.numberOfChoices + 1), tied: true }));
         dispute.jurorAtStake.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalJurorFees.push(msg.value);
         dispute.drawsPerRound.push(0);
