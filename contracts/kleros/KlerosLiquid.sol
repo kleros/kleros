@@ -88,30 +88,31 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     /* Events */
 
     /** @dev Emitted when we pass to a new phase.
-     *  @param phase The new phase.
+     *  @param _phase The new phase.
      */
-    event NewPhase(Phase phase);
+    event NewPhase(Phase _phase);
 
     /** @dev Emitted when a dispute passes to a new period.
-     *  @param period The new period.
+     *  @param _disputeID The ID of the dispute.
+     *  @param _period The new period.
      */
-    event NewPeriod(uint indexed disputeID, Period period);
+    event NewPeriod(uint indexed _disputeID, Period _period);
 
     /** @dev Emitted when a juror is drawn.
-     *  @param disputeID The ID of the dispute.
-     *  @param arbitrable The arbitrable contract that is ruled by the dispute.
+     *  @param _disputeID The ID of the dispute.
+     *  @param _arbitrable The arbitrable contract that is ruled by the dispute.
      *  @param _address The drawn address.
-     *  @param voteID The vote ID.
+     *  @param _voteID The vote ID.
      */
-    event Draw(uint indexed disputeID, Arbitrable indexed arbitrable, address indexed _address, uint voteID);
+    event Draw(uint indexed _disputeID, Arbitrable indexed _arbitrable, address indexed _address, uint _voteID);
 
     /** @dev Emitted when a juror wins or loses tokens and ETH from a dispute.
-     *  @param disputeID The ID of the dispute.
+     *  @param _disputeID The ID of the dispute.
      *  @param _address The juror affected.
-     *  @param tokenAmount The amount of tokens won or lost.
-     *  @param ETHAmount The amount of ETH won or lost.
+     *  @param _tokenAmount The amount of tokens won or lost.
+     *  @param _ETHAmount The amount of ETH won or lost.
      */
-    event TokenAndETHShift(uint indexed disputeID, address indexed _address, int tokenAmount, int ETHAmount);
+    event TokenAndETHShift(uint indexed _disputeID, address indexed _address, int _tokenAmount, int _ETHAmount);
 
     /* Storage */
 

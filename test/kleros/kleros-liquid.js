@@ -354,7 +354,7 @@ contract('KlerosLiquid', accounts =>
         numberOfDraws.push(
           (await new Promise((resolve, reject) =>
             klerosLiquid
-              .Draw({ disputeID: dispute.ID }, { fromBlock: drawBlockNumber })
+              .Draw({ _disputeID: dispute.ID }, { fromBlock: drawBlockNumber })
               .get((err, logs) => (err ? reject(err) : resolve(logs)))
           )).length
         )
@@ -421,13 +421,13 @@ contract('KlerosLiquid', accounts =>
               (await new Promise((resolve, reject) =>
                 klerosLiquid
                   .TokenAndETHShift(
-                    { disputeID: dispute.ID },
+                    { _disputeID: dispute.ID },
                     { fromBlock: executeBlockNumber }
                   )
                   .get((err, logs) => (err ? reject(err) : resolve(logs)))
               ))
                 .reduce(
-                  (acc, e) => acc.plus(e.args.ETHAmount),
+                  (acc, e) => acc.plus(e.args._ETHAmount),
                   web3.toBigNumber(0)
                 )
                 .toNumber()
