@@ -58,20 +58,21 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint winningChoice;
         uint[] counts; // The sum of votes for each choice in the form `counts[choice]`.
     }
-    struct Dispute {
+    struct Dispute { // Note that appeal `0` is equivalent to the first round of the dispute.
         uint subcourtID; // The ID of the subcourt the dispute is in.
         Arbitrable arbitrated; // The arbitrated arbitrable contract.
-        uint numberOfChoices; // The number of choices jurors have when voting.
+        // The number of choices jurors have when voting. This does not include choice `0` which is reserved for "refuse to arbitrate"/"no ruling".
+        uint numberOfChoices;
         Period period; // The current period of the dispute.
         uint lastPeriodChange; // The last time the period was changed.
         Vote[][] votes; // The votes in the form `votes[appeal][voteID]`.
         VoteCounter[] voteCounters; // The vote counters in the form `voteCounters[appeal]`.
         uint[] jurorAtStake; // The amount of PNK at stake for each juror in the form `jurorAtStake[appeal]`.
         uint[] totalJurorFees; // The total juror fees paid in the form `totalJurorFees[appeal]`.
-        uint[] appealDraws; // The next voteIDs to draw in the form `appealDraws[appeal]`.
-        uint[] appealCommits; // The number of commits in the form `appealCommits[appeal]`.
-        uint[] appealVotes; // The number of votes in the form `appealVotes[appeal]`.
-        uint[] appealRepartitions; // The next voteIDs to repartition tokens/eth for in the form `appealRepartitions[appeal]`.
+        uint[] drawsPerRound; // The next voteIDs to draw in the form `drawsPerRound[appeal]`.
+        uint[] commitsPerRound; // The number of commits in the form `commitsPerRound[appeal]`.
+        uint[] votesPerRound; // The number of votes in the form `votesPerRound[appeal]`.
+        uint[] repartitionsPerRound; // The next voteIDs to repartition tokens/eth for in the form `repartitionsPerRound[appeal]`.
     }
 
     // Juror
@@ -397,19 +398,19 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         if (dispute.period == Period.evidence) {
             // solium-disable-next-line security/no-block-members
             require(block.timestamp - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[uint(dispute.period)], "The evidence period time has not passed yet.");
-            require(dispute.appealDraws[dispute.appealDraws.length - 1] == dispute.votes[dispute.votes.length - 1].length, "The dispute has not finished drawing yet.");
+            require(dispute.drawsPerRound[dispute.drawsPerRound.length - 1] == dispute.votes[dispute.votes.length - 1].length, "The dispute has not finished drawing yet.");
             dispute.period = courts[dispute.subcourtID].hiddenVotes ? Period.commit : Period.vote;
         } else if (dispute.period == Period.commit) {
             require(
                 // solium-disable-next-line security/no-block-members
-                block.timestamp - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[uint(dispute.period)] || dispute.appealCommits[dispute.appealCommits.length - 1] == dispute.votes[dispute.votes.length - 1].length,
+                block.timestamp - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[uint(dispute.period)] || dispute.commitsPerRound[dispute.commitsPerRound.length - 1] == dispute.votes[dispute.votes.length - 1].length,
                 "The commit period time has not passed yet and not every juror has committed yet."
             );
             dispute.period = Period.vote;
         } else if (dispute.period == Period.vote) {
             require(
                 // solium-disable-next-line security/no-block-members
-                block.timestamp - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[uint(dispute.period)] || dispute.appealVotes[dispute.appealVotes.length - 1] == dispute.votes[dispute.votes.length - 1].length,
+                block.timestamp - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[uint(dispute.period)] || dispute.votesPerRound[dispute.votesPerRound.length - 1] == dispute.votes[dispute.votes.length - 1].length,
                 "The vote period time has not passed yet and not every juror has voted yet."
             );
             dispute.period = Period.appeal;
@@ -482,12 +483,12 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      */
     function draw(uint _disputeID, uint _iterations) external onlyDuringPhase(Phase.drawing) onlyDuringPeriod(_disputeID, Period.evidence) {
         Dispute storage dispute = disputes[_disputeID];
-        uint _startIndex = dispute.appealDraws[dispute.appealDraws.length - 1];
+        uint _startIndex = dispute.drawsPerRound[dispute.drawsPerRound.length - 1];
         uint _endIndex = _iterations == 0 ? dispute.votes[dispute.votes.length - 1].length : _startIndex + _iterations;
         for (uint i = _startIndex; i < _endIndex; i++) {
             address _drawnAddress = super.draw(bytes32(dispute.subcourtID), uint(keccak256(RN, _disputeID, i)));
             dispute.votes[dispute.votes.length - 1][i]._address = _drawnAddress;
-            dispute.appealDraws[dispute.appealDraws.length - 1]++;
+            dispute.drawsPerRound[dispute.drawsPerRound.length - 1]++;
             jurors[msg.sender].atStake += dispute.jurorAtStake[dispute.jurorAtStake.length - 1];
             emit Draw(_disputeID, dispute.arbitrated, _drawnAddress, i);
         }
@@ -502,7 +503,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         Dispute storage dispute = disputes[_disputeID];
         require(dispute.votes[dispute.votes.length - 1][_voteID]._address == msg.sender, "The caller has to own the vote.");
         dispute.votes[dispute.votes.length - 1][_voteID].commit = _commit;
-        dispute.appealCommits[dispute.appealCommits.length - 1]++;
+        dispute.commitsPerRound[dispute.commitsPerRound.length - 1]++;
     }
 
     /** @dev Sets the caller's choice for a specified vote.
@@ -520,7 +521,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             "The commit must match the choice in subcourts with hidden votes."
         );
         dispute.votes[dispute.votes.length - 1][_voteID].choice = _choice;
-        dispute.appealVotes[dispute.appealVotes.length - 1]++;
+        dispute.votesPerRound[dispute.votesPerRound.length - 1]++;
         VoteCounter storage voteCounter = dispute.voteCounters[dispute.voteCounters.length - 1];
         voteCounter.counts[_choice]++;
         if (voteCounter.counts[_choice] > voteCounter.counts[voteCounter.winningChoice]) voteCounter.winningChoice = _choice;
@@ -550,7 +551,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     function execute(uint _disputeID, uint _appeal, uint _iterations) external onlyDuringPeriod(_disputeID, Period.execution) {
         Dispute storage dispute = disputes[_disputeID];
         uint _winningChoice = dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice;
-        uint _startIndex = dispute.appealRepartitions[_appeal];
+        uint _startIndex = dispute.repartitionsPerRound[_appeal];
         uint _endIndex = _iterations == 0 ? dispute.votes[_appeal].length : _startIndex + _iterations;
         (uint _tokenReward, uint _ETHReward) = computeTokenAndETHRewards(_disputeID, _appeal);
 
@@ -568,7 +569,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
                 emit TokenAndETHShift(_disputeID, vote._address, -int(_penalty), 0);
             }
             jurors[vote._address].atStake -= dispute.jurorAtStake[_appeal];
-            dispute.appealRepartitions[_appeal]++;
+            dispute.repartitionsPerRound[_appeal]++;
         }
     }
 
@@ -606,10 +607,10 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.numberOfChoices + 1) }));
         dispute.jurorAtStake.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalJurorFees.push(msg.value);
-        dispute.appealDraws.push(0);
-        dispute.appealCommits.push(0);
-        dispute.appealVotes.push(0);
-        dispute.appealRepartitions.push(0);
+        dispute.drawsPerRound.push(0);
+        dispute.commitsPerRound.push(0);
+        dispute.votesPerRound.push(0);
+        dispute.repartitionsPerRound.push(0);
         disputesWithoutJurors++;
 
         emit DisputeCreation(disputeID, Arbitrable(msg.sender));
@@ -631,10 +632,10 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.numberOfChoices + 1) }));
         dispute.jurorAtStake.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalJurorFees.push(msg.value);
-        dispute.appealDraws.push(0);
-        dispute.appealCommits.push(0);
-        dispute.appealVotes.push(0);
-        dispute.appealRepartitions.push(0);
+        dispute.drawsPerRound.push(0);
+        dispute.commitsPerRound.push(0);
+        dispute.votesPerRound.push(0);
+        dispute.repartitionsPerRound.push(0);
         disputesWithoutJurors++;
 
         emit AppealDecision(_disputeID, Arbitrable(msg.sender));
