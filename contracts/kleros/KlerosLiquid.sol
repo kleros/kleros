@@ -484,13 +484,16 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     function draw(uint _disputeID, uint _iterations) external onlyDuringPhase(Phase.drawing) onlyDuringPeriod(_disputeID, Period.evidence) {
         Dispute storage dispute = disputes[_disputeID];
         uint _startIndex = dispute.drawsPerRound[dispute.drawsPerRound.length - 1];
-        uint _endIndex = _iterations == 0 ? dispute.votes[dispute.votes.length - 1].length : _startIndex + _iterations;
+        uint _endIndex = _startIndex + _iterations;
+        if (_endIndex > dispute.votes[dispute.votes.length - 1].length) _endIndex = dispute.votes[dispute.votes.length - 1].length;
         for (uint i = _startIndex; i < _endIndex; i++) {
             address _drawnAddress = super.draw(bytes32(dispute.subcourtID), uint(keccak256(RN, _disputeID, i)));
             dispute.votes[dispute.votes.length - 1][i]._address = _drawnAddress;
             dispute.drawsPerRound[dispute.drawsPerRound.length - 1]++;
             jurors[msg.sender].lockedTokens += dispute.jurorAtStake[dispute.jurorAtStake.length - 1];
             emit Draw(_disputeID, dispute.arbitrated, _drawnAddress, i);
+
+            if (i == dispute.votes[dispute.votes.length - 1].length - 1) disputesWithoutJurors--;
         }
     }
 
