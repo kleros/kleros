@@ -1,9 +1,7 @@
 pragma solidity ^0.4.24;
 
-import "kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
 import "kleros-interaction/contracts/standard/arbitration/Arbitrable.sol";
 import "kleros-interaction/contracts/standard/rng/RNG.sol";
-import "kleros-interaction/contracts/standard/rng/ConstantNG.sol"; // Compile for tests
 import { MiniMeTokenERC20 as Pinakion } from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
 import { TokenController } from "minimetoken/contracts/TokenController.sol";
 
