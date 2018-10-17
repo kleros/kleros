@@ -369,7 +369,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         courts[_subcourtID].timesPerPeriod = _timesPerPeriod;
     }
 
-    /** @dev Pass the phase. */
+    /** @dev Pass the phase. TRUSTED */
     function passPhase() external {
         if (phase == Phase.staking) {
             // solium-disable-next-line security/no-block-members
