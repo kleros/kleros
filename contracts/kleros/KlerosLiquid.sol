@@ -37,10 +37,9 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     struct Court {
         uint parent; // The parent court.
         uint[] children; // List of child courts.
-        uint[] vacantChildrenIndexes; // Stack of vacant slots in the children list.
         bool hiddenVotes; // Wether to use commit and reveal or not.
         uint minStake; // Minimum PNK needed to stake in the court.
-        uint alpha; // Percentage of PNK that is lost when incoherent (alpha / 10000).
+        uint alpha; // Basis points of PNK that are lost when incoherent.
         uint jurorFee; // Arbitration fee paid to each juror.
         uint minJurors; // The minimum number of jurors required per dispute.
         // The appeal after the one that reaches this number of jurors will go to the parent court if any, otherwise, no more appeals are possible.
@@ -206,7 +205,6 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         courts.push(Court({
             parent: 0,
             children: new uint[](0),
-            vacantChildrenIndexes: new uint[](0),
             hiddenVotes: _hiddenVotes,
             minStake: _minStake,
             alpha: _alpha,
@@ -283,7 +281,6 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint _subcourtID = courts.push(Court({
             parent: _parent,
             children: new uint[](0),
-            vacantChildrenIndexes: new uint[](0),
             hiddenVotes: _hiddenVotes,
             minStake: _minStake,
             alpha: _alpha,
@@ -295,11 +292,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         createTree(bytes32(_subcourtID), _sortitionSumTreeK);
 
         // Update the parent.
-        if (courts[_parent].vacantChildrenIndexes.length > 0) {
-            uint _vacantIndex = courts[_parent].vacantChildrenIndexes[courts[_parent].vacantChildrenIndexes.length - 1];
-            courts[_parent].vacantChildrenIndexes.length--;
-            courts[_parent].children[_vacantIndex] = _subcourtID;
-        } else courts[_parent].children.push(_subcourtID);
+        courts[_parent].children.push(_subcourtID);
     }
 
     /** @dev Move a subcourt to a new parent.
@@ -316,8 +309,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         // Update the old parent's children, if any.
         for (uint i = 0; i < courts[courts[_subcourtID].parent].children.length; i++)
             if (courts[courts[_subcourtID].parent].children[i] == _subcourtID) {
-                delete courts[courts[_subcourtID].parent].children[i];
-                courts[courts[_subcourtID].parent].vacantChildrenIndexes.push(i);
+                courts[courts[_subcourtID].parent].children[i] = courts[courts[_subcourtID].parent].children[courts[courts[_subcourtID].parent].children.length - 1];
+                courts[courts[_subcourtID].parent].children.length--;
                 break;
             }
         
