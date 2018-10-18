@@ -44,6 +44,7 @@
   },
   "dependencies": {
     "kleros-interaction": "^0.0.25",
-    "minimetoken": "^0.2.0"
+    "minimetoken": "^0.2.0",
+    "solidity-bytes-utils": "^0.0.5"
   }
 }

@@ -4,6 +4,7 @@ import "kleros-interaction/contracts/standard/arbitration/Arbitrable.sol";
 import "kleros-interaction/contracts/standard/rng/RNG.sol";
 import { MiniMeTokenERC20 as Pinakion } from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
 import { TokenController } from "minimetoken/contracts/TokenController.sol";
+import "solidity-bytes-utils/contracts/BytesLib.sol";
 
 import "../data-structures/SortitionSumTreeFactory.sol";
 
@@ -577,21 +578,15 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     /* Public */
 
     /** @dev Creates a dispute. Must be called by the arbitrable contract.
-     *  @param _subcourtID The ID of the subcourt to create the dispute in.
      *  @param _numberOfChoices Number of choices to choose from in the dispute to be created.
-     *  @param _extraData Additional info about the dispute to be created.
+     *  @param _extraData Additional info about the dispute to be created. We use it to pass the ID of the subcourt to create the dispute in.
      *  @return The ID of the created dispute.
      */
     function createDispute(
-        uint _subcourtID,
         uint _numberOfChoices,
         bytes _extraData
-    ) public payable returns(uint disputeID)  {
-        require(
-            msg.value >= arbitrationCost(_subcourtID, _extraData),
-            "There is not enough ETH to pay the minimum number of jurors for disputes in this subcourt."
-        );
-        require(_numberOfChoices == 2, "We only support binary disputes for now.");
+    ) public payable requireArbitrationFee(_extraData) returns(uint disputeID)  {
+        uint _subcourtID = BytesLib.toUint(_extraData, 0);
         disputeID = disputes.length++;
         Dispute storage dispute = disputes[disputeID];
         dispute.subcourtID = _subcourtID;
@@ -601,7 +596,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         // solium-disable-next-line security/no-block-members
         dispute.lastPeriodChange = block.timestamp;
         dispute.votes[dispute.votes.length++].length = msg.value / courts[dispute.subcourtID].jurorFee;
-        dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.numberOfChoices + 1), tied: true }));
+        dispute.voteCounters[dispute.voteCounters.length++].counts.length = dispute.numberOfChoices + 1;
+        dispute.voteCounters[dispute.voteCounters.length - 1].tied = true;
         dispute.jurorAtStake.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalJurorFees.push(msg.value);
         dispute.drawsPerRound.push(0);
@@ -627,7 +623,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             dispute.subcourtID = courts[dispute.subcourtID].parent;
         dispute.period = Period.evidence;
         dispute.votes[dispute.votes.length++].length = msg.value / courts[dispute.subcourtID].jurorFee;
-        dispute.voteCounters.push(VoteCounter({ winningChoice: 1, counts: new uint[](dispute.numberOfChoices + 1), tied: true }));
+        dispute.voteCounters[dispute.voteCounters.length++].counts.length = dispute.numberOfChoices + 1;
+        dispute.voteCounters[dispute.voteCounters.length - 1].tied = true;
         dispute.jurorAtStake.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalJurorFees.push(msg.value);
         dispute.drawsPerRound.push(0);
@@ -669,20 +666,12 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
 
     /* Public Views */
 
-    /** @dev Implement original `arbitrationCost()` from standard for compilation.
-     *  @param _extraData Additional info about the dispute.
+    /** @dev Get the cost of arbitration in a specified subcourt.
+     *  @param _extraData Additional info about the dispute. We use it to pass the ID of the subcourt where the dispute will be created in.
      *  @return The cost.
      */
     function arbitrationCost(bytes _extraData) public view returns(uint cost) {
-        cost = NON_PAYABLE_AMOUNT;
-    }
-
-    /** @dev Get the cost of arbitration in a specified subcourt.
-     *  @param _subcourtID The ID of the subcourt.
-     *  @param _extraData Additional info about the dispute.
-     *  @return The cost.
-     */
-    function arbitrationCost(uint _subcourtID, bytes _extraData) public view returns(uint cost) {
+        uint _subcourtID = BytesLib.toUint(_extraData, 0);
         cost = courts[_subcourtID].jurorFee * courts[_subcourtID].minJurors;
     }
 

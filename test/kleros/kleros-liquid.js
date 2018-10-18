@@ -315,17 +315,10 @@ contract('KlerosLiquid', accounts =>
     // Create the disputes and set stakes
     await pinakion.generateTokens(governor, -1)
     for (const dispute of disputes) {
-      await klerosLiquid.createDispute(
-        dispute.subcourtID,
-        2,
-        '0x0000000000000000000000000000000000000000',
-        {
-          value: await klerosLiquid.arbitrationCost(
-            dispute.subcourtID,
-            '0x0000000000000000000000000000000000000000'
-          )
-        }
-      )
+      const extraData = `0x${dispute.subcourtID.toString(16).padStart(64, '0')}`
+      await klerosLiquid.createDispute(2, extraData, {
+        value: await klerosLiquid.arbitrationCost(extraData)
+      })
       await klerosLiquid.setStake(
         dispute.subcourtID,
         subcourtMap[dispute.subcourtID].minStake
