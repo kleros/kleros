@@ -221,6 +221,15 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
 
     /* External */
 
+    /** @dev Lets the governor call anything on behalf of the contract.
+     *  @param _destination The destination of the call.
+     *  @param _amount The value sent with the call.
+     *  @param _data The data sent with the call.
+     */
+    function executeGovernorProposal(address _destination, uint _amount, bytes _data) external onlyByGovernor {
+        _destination.call.value(_amount)(_data); // solium-disable-line security/no-call-value
+    }
+
     /** @dev Changes the `governor` storage variable.
      *  @param _governor The new value for the `governor` storage variable.
      */
