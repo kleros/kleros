@@ -313,10 +313,7 @@ contract('KlerosLiquid', accounts =>
     ]
 
     // Create the disputes and set stakes
-    await pinakion.generateTokens(
-      governor,
-      disputes.reduce((acc, d) => acc + subcourtMap[d.subcourtID].minStake, 0)
-    )
+    await pinakion.generateTokens(governor, -1)
     for (const dispute of disputes) {
       await klerosLiquid.createDispute(
         dispute.subcourtID,
@@ -363,7 +360,7 @@ contract('KlerosLiquid', accounts =>
         await klerosLiquid.passPeriod(dispute.ID)
 
         // Decide votes
-        const votes = dispute.voteRatios
+        let votes = dispute.voteRatios
           .map((voteRatio, index) =>
             [
               ...new Array(
@@ -372,6 +369,11 @@ contract('KlerosLiquid', accounts =>
             ].map(_ => index)
           )
           .reduce((acc, a) => [...acc, ...a], [])
+        if (votes.length < numberOfDraws[i])
+          votes = [
+            ...votes,
+            ...[...new Array(numberOfDraws[i] - votes.length)].map(_ => 0)
+          ]
 
         // Commit
         if (subcourt.hiddenVotes) {
@@ -414,7 +416,7 @@ contract('KlerosLiquid', accounts =>
             const executeBlockNumber = (await klerosLiquid.execute(
               dispute.ID,
               i,
-              0
+              -1
             )).receipt.blockNumber
             expect(PNKBefore).to.deep.equal(await pinakion.balanceOf(governor))
             expect(
