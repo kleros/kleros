@@ -641,7 +641,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param _owner The address that sent the ether to create tokens.
      *  @return Wether the operation should be allowed or not.
      */
-    function proxyPayment(address _owner) public payable returns(bool allowed) { allowed = true; }
+    function proxyPayment(address _owner) public payable returns(bool allowed) { allowed = false; }
 
     /** @dev Notifies the controller about a token transfer allowing the controller to react if desired.
      *  @param _from The origin of the transfer.
@@ -650,9 +650,11 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @return Wether the operation should be allowed or not.
      */
     function onTransfer(address _from, address _to, uint _amount) public returns(bool allowed) {
-        uint _newBalance = pinakion.balanceOf(_from) - _amount;
-        require(_newBalance >= stakeOf(bytes32(0), msg.sender), "Cannot transfer an amount that would make balance less than stake.");
-        require(_newBalance >= jurors[_from].lockedTokens, "Cannot transfer an amount that would make balance less than locked stake.");
+        if (_from != address(this) && _to != address(this)) {
+            uint _newBalance = pinakion.balanceOf(_from) - _amount;
+            require(_newBalance >= stakeOf(bytes32(0), msg.sender), "Cannot transfer an amount that would make balance less than stake.");
+            require(_newBalance >= jurors[_from].lockedTokens, "Cannot transfer an amount that would make balance less than locked stake.");
+        }
         allowed = true;
     }
 
