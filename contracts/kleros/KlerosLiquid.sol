@@ -685,12 +685,12 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     function appealCost(uint _disputeID, bytes _extraData) public view returns(uint cost) {
         Dispute storage dispute = disputes[_disputeID];
         uint _lastNumberOfJurors = dispute.votes[dispute.votes.length - 1].length;
-        if (_lastNumberOfJurors >= courts[dispute.subcourtID].jurorsForJump) // Jump to parent subcourt.
+        if (_lastNumberOfJurors >= courts[dispute.subcourtID].jurorsForJump) { // Jump to parent subcourt.
             if (dispute.subcourtID == 0) // Already in the general court.
                 cost = NON_PAYABLE_AMOUNT;
             else
                 cost = courts[courts[dispute.subcourtID].parent].jurorFee * courts[courts[dispute.subcourtID].parent].minJurors;
-        else // Stay in current subcourt.
+        } else // Stay in current subcourt.
             cost = courts[dispute.subcourtID].jurorFee * ((_lastNumberOfJurors * 2) + 1);
     }
 
@@ -779,28 +779,4 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         }
         emit StakeSet(_address, _subcourtID, _stake, _stakeDiff);
     }
-
-    /* Internal Views */
-
-    /** @dev Check if the specified address is a contract address.
-     *  @param _address The address to check.
-     *  @return Wether the address is a contract address or not.
-     */
-    function isContract(address _address) internal view returns(bool isContract) {
-        uint32 size;
-        // solium-disable-next-line security/no-inline-assembly
-        assembly {
-            size := extcodesize(_address)
-        }
-        isContract = size > 0;
-    }
-
-    /* Private */
-
-
-
-    /* Private Views */
-
-
-
 }
