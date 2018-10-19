@@ -34,7 +34,8 @@ contract Governance is TokenController{
         New,
         PutToSupport,
         PutToVote,
-        Decided
+        Decided,
+        Executed
     }
 
     struct Proposal {
@@ -208,7 +209,7 @@ contract Governance is TokenController{
         require(proposal.approved, "Proposal must be approved.");
 
         require(proposal.destination.call.value(proposal.amount)(proposal.data), "Proposal execution failed!"); // solium-disable-line security/no-call-value
-
+        proposal.state = ProposalState.Executed;
         emit ProposalExecuted(_id);
     }
 
