@@ -85,6 +85,11 @@ contract Governance is TokenController{
         _;
     }
 
+    modifier onlyItself() {
+        require(msg.sender == address(this), "Caller must be the contract itself.");
+        _;
+    }
+
 
     // ****************************** //
     // *           Events           * //
@@ -221,7 +226,7 @@ contract Governance is TokenController{
     /** @dev Setter for proposalQuorum.
      *  @param _proposalQuorum Value to be set.
      */
-    function setProposalQuorum(uint _proposalQuorum) internal {
+    function setProposalQuorum(uint _proposalQuorum) public onlyItself {
         proposalQuorum = _proposalQuorum;
     }
 
@@ -229,7 +234,7 @@ contract Governance is TokenController{
     /** @dev Setter for votingTime.
      *  @param _votingTime Value to be set.
      */
-    function setVotingTime(uint _votingTime) internal {
+    function setVotingTime(uint _votingTime) public onlyItself {
         votingTime = _votingTime;
     }
 
@@ -237,7 +242,7 @@ contract Governance is TokenController{
     /** @dev Setter for quorumDivideTime.
      *  @param _quorumDivideTime Value to be set.
      */
-    function setQuorumDivideTime(uint _quorumDivideTime) internal {
+    function setQuorumDivideTime(uint _quorumDivideTime) public onlyItself {
         quorumDivideTime = _quorumDivideTime;
     }
 
