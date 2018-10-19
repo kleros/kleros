@@ -26,9 +26,9 @@ contract Governance is TokenController{
     uint public votingTime;
     uint public currentVotingTime;
 
-    address public constant SUPPORT_DEPOSIT = 0x707574546F566F74650000000000000000000000; // When this address reaches quorum proposal gets put to vote.
-    address public constant APPROVAL_DEPOSIT =  0x617070726f76616c000000000000000000000000; // This address represents yes votes.
-    address public constant REJECTION_DEPOSIT = 0x72656a656374696F6E0000000000000000000000; // This address represents no votes.
+    address public constant SUPPORT_DEPOSIT = 0x707574546F566F74650000000000000000000000; // Address is a message in hex: putToVote - When this address reaches quorum proposal gets put to vote.
+    address public constant APPROVAL_DEPOSIT =  0x617070726f76616c000000000000000000000000; // Address is a message in hex: approval - This address represents yes votes.
+    address public constant REJECTION_DEPOSIT = 0x72656a656374696F6E0000000000000000000000; // Address is a message in hex: rejection - This address represents no votes.
 
     enum ProposalState {
         New,
