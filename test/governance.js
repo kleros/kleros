@@ -33,6 +33,7 @@ contract('Governance', function(accounts) {
 
   const MIN_STAKING_TIME = 1
   const MAX_DRAWINNG_TIME = 1
+  const EXPECTED_VOTING_TIME = 3000
 
   let governance
   let arbitrablePermissionList
@@ -142,7 +143,7 @@ contract('Governance', function(accounts) {
     for (let index = 0; index < 10; index++)
       pinakion.generateTokens(
         accounts[index],
-        (await web3.eth.getBalance(CREATOR)).toNumber(),
+        await web3.eth.getBalance(CREATOR),
         { from: CREATOR }
       )
 
@@ -173,7 +174,7 @@ contract('Governance', function(accounts) {
     governance = await GOVERNANCE.new(
       PROPOSAL_QUORUM,
       QUORUM_DIVIDE_TIME,
-      VOTING_TIME,
+      0,
       arbitrablePermissionList.address,
       pinakion.address,
       tokenController.address,
@@ -184,37 +185,53 @@ contract('Governance', function(accounts) {
 
     assert.equal(await tokenController.governor(), governance.address) // Make sure that governance contract is the governor of kleros liquid contract
 
+    const DESTINATION = governance.address
+    const AMOUNT = 0
+    let DATA = web3.eth.abi.encodeFunctionCall(
+      {
+        name: 'setVotingTime',
+        type: 'function',
+        inputs: [
+          {
+            type: 'uint256',
+            name: '_votingTime'
+          }
+        ]
+      },
+      [EXPECTED_VOTING_TIME]
+    )
+
     await governance.createAndRegisterProposal(
-      'PROPOSAL_0',
+      web3.utils.asciiToHex('PROPOSAL_0'),
       governance.address,
       0,
-      'data',
-      'descriptionURI',
-      'descriptionHash',
-      'argumentsURI',
-      'argumentsHash',
+      DATA,
+      web3.utils.asciiToHex('descriptionURI'),
+      web3.utils.asciiToHex('descriptionHash'),
+      web3.utils.asciiToHex('argumentsURI'),
+      web3.utils.asciiToHex('argumentsHash'),
       { from: CREATOR, gas: 3000000, value: 10000000 }
     )
     await governance.createAndRegisterProposal(
-      'PROPOSAL_1',
+      web3.utils.asciiToHex('PROPOSAL_1'),
       governance.address,
       0,
-      'data',
-      'descriptionURI',
-      'descriptionHash',
-      'argumentsURI',
-      'argumentsHash',
+      web3.utils.asciiToHex('data'),
+      web3.utils.asciiToHex('descriptionURI'),
+      web3.utils.asciiToHex('descriptionHash'),
+      web3.utils.asciiToHex('argumentsURI'),
+      web3.utils.asciiToHex('argumentsHash'),
       { from: CREATOR, gas: 3000000, value: 10000000 }
     )
     await governance.createAndRegisterProposal(
-      'PROPOSAL_2',
+      web3.utils.asciiToHex('PROPOSAL_2'),
       governance.address,
       0,
-      'data',
-      'descriptionURI',
-      'descriptionHash',
-      'argumentsURI',
-      'argumentsHash',
+      web3.utils.asciiToHex('data'),
+      web3.utils.asciiToHex('descriptionURI'),
+      web3.utils.asciiToHex('descriptionHash'),
+      web3.utils.asciiToHex('argumentsURI'),
+      web3.utils.asciiToHex('argumentsHash'),
       { from: CREATOR, gas: 3000000, value: 10000000 }
     )
   })
@@ -627,54 +644,58 @@ contract('Governance', function(accounts) {
     assert.equal(ACTUAL, false)
   })
 
-  // For this test I need web3 1.0.0-beta36 for encoding function call. // Update, try using this: myContract.myMethod.getData(...args)
-  //   it('should be possible to execute a proposal', async function() {
-  //     const DESTINATION = governance.address
-  //     const AMOUNT = 0
-  //     console.log(web3)
-  //     const DATA = web3.eth.abi.encodeFunctionCall({
-  //     name: 'setVotingTime',
-  //     type: 'function',
-  //     inputs: [{
-  //         type: 'uint256',
-  //         name: '_votingTime'
-  //     }]
-  // }, ['3000']);
-  //
-  //     const URI_DESCRIPTION = "description"
-  //     const URI_ARGUMENTS = "arguments"
-  //
-  //     await governance.createProposal("PROPOSAL_0", )
-  //
-  //     await governance.requestRegisteringProposal("PROPOSAL_0", {
-  //       from: accounts[3], value: 10000000
-  //     })
-  //
-  //     await governance.putProposalToSupport("PROPOSAL_0", {
-  //         from: CREATOR, gas: 3000000
-  //     })
-  //
-  //     const QUORUM_TOKEN_ADDRESS = (await governance.proposals("PROPOSAL_0"))[9]
-  //     let miniMeToken = web3.eth.contract(MINIME_TOKEN.abi)
-  //     const QUORUM_TOKEN = miniMeToken.at(QUORUM_TOKEN_ADDRESS)
-  //     let DEPOSIT_ADDRESS = await governance.SUPPORT_DEPOSIT()
-  //     let TRANSFER_AMOUNT = await QUORUM_TOKEN.balanceOf(CREATOR)
-  //     await QUORUM_TOKEN.transfer(DEPOSIT_ADDRESS, TRANSFER_AMOUNT, {from: CREATOR, gas: 3000000})
-  //
-  //     await governance.putProposalToVote("PROPOSAL_0", {
-  //       from: CREATOR, gas: 3000000
-  //     })
-  //
-  //     const VOTE_TOKEN_ADDRESS = (await governance.proposals("PROPOSAL_0"))[10]
-  //     const VOTE_TOKEN = miniMeToken.at(QUORUM_TOKEN_ADDRESS)
-  //     DEPOSIT_ADDRESS = await governance.APPROVAL_DEPOSIT()
-  //     TRANSFER_AMOUNT = await VOTE_TOKEN.balanceOf(CREATOR)
-  //     await VOTE_TOKEN.transfer(DEPOSIT_ADDRESS, TRANSFER_AMOUNT, {from: CREATOR, gas: 3000000})
-  //
-  //     await increaseTime(2000)
-  //
-  //     await governance.finalizeVoting("PROPOSAL_0")
-  //
-  //     await governance.executeProposal("PROPOSAL_0")
-  //   })
+  //For this test I need web3 1.0.0-beta36 for encoding function call. // Update, try using this: myContract.myMethod.getData(...args)
+  it.only('should be possible to execute a proposal', async function() {
+    await governance.putProposalToSupport(web3.utils.asciiToHex('PROPOSAL_0'), {
+      from: CREATOR,
+      gas: 3000000
+    })
+
+    const QUORUM_TOKEN_ADDRESS = (await governance.proposals(
+      web3.utils.asciiToHex('PROPOSAL_0')
+    ))[9]
+    const QUORUM_TOKEN = new web3.eth.Contract(
+      MINIME_TOKEN.abi,
+      QUORUM_TOKEN_ADDRESS
+    )
+    let DEPOSIT_ADDRESS = await governance.SUPPORT_DEPOSIT()
+
+    for (let i = 0; i < 9; i++) {
+      sender = accounts[i]
+      let TRANSFER_AMOUNT = await QUORUM_TOKEN.methods.balanceOf(sender).call()
+      await QUORUM_TOKEN.methods
+        .transfer(DEPOSIT_ADDRESS, TRANSFER_AMOUNT)
+        .send({
+          from: sender,
+          gas: 3000000
+        })
+    }
+
+    await governance.putProposalToVote(web3.utils.asciiToHex('PROPOSAL_0'), {
+      from: CREATOR,
+      gas: 3000000
+    })
+
+    const VOTE_TOKEN_ADDRESS = (await governance.proposals(
+      web3.utils.asciiToHex('PROPOSAL_0')
+    ))[10]
+    const VOTE_TOKEN = new web3.eth.Contract(
+      MINIME_TOKEN.abi,
+      VOTE_TOKEN_ADDRESS
+    )
+    DEPOSIT_ADDRESS = await governance.APPROVAL_DEPOSIT()
+    TRANSFER_AMOUNT = await VOTE_TOKEN.methods.balanceOf(CREATOR).call()
+    await VOTE_TOKEN.methods
+      .transfer(DEPOSIT_ADDRESS, TRANSFER_AMOUNT)
+      .send({ from: CREATOR, gas: 3000000 })
+
+    await governance.finalizeVoting(web3.utils.asciiToHex('PROPOSAL_0'))
+
+    await governance.executeProposal(web3.utils.asciiToHex('PROPOSAL_0'))
+
+    assert.equal(
+      EXPECTED_VOTING_TIME,
+      web3.utils.hexToNumber(await governance.votingTime())
+    )
+  })
 })

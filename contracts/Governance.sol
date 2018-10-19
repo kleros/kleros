@@ -208,6 +208,8 @@ contract Governance is TokenController{
         require(proposal.state == ProposalState.Decided, "Proposal must be in Decided state.");
         require(proposal.approved, "Proposal must be approved.");
 
+        require(proposal.destination == address(this), "Destination unknown");
+        //this.call.value(0)()
         require(proposal.destination.call.value(proposal.amount)(proposal.data), "Proposal execution failed!"); // solium-disable-line security/no-call-value
         proposal.state = ProposalState.Executed;
         emit ProposalExecuted(_id);
@@ -229,7 +231,9 @@ contract Governance is TokenController{
     /** @dev Setter for votingTime.
      *  @param _votingTime Value to be set.
      */
-    function setVotingTime(uint _votingTime) internal {
+    function setVotingTime(uint _votingTime)  {
+        require(msg.sender == address(this));
+
         votingTime = _votingTime;
     }
 
