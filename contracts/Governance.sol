@@ -118,7 +118,7 @@ contract Governance is TokenController{
      *  @param _argumentsHash Hash of the arguments content.
      */
     function createAndRegisterProposal(bytes32 _id, address _destination, uint _amount, bytes _data, string _descriptionURI, bytes32 _descriptionHash, string _argumentsURI, bytes32 _argumentsHash) public payable onlyWhenProposalIsNew(_id)  {
-        require(proposals[_id].destination == address(0), "There must not a proposal with given id already.");
+        require(proposals[_id].destination == address(0), "There must not be a proposal with given id already.");
 
         proposals[_id].destination = _destination;
         proposals[_id].amount = _amount;
