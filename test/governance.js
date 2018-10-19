@@ -79,7 +79,7 @@ contract('Governance', function(accounts) {
       minJurors: randomInt(5, 3),
       jurorsForJump: randomInt(15, 3),
       timesPerPeriod: [...new Array(4)].map(_ => randomInt(5)),
-      sortitionSumTreeK: randomInt(5),
+      sortitionSumTreeK: randomInt(5, 2),
       children:
         depth > 1
           ? [...new Array(K)].map(
