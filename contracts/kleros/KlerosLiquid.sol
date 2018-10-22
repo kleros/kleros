@@ -47,6 +47,12 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint jurorsForJump;
         uint[4] timesPerPeriod; // The time allotted to each dispute period in the form `timesPerPeriod[period]`.
     }
+    struct DelayedSetStake {
+        address _address; // The address of the juror.
+        uint subcourtID; // The ID of the subcourt.
+        uint128 stake; // The new stake.
+        bool unstakeAll; // True if called in the process of unstaking from all subcourts for a juror, false otherwise.
+    }
 
     // Dispute
     struct Vote {
@@ -141,6 +147,9 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     uint public maxDrawingTime;
     // General Storage
     Court[] public courts;
+    mapping(uint => DelayedSetStake) public delayedSetStakes;
+    uint public nextDelayedSetStake = 1;
+    uint public lastDelayedSetStake;
 
     // Dispute
     Dispute[] public disputes;
@@ -445,6 +454,22 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      */
     function setStake(uint _subcourtID, uint128 _stake) external {
         _setStake(msg.sender, _subcourtID, _stake, false);
+    }
+
+    /** @dev Execute the next delayed set stake. */
+    function executeDelayedSetStake() external {
+        require(nextDelayedSetStake <= lastDelayedSetStake, "No delayed set stakes left.");
+        DelayedSetStake storage delayedSetStake = delayedSetStakes[nextDelayedSetStake++];
+        this.call( // solium-disable-line security/no-low-level-calls
+            abi.encodeWithSelector(
+                bytes4(keccak256("_setStake(address,uint256,uint128,bool)))")),
+                delayedSetStake._address,
+                delayedSetStake.subcourtID,
+                delayedSetStake.stake,
+                delayedSetStake.unstakeAll
+            )
+        );
+        delete delayedSetStakes[nextDelayedSetStake - 1];
     }
 
     /** @dev Draws jurors for a dispute. Can be called in parts. `O(n)` where `n` is the number of iterations to run.
@@ -762,7 +787,14 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param _stake The new stake.
      *  @param _unstakeAll True if called in the process of unstaking from all subcourts for a juror, false otherwise.
      */
-    function _setStake(address _address, uint _subcourtID, uint128 _stake, bool _unstakeAll) internal { // TODO: delayed action.
+    function _setStake(address _address, uint _subcourtID, uint128 _stake, bool _unstakeAll) public {
+        // Delayed action logic.
+        require(msg.sender == address(this) || msg.sender == _address, "Can only be called internally or by a juror setting his own stake.");
+        if (phase != Phase.staking) {
+            delayedSetStakes[++lastDelayedSetStake] = DelayedSetStake({ _address: _address, subcourtID: _subcourtID, stake: _stake, unstakeAll: _unstakeAll });
+            return;
+        }
+
         require(
             _stake == 0 || courts[_subcourtID].minStake <= _stake,
             "The juror's stake cannot be lower than the minimum stake for the subcourt."
