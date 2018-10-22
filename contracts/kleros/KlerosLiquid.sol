@@ -611,9 +611,9 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         }
     }
 
-    // /** @dev Executes a specified dispute's ruling. UNTRUSTED.
-    //  *  @param _disputeID The ID of the dispute.
-    //  */
+    /** @dev Executes a specified dispute's ruling. UNTRUSTED.
+     *  @param _disputeID The ID of the dispute.
+     */
     function rule(uint _disputeID) external onlyDuringPeriod(_disputeID, Period.execution) {
         Dispute storage dispute = disputes[_disputeID];
         uint _winningChoice = dispute.voteCounters[dispute.voteCounters.length - 1].tied ? 0
