@@ -38,4 +38,4 @@ The full logic cycle for a batch of disputes runs in a single session the length
 
 ### Bounties
 
-Bugs or vulnerabilities on deployed (and in use) contracts are eligible up to 20 ETH of bounties (depending of their vulnerability, using the OWASP rating). Please disclose them to contact@kleros.io .
+Bugs or vulnerabilities on deployed (and in use) contracts are eligible up to 20 ETH of bounties (depending of their vulnerability, using the OWASP rating). Please disclose them to both contact@kleros.io and clement@kleros.io using "[Bug Bounty]" in the subject.
