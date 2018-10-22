@@ -32,7 +32,6 @@ const generateSubcourts = (
     minStake: newMinStake,
     alpha: randomInt(1000),
     jurorFee: randomInt(100),
-    minJurors: randomInt(5, 3),
     jurorsForJump: randomInt(15, 3),
     timesPerPeriod: [...new Array(4)].map(_ => randomInt(5)),
     sortitionSumTreeK: randomInt(2, 5),
@@ -109,7 +108,6 @@ contract('KlerosLiquid', accounts =>
       subcourtTree.minStake,
       subcourtTree.alpha,
       subcourtTree.jurorFee,
-      subcourtTree.minJurors,
       subcourtTree.jurorsForJump,
       subcourtTree.timesPerPeriod,
       subcourtTree.sortitionSumTreeK
@@ -162,7 +160,6 @@ contract('KlerosLiquid', accounts =>
           subcourt.minStake,
           subcourt.alpha,
           subcourt.jurorFee,
-          subcourt.minJurors,
           subcourt.jurorsForJump,
           subcourt.timesPerPeriod,
           subcourt.sortitionSumTreeK
@@ -177,7 +174,6 @@ contract('KlerosLiquid', accounts =>
           web3.toBigNumber(subcourt.minStake),
           web3.toBigNumber(subcourt.alpha),
           web3.toBigNumber(subcourt.jurorFee),
-          web3.toBigNumber(subcourt.minJurors),
           web3.toBigNumber(subcourt.jurorsForJump)
         ]),
       subcourtMap
@@ -202,7 +198,6 @@ contract('KlerosLiquid', accounts =>
           web3.toBigNumber(subcourt.minStake),
           web3.toBigNumber(subcourt.alpha),
           web3.toBigNumber(subcourt.jurorFee),
-          web3.toBigNumber(subcourt.minJurors),
           web3.toBigNumber(subcourt.jurorsForJump)
         ]),
       subcourtMap
@@ -224,7 +219,6 @@ contract('KlerosLiquid', accounts =>
           web3.toBigNumber(subcourt.minStake),
           web3.toBigNumber(subcourt.alpha),
           web3.toBigNumber(subcourt.jurorFee),
-          web3.toBigNumber(subcourt.minJurors),
           web3.toBigNumber(subcourt.jurorsForJump)
         ]),
       subcourtMap
@@ -265,14 +259,6 @@ contract('KlerosLiquid', accounts =>
     )
     await checkOnlyByGovernor(
       async () => (await klerosLiquid.courts(0))[5],
-      subcourtTree.minJurors,
-      (nextValue, ...args) =>
-        klerosLiquid.changeSubcourtMinJurors(0, nextValue, ...args),
-      0,
-      accounts[2]
-    )
-    await checkOnlyByGovernor(
-      async () => (await klerosLiquid.courts(0))[6],
       subcourtTree.jurorsForJump,
       (nextValue, ...args) =>
         klerosLiquid.changeSubcourtJurorsForJump(0, nextValue, ...args),

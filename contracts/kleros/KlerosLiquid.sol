@@ -42,7 +42,6 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint minStake; // Minimum PNK needed to stake in the court.
         uint alpha; // Basis points of PNK that are lost when incoherent.
         uint jurorFee; // Arbitration fee paid to each juror.
-        uint minJurors; // The minimum number of jurors required per dispute.
         // The appeal after the one that reaches this number of jurors will go to the parent court if any, otherwise, no more appeals are possible.
         uint jurorsForJump;
         uint[4] timesPerPeriod; // The time allotted to each dispute period in the form `timesPerPeriod[period]`.
@@ -185,7 +184,6 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param _minStake The `minStake` property value of the general court.
      *  @param _alpha The `alpha` property value of the general court.
      *  @param _jurorFee The `jurorFee` property value of the general court.
-     *  @param _minJurors The `minJurors` property value of the general court.
      *  @param _jurorsForJump The `jurorsForJump` property value of the general court.
      *  @param _timesPerPeriod The `timesPerPeriod` property value of the general court.
      *  @param _sortitionSumTreeK The number of children per node of the general court's sortition sum tree.
@@ -200,7 +198,6 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint _minStake,
         uint _alpha,
         uint _jurorFee,
-        uint _minJurors,
         uint _jurorsForJump,
         uint[4] _timesPerPeriod,
         uint _sortitionSumTreeK
@@ -221,7 +218,6 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             minStake: _minStake,
             alpha: _alpha,
             jurorFee: _jurorFee,
-            minJurors: _minJurors,
             jurorsForJump: _jurorsForJump,
             timesPerPeriod: _timesPerPeriod
         }));
@@ -280,7 +276,6 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param _minStake The `minStake` property value of the subcourt.
      *  @param _alpha The `alpha` property value of the subcourt.
      *  @param _jurorFee The `jurorFee` property value of the subcourt.
-     *  @param _minJurors The `minJurors` property value of the subcourt.
      *  @param _jurorsForJump The `jurorsForJump` property value of the subcourt.
      *  @param _timesPerPeriod The `timesPerPeriod` property value of the subcourt.
      *  @param _sortitionSumTreeK The number of children per node of the subcourt's sortition sum tree.
@@ -291,7 +286,6 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint _minStake,
         uint _alpha,
         uint _jurorFee,
-        uint _minJurors,
         uint _jurorsForJump,
         uint[4] _timesPerPeriod,
         uint _sortitionSumTreeK
@@ -306,7 +300,6 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             minStake: _minStake,
             alpha: _alpha,
             jurorFee: _jurorFee,
-            minJurors: _minJurors,
             jurorsForJump: _jurorsForJump,
             timesPerPeriod: _timesPerPeriod
         })) - 1;
@@ -369,14 +362,6 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      */
     function changeSubcourtJurorFee(uint _subcourtID, uint _jurorFee) external onlyByGovernor {
         courts[_subcourtID].jurorFee = _jurorFee;
-    }
-
-    /** @dev Changes the `minJurors` property value of the specified subcourt.
-     *  @param _subcourtID The ID of the subcourt.
-     *  @param _minJurors The new value for the `minJurors` property value.
-     */
-    function changeSubcourtMinJurors(uint _subcourtID, uint _minJurors) external onlyByGovernor {
-        courts[_subcourtID].minJurors = _minJurors;
     }
 
     /** @dev Changes the `jurorsForJump` property value of the specified subcourt.
@@ -723,7 +708,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      */
     function arbitrationCost(bytes _extraData) public view returns(uint cost) {
         uint _subcourtID = BytesLib.toUint(_extraData, 0);
-        cost = courts[_subcourtID].jurorFee * courts[_subcourtID].minJurors;
+        cost = courts[_subcourtID].jurorFee;
     }
 
     /** @dev Get the cost of appealing a specified dispute.
@@ -738,7 +723,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             if (dispute.subcourtID == 0) // Already in the general court.
                 cost = NON_PAYABLE_AMOUNT;
             else // Get the cost of the parent subcourt.
-                cost = courts[courts[dispute.subcourtID].parent].jurorFee * courts[courts[dispute.subcourtID].parent].minJurors;
+                cost = courts[courts[dispute.subcourtID].parent].jurorFee;
         } else // Stay in current subcourt.
             cost = courts[dispute.subcourtID].jurorFee * ((_lastNumberOfJurors * 2) + 1);
     }
