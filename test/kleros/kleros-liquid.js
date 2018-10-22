@@ -32,7 +32,6 @@ const generateSubcourts = (
     minStake: newMinStake,
     alpha: randomInt(1000),
     jurorFee: randomInt(100),
-    minJurors: randomInt(5, 3),
     jurorsForJump: randomInt(15, 3),
     timesPerPeriod: [...new Array(4)].map(_ => randomInt(5)),
     sortitionSumTreeK: randomInt(2, 5),
@@ -109,7 +108,6 @@ contract('KlerosLiquid', accounts =>
       subcourtTree.minStake,
       subcourtTree.alpha,
       subcourtTree.jurorFee,
-      subcourtTree.minJurors,
       subcourtTree.jurorsForJump,
       subcourtTree.timesPerPeriod,
       subcourtTree.sortitionSumTreeK
@@ -162,7 +160,6 @@ contract('KlerosLiquid', accounts =>
           subcourt.minStake,
           subcourt.alpha,
           subcourt.jurorFee,
-          subcourt.minJurors,
           subcourt.jurorsForJump,
           subcourt.timesPerPeriod,
           subcourt.sortitionSumTreeK
@@ -177,7 +174,6 @@ contract('KlerosLiquid', accounts =>
           web3.toBigNumber(subcourt.minStake),
           web3.toBigNumber(subcourt.alpha),
           web3.toBigNumber(subcourt.jurorFee),
-          web3.toBigNumber(subcourt.minJurors),
           web3.toBigNumber(subcourt.jurorsForJump)
         ]),
       subcourtMap
@@ -202,7 +198,6 @@ contract('KlerosLiquid', accounts =>
           web3.toBigNumber(subcourt.minStake),
           web3.toBigNumber(subcourt.alpha),
           web3.toBigNumber(subcourt.jurorFee),
-          web3.toBigNumber(subcourt.minJurors),
           web3.toBigNumber(subcourt.jurorsForJump)
         ]),
       subcourtMap
@@ -224,7 +219,6 @@ contract('KlerosLiquid', accounts =>
           web3.toBigNumber(subcourt.minStake),
           web3.toBigNumber(subcourt.alpha),
           web3.toBigNumber(subcourt.jurorFee),
-          web3.toBigNumber(subcourt.minJurors),
           web3.toBigNumber(subcourt.jurorsForJump)
         ]),
       subcourtMap
@@ -265,14 +259,6 @@ contract('KlerosLiquid', accounts =>
     )
     await checkOnlyByGovernor(
       async () => (await klerosLiquid.courts(0))[5],
-      subcourtTree.minJurors,
-      (nextValue, ...args) =>
-        klerosLiquid.changeSubcourtMinJurors(0, nextValue, ...args),
-      0,
-      accounts[2]
-    )
-    await checkOnlyByGovernor(
-      async () => (await klerosLiquid.courts(0))[6],
       subcourtTree.jurorsForJump,
       (nextValue, ...args) =>
         klerosLiquid.changeSubcourtJurorsForJump(0, nextValue, ...args),
@@ -313,22 +299,12 @@ contract('KlerosLiquid', accounts =>
     ]
 
     // Create the disputes and set stakes
-    await pinakion.generateTokens(
-      governor,
-      disputes.reduce((acc, d) => acc + subcourtMap[d.subcourtID].minStake, 0)
-    )
+    await pinakion.generateTokens(governor, -1)
     for (const dispute of disputes) {
-      await klerosLiquid.createDispute(
-        dispute.subcourtID,
-        2,
-        '0x0000000000000000000000000000000000000000',
-        {
-          value: await klerosLiquid.arbitrationCost(
-            dispute.subcourtID,
-            '0x0000000000000000000000000000000000000000'
-          )
-        }
-      )
+      const extraData = `0x${dispute.subcourtID.toString(16).padStart(64, '0')}`
+      await klerosLiquid.createDispute(2, extraData, {
+        value: await klerosLiquid.arbitrationCost(extraData)
+      })
       await klerosLiquid.setStake(
         dispute.subcourtID,
         subcourtMap[dispute.subcourtID].minStake
@@ -349,12 +325,12 @@ contract('KlerosLiquid', accounts =>
         await klerosLiquid.passPhase()
 
         // Draw
-        const drawBlockNumber = (await klerosLiquid.draw(dispute.ID, 0)).receipt
-          .blockNumber
+        const drawBlockNumber = (await klerosLiquid.draw(dispute.ID, -1))
+          .receipt.blockNumber
         numberOfDraws.push(
           (await new Promise((resolve, reject) =>
             klerosLiquid
-              .Draw({ disputeID: dispute.ID }, { fromBlock: drawBlockNumber })
+              .Draw({ _disputeID: dispute.ID }, { fromBlock: drawBlockNumber })
               .get((err, logs) => (err ? reject(err) : resolve(logs)))
           )).length
         )
@@ -363,7 +339,7 @@ contract('KlerosLiquid', accounts =>
         await klerosLiquid.passPeriod(dispute.ID)
 
         // Decide votes
-        const votes = dispute.voteRatios
+        let votes = dispute.voteRatios
           .map((voteRatio, index) =>
             [
               ...new Array(
@@ -372,14 +348,19 @@ contract('KlerosLiquid', accounts =>
             ].map(_ => index)
           )
           .reduce((acc, a) => [...acc, ...a], [])
+        if (votes.length < numberOfDraws[i])
+          votes = [
+            ...votes,
+            ...[...new Array(numberOfDraws[i] - votes.length)].map(_ => 0)
+          ]
 
         // Commit
         if (subcourt.hiddenVotes) {
           for (let i = 0; i < votes.length; i++)
             await klerosLiquid.commit(
               dispute.ID,
-              i,
-              soliditySha3(dispute.ID, i, votes[i], i)
+              [i],
+              [soliditySha3(votes[i], i)]
             )
           await increaseTime(subcourt.timesPerPeriod[1])
           await klerosLiquid.passPeriod(dispute.ID)
@@ -387,7 +368,7 @@ contract('KlerosLiquid', accounts =>
 
         // Vote
         for (let i = 0; i < votes.length; i++)
-          await klerosLiquid.vote(dispute.ID, i, votes[i], i)
+          await klerosLiquid.vote(dispute.ID, [i], votes[i], [i])
         await increaseTime(subcourt.timesPerPeriod[2])
         await klerosLiquid.passPeriod(dispute.ID)
 
@@ -414,20 +395,20 @@ contract('KlerosLiquid', accounts =>
             const executeBlockNumber = (await klerosLiquid.execute(
               dispute.ID,
               i,
-              0
+              -1
             )).receipt.blockNumber
             expect(PNKBefore).to.deep.equal(await pinakion.balanceOf(governor))
             expect(
               (await new Promise((resolve, reject) =>
                 klerosLiquid
                   .TokenAndETHShift(
-                    { disputeID: dispute.ID },
+                    { _disputeID: dispute.ID },
                     { fromBlock: executeBlockNumber }
                   )
                   .get((err, logs) => (err ? reject(err) : resolve(logs)))
               ))
                 .reduce(
-                  (acc, e) => acc.plus(e.args.ETHAmount),
+                  (acc, e) => acc.plus(e.args._ETHAmount),
                   web3.toBigNumber(0)
                 )
                 .toNumber()
