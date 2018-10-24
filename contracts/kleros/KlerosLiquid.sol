@@ -4,7 +4,6 @@ import "kleros-interaction/contracts/standard/arbitration/Arbitrable.sol";
 import "kleros-interaction/contracts/standard/rng/RNG.sol";
 import { MiniMeTokenERC20 as Pinakion } from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
 import { TokenController } from "minimetoken/contracts/TokenController.sol";
-import "solidity-bytes-utils/contracts/BytesLib.sol";
 
 import "../data-structures/SortitionSumTreeFactory.sol";
 
@@ -617,7 +616,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint _numberOfChoices,
         bytes _extraData
     ) public payable requireArbitrationFee(_extraData) returns(uint disputeID)  {
-        uint _subcourtID = BytesLib.toUint(_extraData, 0);
+        uint _subcourtID = toUint(_extraData);
         disputeID = disputes.length++;
         Dispute storage dispute = disputes[disputeID];
         dispute.subcourtID = _subcourtID;
@@ -707,7 +706,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @return The cost.
      */
     function arbitrationCost(bytes _extraData) public view returns(uint cost) {
-        uint _subcourtID = BytesLib.toUint(_extraData, 0);
+        uint _subcourtID = toUint(_extraData);
         cost = courts[_subcourtID].jurorFee;
     }
 
@@ -825,5 +824,17 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             else _currentSubcourtID = courts[_currentSubcourtID].parent;
         }
         emit StakeSet(_address, _subcourtID, _stake, _stakeDiff);
+    }
+
+    /** @dev Get a subcourt ID from the specified extra data bytes array.
+     *  @param _extraData The extra data.
+     */
+    function toUint(bytes _extraData) internal view returns (uint _uint) {
+        if (_extraData.length >= 32) {
+            assembly { // solium-disable-line security/no-inline-assembly
+                _uint := mload(add(_extraData, 0x20))
+            }
+            if (_uint >= courts.length) _uint = 0;
+        } else _uint = 0;
     }
 }
