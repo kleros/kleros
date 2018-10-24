@@ -137,7 +137,7 @@ contract Governance is TokenController{
 
         emit ProposalCreated(_id, _destination);
 
-        proposalList.requestRegistration.value(msg.value)(_id);
+        require(proposalList.requestRegistration.value(msg.value)(_id));
         emit ProposalRequestedToRegister(_id);
     }
 
