@@ -74,13 +74,9 @@ contract Governance is TokenController{
     // *          Modifiers         * //
     // ****************************** //
 
-    modifier onlyWhenProposalIsNew(bytes32 _id) {
-        require(proposals[_id].state == ProposalState.New, "Proposal must be in New state.");
-        _;
-    }
 
-    modifier onlyWhenProposalPutToSupport(bytes32 _id) {
-        require(proposals[_id].state == ProposalState.PutToSupport, "Proposal must be in PutToSupport state.");
+    modifier onlyWhenProposalInStateOf(bytes32 _id, ProposalState _proposalState){
+        require(proposals[_id].state == _proposalState, string(abi.encodePacked("Proposal must be in state: ", _proposalState)));
         _;
     }
 
@@ -121,7 +117,7 @@ contract Governance is TokenController{
      *  @param _argumentsURI URI of the arguments of the proposal.
      *  @param _argumentsHash Hash of the arguments content.
      */
-    function createAndRegisterProposal(bytes32 _id, address _destination, uint _amount, bytes _data, string _descriptionURI, bytes32 _descriptionHash, string _argumentsURI, bytes32 _argumentsHash) public payable onlyWhenProposalIsNew(_id)  {
+    function createAndRegisterProposal(bytes32 _id, address _destination, uint _amount, bytes _data, string _descriptionURI, bytes32 _descriptionHash, string _argumentsURI, bytes32 _argumentsHash) public payable onlyWhenProposalInStateOf(_id, ProposalState.New)  {
         require(proposals[_id].destination == address(0), "There must not be a proposal with given id already.");
 
         proposals[_id].destination = _destination;
@@ -144,7 +140,7 @@ contract Governance is TokenController{
     /** @dev Put proposal to support voting only when a new proposal is permitted.
      *  @param _id ID of a proposal.
      */
-    function putProposalToSupport(bytes32 _id) public onlyWhenProposalIsNew(_id) {
+    function putProposalToSupport(bytes32 _id) public onlyWhenProposalInStateOf(_id, ProposalState.New) {
         require(proposalList.isPermitted(_id), "Proposal must be permitted in the proposal list.");
 
         Proposal storage proposal = proposals[_id];
@@ -161,7 +157,7 @@ contract Governance is TokenController{
     /** @dev Calculate and return required quorum for a given proposal.
      *  @param _id ID of a proposal.
      */
-    function getRequiredQuorum(bytes32 _id) public view onlyWhenProposalPutToSupport(_id) returns (uint effectiveQuorum){
+    function getRequiredQuorum(bytes32 _id) public view onlyWhenProposalInStateOf(_id, ProposalState.PutToSupport) returns (uint effectiveQuorum){
         uint numberOfDividePeriodsPassed = (block.timestamp - lastTimeQuorumReached) / quorumDivideTime;
         effectiveQuorum = quorumRequirement[_id] * proposals[_id].quorumToken.totalSupply() / (2 ** numberOfDividePeriodsPassed) / 100;
     }
@@ -170,7 +166,7 @@ contract Governance is TokenController{
     /** @dev Put given proposal to vote.
      *  @param _id ID of a proposal.
      */
-    function putProposalToVote(bytes32 _id) public onlyWhenProposalPutToSupport(_id) {
+    function putProposalToVote(bytes32 _id) public onlyWhenProposalInStateOf(_id, ProposalState.PutToSupport) {
         require(proposals[_id].quorumToken.balanceOf(SUPPORT_DEPOSIT) >= getRequiredQuorum(_id), "Proposal must to have quorum.");
 
         Proposal storage proposal = proposals[_id];
@@ -192,8 +188,7 @@ contract Governance is TokenController{
     /** @dev Ends a voting, moves proposal to decided state, sets the decision.
      *  @param _id ID of a proposal.
      */
-    function finalizeVoting(bytes32 _id) public  {
-        require(proposals[_id].state == ProposalState.PutToVote, "Proposal must be in PutToVote state");
+    function finalizeVoting(bytes32 _id) onlyWhenProposalInStateOf(_id, ProposalState.PutToVote) public  {
         require(now - proposals[_id].whenPutToVote >= currentVotingTime, "Voting period must be ended.");
 
         proposals[_id].state = ProposalState.Decided;
@@ -206,10 +201,9 @@ contract Governance is TokenController{
     /** @dev General purpose call function for executing a proposal UNTRUSTED.
      *  @param _id ID of a proposal.
      */
-    function executeProposal(bytes32 _id) public {
+    function executeProposal(bytes32 _id) onlyWhenProposalInStateOf(_id, ProposalState.Decided) public {
         Proposal storage proposal = proposals[_id];
 
-        require(proposal.state == ProposalState.Decided, "Proposal must be in Decided state.");
         require(proposal.approved, "Proposal must be approved.");
 
         require(proposal.destination.call.value(proposal.amount)(proposal.data), "Proposal execution failed!"); // solium-disable-line security/no-call-value
