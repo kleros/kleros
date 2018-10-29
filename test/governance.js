@@ -161,7 +161,6 @@ contract('Governance', function(accounts) {
       subcourtTree.minStake,
       subcourtTree.alpha,
       subcourtTree.jurorFee,
-      subcourtTree.minJurors,
       subcourtTree.jurorsForJump,
       subcourtTree.timesPerPeriod,
       subcourtTree.sortitionSumTreeK
