@@ -9,12 +9,11 @@ pragma solidity ^0.4.24;
 
 import "kleros-interaction/contracts/standard/permission/ArbitrablePermissionList.sol";
 import "kleros-interaction/contracts/standard/arbitration/CentralizedArbitrator.sol"; // I need this contract to be deployed for tests, Truffle issue.
-import { ApproveAndCallFallBack, MiniMeToken, MiniMeTokenFactory, TokenController } from "minimetoken/contracts/MiniMeToken.sol";
-import { MiniMeTokenERC20 as Pinakion } from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
+import { MiniMeTokenERC20, TokenController } from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
 
 contract Governance is TokenController{
 
-    Pinakion public pinakion;
+    MiniMeTokenERC20 public pinakion;
     TokenController public tokenController;
     ArbitrablePermissionList public proposalList;
 
@@ -48,8 +47,8 @@ contract Governance is TokenController{
         bytes32 argumentsHash; // Hash of the arguments.
         ProposalState state; // State of proposal.
         uint whenPutToVote; // Records the time when a proposal put to vote to be able to calculate voting period.
-        MiniMeToken quorumToken; // The token that will be used for quorum.
-        MiniMeToken voteToken; // The token that will be used for actual proposal voting.
+        MiniMeTokenERC20 quorumToken; // The token that will be used for quorum.
+        MiniMeTokenERC20 voteToken; // The token that will be used for actual proposal voting.
         bool approved; // Outcome of voting.
     }
 
@@ -57,7 +56,7 @@ contract Governance is TokenController{
     mapping(bytes32 => uint) public quorumRequirement; // The quorum requirement that is constant during a proposals lifecycle.
 
 
-    constructor (uint _proposalQuorum, uint _quorumDivideTime, uint _votingTime, ArbitrablePermissionList _arbitrablePermissionList, Pinakion _pinakion, TokenController _tokenController) public {
+    constructor (uint _proposalQuorum, uint _quorumDivideTime, uint _votingTime, ArbitrablePermissionList _arbitrablePermissionList, MiniMeTokenERC20 _pinakion, TokenController _tokenController) public {
         lastTimeQuorumReached = block.timestamp;
 
         proposalList = _arbitrablePermissionList;
@@ -151,7 +150,7 @@ contract Governance is TokenController{
         Proposal storage proposal = proposals[_id];
 
         address cloneToken = pinakion.createCloneToken({_cloneTokenName: "Quorum Token", _cloneDecimalUnits: pinakion.decimals(), _cloneTokenSymbol: "QUORUM", _snapshotBlock: block.number, _transfersEnabled: true});
-        proposal.quorumToken = MiniMeToken(cloneToken);
+        proposal.quorumToken = MiniMeTokenERC20(cloneToken);
 
         proposal.state = ProposalState.PutToSupport;
 
@@ -179,7 +178,7 @@ contract Governance is TokenController{
         proposal.whenPutToVote = block.timestamp;
 
         address cloneToken = pinakion.createCloneToken({_cloneTokenName: "Vote Token", _cloneDecimalUnits: pinakion.decimals(), _cloneTokenSymbol: "VOTE", _snapshotBlock: block.number, _transfersEnabled: true});
-        proposal.voteToken = MiniMeToken(cloneToken);
+        proposal.voteToken = MiniMeTokenERC20(cloneToken);
 
         proposal.state = ProposalState.PutToVote;
 
