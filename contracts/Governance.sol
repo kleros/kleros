@@ -80,7 +80,10 @@ contract Governance is TokenController{
         _;
     }
 
-    modifier onlyItself() {
+    modifier onlyItself()
+    // Internal visibility modifier doesn't let external calls.
+    // This modifiers lets to call functions inside the same contract, from contract, externally.
+    {
         require(msg.sender == address(this), "Caller must be the contract itself.");
         _;
     }
