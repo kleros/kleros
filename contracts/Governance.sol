@@ -25,10 +25,13 @@ contract Governance is TokenController{
     uint public votingTime;
     uint public currentVotingTime;
 
-    address public constant SUPPORT_DEPOSIT = 0x707574546F566F74650000000000000000000000; // Address is a message in hex: putToVote - When this address reaches quorum proposal gets put to vote.
-    address public constant APPROVAL_DEPOSIT =  0x617070726f76616c000000000000000000000000; // Address is a message in hex: approval - This address represents yes votes.
-    address public constant REJECTION_DEPOSIT = 0x72656a656374696F6E0000000000000000000000; // Address is a message in hex: rejection - This address represents no votes.
-
+    // Address is a message in hex: putToVote - When this address reaches quorum proposal gets put to vote.
+    address public constant SUPPORT_DEPOSIT = 0x707574546F566F74650000000000000000000000;
+    // Address is a message in hex: approval - This address represents yes votes.
+    address public constant APPROVAL_DEPOSIT =  0x617070726f76616c000000000000000000000000;
+    // Address is a message in hex: rejection - This address represents no votes.
+    address public constant REJECTION_DEPOSIT = 0x72656a656374696F6E0000000000000000000000;
+    
     enum ProposalState {
         New,
         PutToSupport,
@@ -56,7 +59,16 @@ contract Governance is TokenController{
     mapping(bytes32 => uint) public quorumRequirement; // The quorum requirement that is constant during a proposals lifecycle.
 
 
-    constructor (uint _proposalQuorum, uint _quorumDivideTime, uint _votingTime, ArbitrablePermissionList _arbitrablePermissionList, MiniMeTokenERC20 _pinakion, TokenController _tokenController) public {
+    constructor (
+        uint _proposalQuorum,
+        uint _quorumDivideTime,
+        uint _votingTime,
+        ArbitrablePermissionList _arbitrablePermissionList,
+        MiniMeTokenERC20 _pinakion,
+        TokenController _tokenController
+    )
+        public
+    {
         lastTimeQuorumReached = block.timestamp;
 
         proposalList = _arbitrablePermissionList;
@@ -128,7 +140,9 @@ contract Governance is TokenController{
         string _descriptionURI,
         bytes32 _descriptionHash,
         string _argumentsURI,
-        bytes32 _argumentsHash) public payable onlyWhenProposalInStateOf(_id, ProposalState.New)
+        bytes32 _argumentsHash
+    )
+        public payable onlyWhenProposalInStateOf(_id, ProposalState.New)
     {
         require(proposals[_id].destination == address(0), "There must not be a proposal with given id already.");
 
@@ -157,7 +171,12 @@ contract Governance is TokenController{
 
         Proposal storage proposal = proposals[_id];
 
-        address cloneToken = pinakion.createCloneToken({_cloneTokenName: "Quorum Token", _cloneDecimalUnits: pinakion.decimals(), _cloneTokenSymbol: "QUORUM", _snapshotBlock: block.number, _transfersEnabled: true});
+        address cloneToken = pinakion.createCloneToken(
+            {_cloneTokenName: "Quorum Token",
+            _cloneDecimalUnits: pinakion.decimals(),
+            _cloneTokenSymbol: "QUORUM",
+            _snapshotBlock: block.number,
+            _transfersEnabled: true});
         proposal.quorumToken = MiniMeTokenERC20(cloneToken);
 
         proposal.state = ProposalState.PutToSupport;
@@ -185,7 +204,12 @@ contract Governance is TokenController{
 
         proposal.whenPutToVote = block.timestamp;
 
-        address cloneToken = pinakion.createCloneToken({_cloneTokenName: "Vote Token", _cloneDecimalUnits: pinakion.decimals(), _cloneTokenSymbol: "VOTE", _snapshotBlock: block.number, _transfersEnabled: true});
+        address cloneToken = pinakion.createCloneToken(
+            {_cloneTokenName: "Vote Token",
+            _cloneDecimalUnits: pinakion.decimals(),
+            _cloneTokenSymbol: "VOTE",
+            _snapshotBlock: block.number,
+            _transfersEnabled: true});
         proposal.voteToken = MiniMeTokenERC20(cloneToken);
 
         proposal.state = ProposalState.PutToVote;
