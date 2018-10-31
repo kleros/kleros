@@ -179,7 +179,7 @@ contract Governance is TokenController{
      *  @param _id ID of a proposal.
      */
     function putProposalToVote(bytes32 _id) external onlyWhenProposalInStateOf(_id, ProposalState.PutToSupport) {
-        require(proposals[_id].quorumToken.balanceOf(SUPPORT_DEPOSIT) >= getRequiredQuorum(_id), "Proposal must to have quorum.");
+        require(proposals[_id].quorumToken.balanceOf(SUPPORT_DEPOSIT) >= getRequiredQuorum(_id), "Proposal must have required quorum to be placed for voting.");
 
         Proposal storage proposal = proposals[_id];
 
