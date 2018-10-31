@@ -23,7 +23,6 @@ contract Governance is TokenController{
     uint public lastTimeQuorumReached;
 
     uint public votingTime;
-    uint public currentVotingTime;
 
     // Address is a message in hex: putToVote - When this address reaches quorum proposal gets put to vote.
     address public constant SUPPORT_DEPOSIT = 0x707574546F566F74650000000000000000000000;
@@ -31,7 +30,7 @@ contract Governance is TokenController{
     address public constant APPROVAL_DEPOSIT =  0x617070726f76616c000000000000000000000000;
     // Address is a message in hex: rejection - This address represents no votes.
     address public constant REJECTION_DEPOSIT = 0x72656a656374696F6E0000000000000000000000;
-    
+
     enum ProposalState {
         New,
         PutToSupport,
@@ -57,6 +56,7 @@ contract Governance is TokenController{
 
     mapping(bytes32 => Proposal) public proposals;
     mapping(bytes32 => uint) public quorumRequirement; // The quorum requirement that is constant during a proposals lifecycle.
+    mapping(bytes32 => uint) public proposalVotingTime; // Given time for a specific proposal to be voted.
 
 
     constructor (
@@ -155,7 +155,7 @@ contract Governance is TokenController{
         proposals[_id].argumentsHash = _argumentsHash;
 
         quorumRequirement[_id] = proposalQuorum;
-
+        proposalVotingTime[_id] = votingTime;
         emit ProposalCreated(_id, _destination);
 
         proposalList.requestRegistration.value(msg.value)(_id);
@@ -217,7 +217,6 @@ contract Governance is TokenController{
         emit ProposalPutToVote(_id);
 
         lastTimeQuorumReached = block.timestamp; // Necessary when calculating required quorum as it is halved periodically.
-        currentVotingTime = votingTime; // Update allowed voting time, which will be constant during new quorum phase.
     }
 
 
@@ -225,7 +224,7 @@ contract Governance is TokenController{
      *  @param _id ID of a proposal.
      */
     function finalizeVoting(bytes32 _id) onlyWhenProposalInStateOf(_id, ProposalState.PutToVote) external  {
-        require(now - proposals[_id].whenPutToVote >= currentVotingTime, "Voting period must be ended.");
+        require(now - proposals[_id].whenPutToVote >= proposalVotingTime[_id], "Voting period must be ended.");
 
         proposals[_id].state = ProposalState.Decided;
         proposals[_id].approved = proposals[_id].voteToken.balanceOf(APPROVAL_DEPOSIT) > proposals[_id].voteToken.balanceOf(REJECTION_DEPOSIT);
