@@ -9,12 +9,11 @@ pragma solidity ^0.4.24;
 
 import "kleros-interaction/contracts/standard/permission/ArbitrablePermissionList.sol";
 import "kleros-interaction/contracts/standard/arbitration/CentralizedArbitrator.sol"; // I need this contract to be deployed for tests, Truffle issue.
-import { ApproveAndCallFallBack, MiniMeToken, MiniMeTokenFactory, TokenController } from "minimetoken/contracts/MiniMeToken.sol";
-import { MiniMeTokenERC20 as Pinakion } from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
+import { MiniMeTokenERC20, TokenController } from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
 
 contract Governance is TokenController{
 
-    Pinakion public pinakion;
+    MiniMeTokenERC20 public pinakion;
     TokenController public tokenController;
     ArbitrablePermissionList public proposalList;
 
@@ -24,11 +23,13 @@ contract Governance is TokenController{
     uint public lastTimeQuorumReached;
 
     uint public votingTime;
-    uint public currentVotingTime;
 
-    address public constant SUPPORT_DEPOSIT = 0x707574546F566F74650000000000000000000000; // Address is a message in hex: putToVote - When this address reaches quorum proposal gets put to vote.
-    address public constant APPROVAL_DEPOSIT =  0x617070726f76616c000000000000000000000000; // Address is a message in hex: approval - This address represents yes votes.
-    address public constant REJECTION_DEPOSIT = 0x72656a656374696F6E0000000000000000000000; // Address is a message in hex: rejection - This address represents no votes.
+    // Address is a message in hex: putToVote - When this address reaches quorum proposal gets put to vote.
+    address public constant SUPPORT_DEPOSIT = 0x707574546F566F74650000000000000000000000;
+    // Address is a message in hex: approval - This address represents yes votes.
+    address public constant APPROVAL_DEPOSIT =  0x617070726f76616c000000000000000000000000;
+    // Address is a message in hex: rejection - This address represents no votes.
+    address public constant REJECTION_DEPOSIT = 0x72656a656374696F6E0000000000000000000000;
 
     enum ProposalState {
         New,
@@ -48,16 +49,26 @@ contract Governance is TokenController{
         bytes32 argumentsHash; // Hash of the arguments.
         ProposalState state; // State of proposal.
         uint whenPutToVote; // Records the time when a proposal put to vote to be able to calculate voting period.
-        MiniMeToken quorumToken; // The token that will be used for quorum.
-        MiniMeToken voteToken; // The token that will be used for actual proposal voting.
+        MiniMeTokenERC20 quorumToken; // The token that will be used for quorum.
+        MiniMeTokenERC20 voteToken; // The token that will be used for actual proposal voting.
         bool approved; // Outcome of voting.
     }
 
     mapping(bytes32 => Proposal) public proposals;
     mapping(bytes32 => uint) public quorumRequirement; // The quorum requirement that is constant during a proposals lifecycle.
+    mapping(bytes32 => uint) public proposalVotingTime; // Given time for a specific proposal to be voted.
 
 
-    constructor (uint _proposalQuorum, uint _quorumDivideTime, uint _votingTime, ArbitrablePermissionList _arbitrablePermissionList, Pinakion _pinakion, TokenController _tokenController) public {
+    constructor (
+        uint _proposalQuorum,
+        uint _quorumDivideTime,
+        uint _votingTime,
+        ArbitrablePermissionList _arbitrablePermissionList,
+        MiniMeTokenERC20 _pinakion,
+        TokenController _tokenController
+    )
+        public
+    {
         lastTimeQuorumReached = block.timestamp;
 
         proposalList = _arbitrablePermissionList;
@@ -75,17 +86,16 @@ contract Governance is TokenController{
     // *          Modifiers         * //
     // ****************************** //
 
-    modifier onlyWhenProposalIsNew(bytes32 _id) {
-        require(proposals[_id].state == ProposalState.New, "Proposal must be in New state.");
+
+    modifier onlyWhenProposalInStateOf(bytes32 _id, ProposalState _proposalState){
+        require(proposals[_id].state == _proposalState, string(abi.encodePacked("Proposal must be in state: ", _proposalState)));
         _;
     }
 
-    modifier onlyWhenProposalPutToSupport(bytes32 _id) {
-        require(proposals[_id].state == ProposalState.PutToSupport, "Proposal must be in PutToSupport state.");
-        _;
-    }
-
-    modifier onlyItself() {
+    modifier onlyItself()
+    // Internal visibility modifier doesn't let external calls.
+    // This modifiers lets to call functions inside the same contract, from contract, externally.
+    {
         require(msg.sender == address(this), "Caller must be the contract itself.");
         _;
     }
@@ -122,7 +132,18 @@ contract Governance is TokenController{
      *  @param _argumentsURI URI of the arguments of the proposal.
      *  @param _argumentsHash Hash of the arguments content.
      */
-    function createAndRegisterProposal(bytes32 _id, address _destination, uint _amount, bytes _data, string _descriptionURI, bytes32 _descriptionHash, string _argumentsURI, bytes32 _argumentsHash) public payable onlyWhenProposalIsNew(_id)  {
+    function createAndRegisterProposal(
+        bytes32 _id,
+        address _destination,
+        uint _amount,
+        bytes _data,
+        string _descriptionURI,
+        bytes32 _descriptionHash,
+        string _argumentsURI,
+        bytes32 _argumentsHash
+    )
+        public payable onlyWhenProposalInStateOf(_id, ProposalState.New)
+    {
         require(proposals[_id].destination == address(0), "There must not be a proposal with given id already.");
 
         proposals[_id].destination = _destination;
@@ -134,7 +155,7 @@ contract Governance is TokenController{
         proposals[_id].argumentsHash = _argumentsHash;
 
         quorumRequirement[_id] = proposalQuorum;
-
+        proposalVotingTime[_id] = votingTime;
         emit ProposalCreated(_id, _destination);
 
         proposalList.requestRegistration.value(msg.value)(_id);
@@ -145,13 +166,18 @@ contract Governance is TokenController{
     /** @dev Put proposal to support voting only when a new proposal is permitted.
      *  @param _id ID of a proposal.
      */
-    function putProposalToSupport(bytes32 _id) public onlyWhenProposalIsNew(_id) {
+    function putProposalToSupport(bytes32 _id) external onlyWhenProposalInStateOf(_id, ProposalState.New) {
         require(proposalList.isPermitted(_id), "Proposal must be permitted in the proposal list.");
 
         Proposal storage proposal = proposals[_id];
 
-        address cloneToken = pinakion.createCloneToken({_cloneTokenName: "Quorum Token", _cloneDecimalUnits: pinakion.decimals(), _cloneTokenSymbol: "QUORUM", _snapshotBlock: block.number, _transfersEnabled: true});
-        proposal.quorumToken = MiniMeToken(cloneToken);
+        address cloneToken = pinakion.createCloneToken(
+            {_cloneTokenName: "Quorum Token",
+            _cloneDecimalUnits: pinakion.decimals(),
+            _cloneTokenSymbol: "QUORUM",
+            _snapshotBlock: block.number,
+            _transfersEnabled: true});
+        proposal.quorumToken = MiniMeTokenERC20(cloneToken);
 
         proposal.state = ProposalState.PutToSupport;
 
@@ -162,7 +188,7 @@ contract Governance is TokenController{
     /** @dev Calculate and return required quorum for a given proposal.
      *  @param _id ID of a proposal.
      */
-    function getRequiredQuorum(bytes32 _id) public view onlyWhenProposalPutToSupport(_id) returns (uint effectiveQuorum){
+    function getRequiredQuorum(bytes32 _id) public view onlyWhenProposalInStateOf(_id, ProposalState.PutToSupport) returns (uint effectiveQuorum){
         uint numberOfDividePeriodsPassed = (block.timestamp - lastTimeQuorumReached) / quorumDivideTime;
         effectiveQuorum = quorumRequirement[_id] * proposals[_id].quorumToken.totalSupply() / (2 ** numberOfDividePeriodsPassed) / 100;
     }
@@ -171,31 +197,34 @@ contract Governance is TokenController{
     /** @dev Put given proposal to vote.
      *  @param _id ID of a proposal.
      */
-    function putProposalToVote(bytes32 _id) public onlyWhenProposalPutToSupport(_id) {
-        require(proposals[_id].quorumToken.balanceOf(SUPPORT_DEPOSIT) >= getRequiredQuorum(_id), "Proposal must to have quorum.");
+    function putProposalToVote(bytes32 _id) external onlyWhenProposalInStateOf(_id, ProposalState.PutToSupport) {
+        require(proposals[_id].quorumToken.balanceOf(SUPPORT_DEPOSIT) >= getRequiredQuorum(_id), "Proposal must have required quorum to be placed for voting.");
 
         Proposal storage proposal = proposals[_id];
 
         proposal.whenPutToVote = block.timestamp;
 
-        address cloneToken = pinakion.createCloneToken({_cloneTokenName: "Vote Token", _cloneDecimalUnits: pinakion.decimals(), _cloneTokenSymbol: "VOTE", _snapshotBlock: block.number, _transfersEnabled: true});
-        proposal.voteToken = MiniMeToken(cloneToken);
+        address cloneToken = pinakion.createCloneToken(
+            {_cloneTokenName: "Vote Token",
+            _cloneDecimalUnits: pinakion.decimals(),
+            _cloneTokenSymbol: "VOTE",
+            _snapshotBlock: block.number,
+            _transfersEnabled: true});
+        proposal.voteToken = MiniMeTokenERC20(cloneToken);
 
         proposal.state = ProposalState.PutToVote;
 
         emit ProposalPutToVote(_id);
 
         lastTimeQuorumReached = block.timestamp; // Necessary when calculating required quorum as it is halved periodically.
-        currentVotingTime = votingTime; // Update allowed voting time, which will be constant during new quorum phase.
     }
 
 
     /** @dev Ends a voting, moves proposal to decided state, sets the decision.
      *  @param _id ID of a proposal.
      */
-    function finalizeVoting(bytes32 _id) public  {
-        require(proposals[_id].state == ProposalState.PutToVote, "Proposal must be in PutToVote state");
-        require(now - proposals[_id].whenPutToVote >= currentVotingTime, "Voting period must be ended.");
+    function finalizeVoting(bytes32 _id) onlyWhenProposalInStateOf(_id, ProposalState.PutToVote) external  {
+        require(now - proposals[_id].whenPutToVote >= proposalVotingTime[_id], "Voting period must be ended.");
 
         proposals[_id].state = ProposalState.Decided;
         proposals[_id].approved = proposals[_id].voteToken.balanceOf(APPROVAL_DEPOSIT) > proposals[_id].voteToken.balanceOf(REJECTION_DEPOSIT);
@@ -207,10 +236,9 @@ contract Governance is TokenController{
     /** @dev General purpose call function for executing a proposal UNTRUSTED.
      *  @param _id ID of a proposal.
      */
-    function executeProposal(bytes32 _id) public {
+    function executeProposal(bytes32 _id) onlyWhenProposalInStateOf(_id, ProposalState.Decided) external {
         Proposal storage proposal = proposals[_id];
 
-        require(proposal.state == ProposalState.Decided, "Proposal must be in Decided state.");
         require(proposal.approved, "Proposal must be approved.");
 
         require(proposal.destination.call.value(proposal.amount)(proposal.data), "Proposal execution failed!"); // solium-disable-line security/no-call-value
