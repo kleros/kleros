@@ -20,7 +20,7 @@ Kleros core smart contracts.
 1.  Clone this repo.
 2.  Run `yarn` to install dependencies and then `yarn run build` to compile the contracts.
 
-## Other Scripts
+## Scripts
 
 - `yarn run prettify` - Apply prettier to the entire project.
 - `yarn run lint:sol` - Lint the entire project's .sol files.
@@ -31,3 +31,7 @@ Kleros core smart contracts.
 - `yarn test` - Run the truffle tests.
 - `yarn run cz` - Run commitizen.
 - `yarn run build` - Compile contracts.
+
+## Contributing
+
+See CONTRIBUTING.md.

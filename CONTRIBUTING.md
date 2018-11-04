@@ -1,1 +1,1 @@
-See [kleros.md](https://kleros.gitbooks.io/kleros-md).
+See [contributing.kleros.io](https://contributing.kleros.io).
