@@ -81,6 +81,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint[] votesPerRound; // The number of votes in the form `votesPerRound[appeal]`.
         uint[] repartitionsPerRound; // The next voteIDs to repartition tokens/eth for in the form `repartitionsPerRound[appeal]`.
         uint[] penaltiesPerRound; // The amount of PNK collected from penalties in the form `penaltiesPerRound[appeal]`.
+        bool ruled; // True if the ruling has been executed, false otherwise.
     }
 
     // Juror
@@ -491,6 +492,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         Dispute storage dispute = disputes[_disputeID];
         for (uint i = 0; i < _voteIDs.length; i++) {
             require(dispute.votes[dispute.votes.length - 1][_voteIDs[i]]._address == msg.sender, "The caller has to own the vote.");
+            require(dispute.votes[dispute.votes.length - 1][_voteIDs[i]].commit == bytes32(0), "Already committed this vote.");
             dispute.votes[dispute.votes.length - 1][_voteIDs[i]].commit = _commits[i];
         }
         dispute.commitsPerRound[dispute.commitsPerRound.length - 1] += _voteIDs.length;
@@ -513,6 +515,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
                 !courts[dispute.subcourtID].hiddenVotes || dispute.votes[dispute.votes.length - 1][_voteIDs[i]].commit == keccak256(_choice, _salts[i]),
                 "The commit must match the choice in subcourts with hidden votes."
             );
+            require(!dispute.votes[dispute.votes.length - 1][_voteIDs[i]].voted, "Vote already cast.");
             dispute.votes[dispute.votes.length - 1][_voteIDs[i]].choice = _choice;
             dispute.votes[dispute.votes.length - 1][_voteIDs[i]].voted = true;
         }
@@ -571,7 +574,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
                     // Reward.
                     (uint _tokenReward, uint _ETHReward) = computeTokenAndETHRewards(_disputeID, _appeal);
                     pinakion.transfer(vote._address, _tokenReward);
-                    vote._address.transfer(_ETHReward);
+                    vote._address.send(_ETHReward);
                     emit TokenAndETHShift(_disputeID, vote._address, int(_tokenReward), int(_ETHReward));
                     jurors[vote._address].lockedTokens -= dispute.jurorAtStake[_appeal];
                 }
@@ -600,6 +603,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      */
     function rule(uint _disputeID) external onlyDuringPeriod(_disputeID, Period.execution) {
         Dispute storage dispute = disputes[_disputeID];
+        require(!dispute.ruled, "Ruling already executed.");
+        dispute.ruled = true;
         uint _winningChoice = dispute.voteCounters[dispute.voteCounters.length - 1].tied ? 0
             : dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice;
         dispute.arbitrated.rule(_disputeID, _winningChoice);
