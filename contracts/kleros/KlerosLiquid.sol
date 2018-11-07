@@ -555,7 +555,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     }
 
     /** @dev Repartitions tokens and ETH for a specified appeal in a specified dispute. Can be called in parts.
-     *  `O(i + j * (n + c + log(p) * log(s)))` where `i` is the number of iterations to run, `j` is the number of jurors that need to be unstaked, `n` is the maximum number of children of one of these jurors' subcourts, `c` is the maximum number of subcourts one of these jurors has staked in, `p` is the total number of subcourts, and `s` is the maximum number of stakers in one of these subcourts.
+     *  `O(i + j * (n + c + p * log(s)))` where `i` is the number of iterations to run, `j` is the number of jurors that need to be unstaked, `n` is the maximum number of children of one of these jurors' subcourts, `c` is the maximum number of subcourts one of these jurors has staked in, `p` is the depth of the subcourt tree, and `s` is the maximum number of stakers in one of these subcourts.
      *  @param _disputeID The ID of the dispute.
      *  @param _appeal The appeal.
      *  @param _iterations The number of iterations to run.
@@ -770,7 +770,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     }
 
     /** @dev Sets the the specified juror's stake in a subcourt.
-     *  `O(n + c + log(p) * log(s))` where `n` is the number of children of the subcourt, `c` is the number of subcourts the juror has staked in, `p` is the total number of subcourts, and `s` is the maximum number of stakers in one of these subcourts.
+     *  `O(n + c + p * log(s))` where `n` is the number of children of the subcourt, `c` is the number of subcourts the juror has staked in, `p` is the depth of the subcourt tree, and `s` is the maximum number of stakers in one of these subcourts.
      *  @param _account The address of the juror.
      *  @param _subcourtID The ID of the subcourt.
      *  @param _stake The new stake.
