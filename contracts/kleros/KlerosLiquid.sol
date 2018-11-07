@@ -465,7 +465,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param _disputeID The ID of the dispute.
      *  @param _iterations The number of iterations to run.
      */
-    function draw(uint _disputeID, uint _iterations) external onlyDuringPhase(Phase.drawing) onlyDuringPeriod(_disputeID, Period.evidence) {
+    function drawVotes(uint _disputeID, uint _iterations) external onlyDuringPhase(Phase.drawing) onlyDuringPeriod(_disputeID, Period.evidence) {
         Dispute storage dispute = disputes[_disputeID];
         uint startIndex = dispute.drawsPerRound[dispute.drawsPerRound.length - 1];
         uint endIndex = startIndex + _iterations;

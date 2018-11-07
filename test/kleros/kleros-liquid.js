@@ -325,7 +325,7 @@ contract('KlerosLiquid', accounts =>
         await klerosLiquid.passPhase()
 
         // Draw
-        const drawBlockNumber = (await klerosLiquid.draw(dispute.ID, -1))
+        const drawBlockNumber = (await klerosLiquid.drawVotes(dispute.ID, -1))
           .receipt.blockNumber
         numberOfDraws.push(
           (await new Promise((resolve, reject) =>
