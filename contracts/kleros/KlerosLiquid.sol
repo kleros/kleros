@@ -38,8 +38,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint parent; // The parent court.
         uint[] children; // List of child courts.
         bool hiddenVotes; // Wether to use commit and reveal or not.
-        uint minStake; // Minimum PNK needed to stake in the court.
-        uint alpha; // Basis points of PNK that are lost when incoherent.
+        uint minStake; // Minimum tokens needed to stake in the court.
+        uint alpha; // Basis point of tokens that are lost when incoherent.
         uint jurorFee; // Arbitration fee paid to each juror.
         // The appeal after the one that reaches this number of jurors will go to the parent court if any, otherwise, no more appeals are possible.
         uint jurorsForJump;
@@ -75,20 +75,21 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         // The votes in the form `votes[appeal][voteID]`. On each round, a new list is pushed and packed with as many empty votes as there are draws.
         Vote[][] votes;
         VoteCounter[] voteCounters; // The vote counters in the form `voteCounters[appeal]`.
-        uint[] jurorAtStake; // The amount of PNK at stake for each juror in the form `jurorAtStake[appeal]`.
+        uint[] jurorAtStake; // The amount of tokens at stake for each juror in the form `jurorAtStake[appeal]`.
         uint[] totalJurorFees; // The total juror fees paid in the form `totalJurorFees[appeal]`.
-        uint[] drawsPerRound; // A counter of draws made per round in the form `drawsPerRound[appeal]`.
-        uint[] commitsPerRound; // A counter of commits made per round in the form `commitsPerRound[appeal]`.
-        uint[] votesPerRound; // A counter of votes made per round in the form `votesPerRound[appeal]`.
-        uint[] repartitionsPerRound; // A counter of vote reward repartitions made per round in the form `repartitionsPerRound[appeal]`.
-        uint[] penaltiesPerRound; // The amount of PNK collected from penalties per round in the form `penaltiesPerRound[appeal]`.
+        uint[] drawsPerRound; // A counter of draws made in each round in the form `drawsPerRound[appeal]`.
+        uint[] commitsPerRound; // A counter of commits made in each round in the form `commitsPerRound[appeal]`.
+        uint[] votesPerRound; // A counter of votes made in each round in the form `votesPerRound[appeal]`.
+        uint[] repartitionsPerRound; // A counter of vote reward repartitions made in each round in the form `repartitionsPerRound[appeal]`.
+        uint[] penaltiesPerRound; // The amount of tokens collected from penalties in each round in the form `penaltiesPerRound[appeal]`.
+        uint[2][] rewardsPerRound; // The amount of tokens and ETH rewarded in each round in the form `rewardsPerRound[appeal][tokens, ETH]`.
         bool ruled; // True if the ruling has been executed, false otherwise.
     }
 
     // Juror
     struct Juror {
         uint[] subcourtIDs; // The IDs of subcourts where the juror has stake path ends.
-        uint lockedTokens; // The juror's total amount of PNK at stake in disputes.
+        uint lockedTokens; // The juror's total amount of tokens at stake in disputes.
     }
 
     /* Events */
@@ -539,19 +540,18 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     /** @dev Computes the token and ETH rewards for a specified case. NOTE: Temporary function until solidity increases local variable allowance.
      *  @param _disputeID The ID of the dispute.
      *  @param _appeal The appeal.
-     *  @return The token and ETH rewards for the specified case.
      */
-    function computeTokenAndETHRewards(uint _disputeID, uint _appeal) private view returns(uint tokenReward, uint ETHReward) {
+    function computeTokenAndETHRewards(uint _disputeID, uint _appeal) private {
         Dispute storage dispute = disputes[_disputeID];
         uint winningChoice = dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice;
         uint coherentCount = dispute.voteCounters[_appeal].counts[winningChoice];
 
         // Distribute penalties and arbitration fees between coherent voters,
         // if there is a tie, there are no penalties to distribute and arbitration fees are distributed between every juror.
-        tokenReward = dispute.voteCounters[dispute.voteCounters.length - 1].tied ? 0
-            : dispute.penaltiesPerRound[_appeal] / coherentCount;
-        ETHReward = dispute.voteCounters[dispute.voteCounters.length - 1].tied ? dispute.totalJurorFees[_appeal] / dispute.votes[_appeal].length
-            : dispute.totalJurorFees[_appeal] / coherentCount;
+        dispute.rewardsPerRound[_appeal][0] = dispute.voteCounters[dispute.voteCounters.length - 1].tied ?
+            0 : dispute.penaltiesPerRound[_appeal] / coherentCount;
+        dispute.rewardsPerRound[_appeal][1] = dispute.voteCounters[dispute.voteCounters.length - 1].tied ?
+            dispute.totalJurorFees[_appeal] / dispute.votes[_appeal].length : dispute.totalJurorFees[_appeal] / coherentCount;
     }
 
     /** @dev Repartitions tokens and ETH for a specified appeal in a specified dispute. Can be called in parts.
@@ -574,7 +574,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
                 if (i >= dispute.votes[_appeal].length) { // Only execute in the second half of the iterations.
 
                     // Reward.
-                    (uint tokenReward, uint ETHReward) = computeTokenAndETHRewards(_disputeID, _appeal);
+                    uint tokenReward = dispute.rewardsPerRound[_appeal][0];
+                    uint ETHReward = dispute.rewardsPerRound[_appeal][1];
                     pinakion.transfer(vote.account, tokenReward);
                     vote.account.send(ETHReward);
                     emit TokenAndETHShift(_disputeID, vote.account, int(tokenReward), int(ETHReward));
@@ -597,13 +598,17 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
                 }
             }
             dispute.repartitionsPerRound[_appeal]++;
+
+            // Finished penalizing, compute and store rewards.
+            if (i == dispute.votes[_appeal].length - 1)
+                computeTokenAndETHRewards(_disputeID, _appeal);
         }
     }
 
     /** @dev Executes a specified dispute's ruling. UNTRUSTED.
      *  @param _disputeID The ID of the dispute.
      */
-    function rule(uint _disputeID) external onlyDuringPeriod(_disputeID, Period.execution) {
+    function executeRuling(uint _disputeID) external onlyDuringPeriod(_disputeID, Period.execution) {
         Dispute storage dispute = disputes[_disputeID];
         require(!dispute.ruled, "Ruling already executed.");
         dispute.ruled = true;
@@ -643,6 +648,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         dispute.votesPerRound.push(0);
         dispute.repartitionsPerRound.push(0);
         dispute.penaltiesPerRound.push(0);
+        dispute.rewardsPerRound.length++;
         disputesWithoutJurors++;
 
         emit DisputeCreation(disputeID, Arbitrable(msg.sender));
@@ -672,6 +678,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         dispute.votesPerRound.push(0);
         dispute.repartitionsPerRound.push(0);
         dispute.penaltiesPerRound.push(0);
+        dispute.rewardsPerRound.length++;
         disputesWithoutJurors++;
 
         emit AppealDecision(_disputeID, Arbitrable(msg.sender));
