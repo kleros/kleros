@@ -179,51 +179,6 @@ contract('KlerosLiquid', accounts =>
       subcourtMap
     )
 
-    // Test moving a subcourt
-    const subcourtToMove = subcourtTree.children[0].children[0].ID
-    const subcourtToMoveMinStake = subcourtMap[subcourtToMove].minStake
-    const parent = 1
-    const nextParent = 2
-
-    // Move subcourt and check hierarchy
-    subcourtMap[subcourtToMove].minStake = 100
-    await klerosLiquid.changeSubcourtMinStake(subcourtToMove, 100)
-    subcourtMap[subcourtToMove].parent = nextParent
-    await klerosLiquid.moveSubcourt(subcourtToMove, nextParent)
-    await asyncForEach(
-      async subcourt =>
-        expect(await klerosLiquid.courts(subcourt.ID)).to.deep.equal([
-          web3.toBigNumber(subcourt.parent),
-          subcourt.hiddenVotes,
-          web3.toBigNumber(subcourt.minStake),
-          web3.toBigNumber(subcourt.alpha),
-          web3.toBigNumber(subcourt.jurorFee),
-          web3.toBigNumber(subcourt.jurorsForJump)
-        ]),
-      subcourtMap
-    )
-
-    // Move it back and check hierarchy
-    subcourtMap[subcourtToMove].minStake = subcourtToMoveMinStake
-    await klerosLiquid.changeSubcourtMinStake(
-      subcourtToMove,
-      subcourtToMoveMinStake
-    )
-    subcourtMap[subcourtToMove].parent = parent
-    await klerosLiquid.moveSubcourt(subcourtToMove, parent)
-    await asyncForEach(
-      async subcourt =>
-        expect(await klerosLiquid.courts(subcourt.ID)).to.deep.equal([
-          web3.toBigNumber(subcourt.parent),
-          subcourt.hiddenVotes,
-          web3.toBigNumber(subcourt.minStake),
-          web3.toBigNumber(subcourt.alpha),
-          web3.toBigNumber(subcourt.jurorFee),
-          web3.toBigNumber(subcourt.jurorsForJump)
-        ]),
-      subcourtMap
-    )
-
     // Test subcourt governance
     await checkOnlyByGovernor(
       async () => (await klerosLiquid.courts(0))[1],

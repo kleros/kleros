@@ -311,29 +311,6 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         courts[_parent].children.push(subcourtID);
     }
 
-    /** @dev Move a subcourt to a new parent. `O(n)` where `n` is the number of the old parent's children.
-     *  @param _subcourtID The ID of the subcourt.
-     *  @param _parent The new `parent` property value of the subcourt.
-     */
-    function moveSubcourt(uint _subcourtID, uint _parent) external onlyByGovernor {
-        require(_subcourtID != 0, "Cannot move the general court.");
-        require(
-            courts[_parent].minStake <= courts[_subcourtID].minStake,
-            "A subcourt cannot be a child of a subcourt with a higher minimum stake."
-        );
-
-        // Update the old parent's children, if any.
-        for (uint i = 0; i < courts[courts[_subcourtID].parent].children.length; i++)
-            if (courts[courts[_subcourtID].parent].children[i] == _subcourtID) {
-                courts[courts[_subcourtID].parent].children[i] = courts[courts[_subcourtID].parent].children[courts[courts[_subcourtID].parent].children.length - 1];
-                courts[courts[_subcourtID].parent].children.length--;
-                break;
-            }
-        
-        // Set the new parent.
-        courts[_subcourtID].parent = _parent;
-    }
-
     /** @dev Changes the `hiddenVotes` property value of the specified subcourt.
      *  @param _subcourtID The ID of the subcourt.
      *  @param _hiddenVotes The new value for the `hiddenVotes` property value.
