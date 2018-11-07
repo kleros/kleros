@@ -442,20 +442,23 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         _setStake(msg.sender, _subcourtID, _stake, false);
     }
 
-    /** @dev Execute the next delayed set stake. */
-    function executeDelayedSetStake() external {
-        require(nextDelayedSetStake <= lastDelayedSetStake, "No delayed set stakes left.");
-        DelayedSetStake storage delayedSetStake = delayedSetStakes[nextDelayedSetStake++];
-        this.call( // solium-disable-line security/no-low-level-calls
-            abi.encodeWithSelector(
-                bytes4(keccak256("_setStake(address,uint256,uint128,bool)))")),
+    /** @dev Execute the next delayed set stakes.
+     *  @param _iterations The number of delayed set stakes to execute.
+     */
+    function executeDelayedSetStakes(uint _iterations) external onlyDuringPhase(Phase.staking) {
+        uint actualIterations = (nextDelayedSetStake + _iterations) - 1 > lastDelayedSetStake ?
+            (lastDelayedSetStake + 1) - nextDelayedSetStake : _iterations;
+        for (uint i = 0; i < actualIterations; i++) {
+            DelayedSetStake storage delayedSetStake = delayedSetStakes[i];
+            _setStake(
                 delayedSetStake.account,
                 delayedSetStake.subcourtID,
                 delayedSetStake.stake,
                 delayedSetStake.unstakeAll
-            )
-        );
-        delete delayedSetStakes[nextDelayedSetStake - 1];
+            );
+            delete delayedSetStakes[i];
+        }
+        nextDelayedSetStake += actualIterations;
     }
 
     /** @dev Draws jurors for a dispute. Can be called in parts. `O(n)` where `n` is the number of iterations to run.
@@ -773,9 +776,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param _stake The new stake.
      *  @param _unstakeAll True if called in the process of unstaking from all subcourts for a juror, false otherwise.
      */
-    function _setStake(address _account, uint _subcourtID, uint128 _stake, bool _unstakeAll) public {
+    function _setStake(address _account, uint _subcourtID, uint128 _stake, bool _unstakeAll) internal {
         // Delayed action logic.
-        require(msg.sender == address(this) || msg.sender == _account, "Can only be called internally or by a juror setting his own stake.");
         if (phase != Phase.staking) {
             delayedSetStakes[++lastDelayedSetStake] = DelayedSetStake({ account: _account, subcourtID: _subcourtID, stake: _stake, unstakeAll: _unstakeAll });
             return;
