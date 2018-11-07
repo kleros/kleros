@@ -666,6 +666,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         if (dispute.votes[dispute.votes.length - 1].length >= courts[dispute.subcourtID].jurorsForJump) // Jump to parent subcourt.
             dispute.subcourtID = courts[dispute.subcourtID].parent;
         dispute.period = Period.evidence;
+        dispute.lastPeriodChange = now;
         // As many votes that can be afforded by the provided funds.
         dispute.votes[dispute.votes.length++].length = msg.value / courts[dispute.subcourtID].jurorFee;
         // Add one for choice "0", "refuse to arbitrate"/"no ruling".
