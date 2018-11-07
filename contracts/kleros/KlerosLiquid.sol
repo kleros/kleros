@@ -72,15 +72,16 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint numberOfChoices;
         Period period; // The current period of the dispute.
         uint lastPeriodChange; // The last time the period was changed.
-        Vote[][] votes; // The votes in the form `votes[appeal][voteID]`.
+        // The votes in the form `votes[appeal][voteID]`. On each round, a new list is pushed and packed with as many empty votes as there are draws.
+        Vote[][] votes;
         VoteCounter[] voteCounters; // The vote counters in the form `voteCounters[appeal]`.
         uint[] jurorAtStake; // The amount of PNK at stake for each juror in the form `jurorAtStake[appeal]`.
         uint[] totalJurorFees; // The total juror fees paid in the form `totalJurorFees[appeal]`.
-        uint[] drawsPerRound; // The next voteIDs to draw in the form `drawsPerRound[appeal]`.
-        uint[] commitsPerRound; // The number of commits in the form `commitsPerRound[appeal]`.
-        uint[] votesPerRound; // The number of votes in the form `votesPerRound[appeal]`.
-        uint[] repartitionsPerRound; // The next voteIDs to repartition tokens/eth for in the form `repartitionsPerRound[appeal]`.
-        uint[] penaltiesPerRound; // The amount of PNK collected from penalties in the form `penaltiesPerRound[appeal]`.
+        uint[] drawsPerRound; // A counter of draws made per round in the form `drawsPerRound[appeal]`.
+        uint[] commitsPerRound; // A counter of commits made per round in the form `commitsPerRound[appeal]`.
+        uint[] votesPerRound; // A counter of votes made per round in the form `votesPerRound[appeal]`.
+        uint[] repartitionsPerRound; // A counter of vote reward repartitions made per round in the form `repartitionsPerRound[appeal]`.
+        uint[] penaltiesPerRound; // The amount of PNK collected from penalties per round in the form `penaltiesPerRound[appeal]`.
         bool ruled; // True if the ruling has been executed, false otherwise.
     }
 
