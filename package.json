@@ -1,5 +1,5 @@
 {
-  "name": "kleros",
+  "name": "@kleros/kleros",
   "version": "0.0.7",
   "description": "Kleros core smart contracts.",
   "keywords": [
