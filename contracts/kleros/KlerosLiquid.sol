@@ -77,9 +77,9 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         VoteCounter[] voteCounters; // The vote counters in the form `voteCounters[appeal]`.
         uint[] jurorAtStake; // The amount of tokens at stake for each juror in the form `jurorAtStake[appeal]`.
         uint[] totalJurorFees; // The total juror fees paid in the form `totalJurorFees[appeal]`.
-        uint[] drawsPerRound; // A counter of draws made in each round in the form `drawsPerRound[appeal]`.
-        uint[] commitsPerRound; // A counter of commits made in each round in the form `commitsPerRound[appeal]`.
-        uint[] votesPerRound; // A counter of votes made in each round in the form `votesPerRound[appeal]`.
+        uint drawsPerRound; // A counter of draws made in the current round.
+        uint commitsPerRound; // A counter of commits made in the current round.
+        uint votesPerRound; // A counter of votes made in the current round.
         uint[] repartitionsPerRound; // A counter of vote reward repartitions made in each round in the form `repartitionsPerRound[appeal]`.
         uint[] penaltiesPerRound; // The amount of tokens collected from penalties in each round in the form `penaltiesPerRound[appeal]`.
         uint[2][] rewardsPerRound; // The amount of tokens and ETH rewarded in each round in the form `rewardsPerRound[appeal][tokens, ETH]`.
@@ -387,17 +387,17 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         Dispute storage dispute = disputes[_disputeID];
         if (dispute.period == Period.evidence) {
             require(now - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[uint(dispute.period)], "The evidence period time has not passed yet.");
-            require(dispute.drawsPerRound[dispute.drawsPerRound.length - 1] == dispute.votes[dispute.votes.length - 1].length, "The dispute has not finished drawing yet.");
+            require(dispute.drawsPerRound == dispute.votes[dispute.votes.length - 1].length, "The dispute has not finished drawing yet.");
             dispute.period = courts[dispute.subcourtID].hiddenVotes ? Period.commit : Period.vote;
         } else if (dispute.period == Period.commit) {
             require(
-                now - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[uint(dispute.period)] || dispute.commitsPerRound[dispute.commitsPerRound.length - 1] == dispute.votes[dispute.votes.length - 1].length,
+                now - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[uint(dispute.period)] || dispute.commitsPerRound == dispute.votes[dispute.votes.length - 1].length,
                 "The commit period time has not passed yet and not every juror has committed yet."
             );
             dispute.period = Period.vote;
         } else if (dispute.period == Period.vote) {
             require(
-                now - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[uint(dispute.period)] || dispute.votesPerRound[dispute.votesPerRound.length - 1] == dispute.votes[dispute.votes.length - 1].length,
+                now - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[uint(dispute.period)] || dispute.votesPerRound == dispute.votes[dispute.votes.length - 1].length,
                 "The vote period time has not passed yet and not every juror has voted yet."
             );
             dispute.period = Period.appeal;
@@ -445,7 +445,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      */
     function drawVotes(uint _disputeID, uint _iterations) external onlyDuringPhase(Phase.drawing) onlyDuringPeriod(_disputeID, Period.evidence) {
         Dispute storage dispute = disputes[_disputeID];
-        uint startIndex = dispute.drawsPerRound[dispute.drawsPerRound.length - 1];
+        uint startIndex = dispute.drawsPerRound;
         uint endIndex = startIndex + _iterations;
 
         // Avoid going out of range.
@@ -456,7 +456,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
 
             // Save the vote.
             dispute.votes[dispute.votes.length - 1][i].account = drawnAddress;
-            dispute.drawsPerRound[dispute.drawsPerRound.length - 1]++;
+            dispute.drawsPerRound++;
             jurors[msg.sender].lockedTokens += dispute.jurorAtStake[dispute.jurorAtStake.length - 1];
             emit Draw(_disputeID, dispute.arbitrated, drawnAddress, i);
 
@@ -477,7 +477,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             require(dispute.votes[dispute.votes.length - 1][_voteIDs[i]].commit == bytes32(0), "Already committed this vote.");
             dispute.votes[dispute.votes.length - 1][_voteIDs[i]].commit = _commits[i];
         }
-        dispute.commitsPerRound[dispute.commitsPerRound.length - 1] += _voteIDs.length;
+        dispute.commitsPerRound += _voteIDs.length;
     }
 
     /** @dev Sets the caller's choices for the specified votes. `O(n)` where `n` is the number of votes.
@@ -501,7 +501,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             dispute.votes[dispute.votes.length - 1][_voteIDs[i]].choice = _choice;
             dispute.votes[dispute.votes.length - 1][_voteIDs[i]].voted = true;
         }
-        dispute.votesPerRound[dispute.votesPerRound.length - 1] += _voteIDs.length;
+        dispute.votesPerRound += _voteIDs.length;
 
         // Update winning choice.
         VoteCounter storage voteCounter = dispute.voteCounters[dispute.voteCounters.length - 1];
@@ -620,9 +620,6 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         dispute.voteCounters[dispute.voteCounters.length - 1].tied = true;
         dispute.jurorAtStake.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalJurorFees.push(msg.value);
-        dispute.drawsPerRound.push(0);
-        dispute.commitsPerRound.push(0);
-        dispute.votesPerRound.push(0);
         dispute.repartitionsPerRound.push(0);
         dispute.penaltiesPerRound.push(0);
         dispute.rewardsPerRound.length++;
@@ -651,9 +648,9 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         dispute.voteCounters[dispute.voteCounters.length - 1].tied = true;
         dispute.jurorAtStake.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalJurorFees.push(msg.value);
-        dispute.drawsPerRound.push(0);
-        dispute.commitsPerRound.push(0);
-        dispute.votesPerRound.push(0);
+        dispute.drawsPerRound = 0;
+        dispute.commitsPerRound = 0;
+        dispute.votesPerRound = 0;
         dispute.repartitionsPerRound.push(0);
         dispute.penaltiesPerRound.push(0);
         dispute.rewardsPerRound.length++;
