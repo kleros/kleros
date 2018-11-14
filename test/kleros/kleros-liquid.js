@@ -253,7 +253,7 @@ contract('KlerosLiquid', accounts =>
       }
     ]
 
-    // Create the disputes and set stakes
+    // Create the disputes and set stakes directly
     await pinakion.generateTokens(governor, -1)
     for (const dispute of disputes) {
       const extraData = `0x${dispute.subcourtID.toString(16).padStart(64, '0')}`
@@ -265,6 +265,19 @@ contract('KlerosLiquid', accounts =>
         subcourtMap[dispute.subcourtID].minStake
       )
     }
+
+    // Set stakes using delayed actions
+    await increaseTime(minStakingTime)
+    await klerosLiquid.passPhase()
+    await klerosLiquid.passPhase()
+    for (const dispute of disputes)
+      await klerosLiquid.setStake(
+        dispute.subcourtID,
+        subcourtMap[dispute.subcourtID].minStake
+      )
+    await increaseTime(maxDrawingTime)
+    await klerosLiquid.passPhase()
+    await klerosLiquid.executeDelayedSetStakes(disputes.length)
 
     // Resolve disputes
     for (const dispute of disputes) {
