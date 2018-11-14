@@ -12,8 +12,8 @@ contract SortitionSumTreeFactory {
         uint K;
         uint[] stack;
         uint[] tree;
-        mapping(address => uint) addressesToTreeIndexes;
-        mapping(uint => address) treeIndexesToAddresses;
+        mapping(bytes32 => uint) IDsToTreeIndexes;
+        mapping(uint => bytes32) treeIndexesToIDs;
     }
 
     /* Storage */
@@ -53,12 +53,12 @@ contract SortitionSumTreeFactory {
      *  @dev Append a value to a tree.
      *  @param _key The key of the tree to append to.
      *  @param _value The value to append.
-     *  @param _address The candidate's address.
+     *  @param _ID The ID of the value.
      *  @return The index of the appended value in the tree.
      */
-    function append(bytes32 _key, uint _value, address _address) internal returns(uint treeIndex) {
+    function append(bytes32 _key, uint _value, bytes32 _ID) internal returns(uint treeIndex) {
         SortitionSumTree storage tree = sortitionSumTrees[_key];
-        require(tree.addressesToTreeIndexes[_address] == 0, "Address already has a value in this tree.");
+        require(tree.IDsToTreeIndexes[_ID] == 0, "ID already has a value in this tree.");
         
         // Add node.
         if (tree.stack.length == 0) { // No vacant spots.
@@ -70,11 +70,11 @@ contract SortitionSumTreeFactory {
             if (treeIndex != 1 && (treeIndex - 1) % tree.K == 0) { // Is first child.
                 tree.tree.push(tree.tree[treeIndex / tree.K]);
                 uint _parentIndex = treeIndex / tree.K;
-                address _parentAddress = tree.treeIndexesToAddresses[_parentIndex];
+                bytes32 _parentID = tree.treeIndexesToIDs[_parentIndex];
                 uint _newIndex = treeIndex + 1;
-                delete tree.treeIndexesToAddresses[_parentIndex];
-                tree.addressesToTreeIndexes[_parentAddress] = _newIndex;
-                tree.treeIndexesToAddresses[_newIndex] = _parentAddress;
+                delete tree.treeIndexesToIDs[_parentIndex];
+                tree.IDsToTreeIndexes[_parentID] = _newIndex;
+                tree.treeIndexesToIDs[_newIndex] = _parentID;
             }
         } else { // Some vacant spot.
             // Pop the stack and append the value.
@@ -84,8 +84,8 @@ contract SortitionSumTreeFactory {
         }
 
         // Add label.
-        tree.addressesToTreeIndexes[_address] = treeIndex;
-        tree.treeIndexesToAddresses[treeIndex] = _address;
+        tree.IDsToTreeIndexes[_ID] = treeIndex;
+        tree.treeIndexesToIDs[treeIndex] = _ID;
 
         updateParents(_key, treeIndex, true, _value);
     }
@@ -93,12 +93,12 @@ contract SortitionSumTreeFactory {
     /**
      *  @dev Remove a value from a tree.
      *  @param _key The key of the tree to remove from.
-     *  @param _address The candidate's address.
+     *  @param _ID The ID of the value.
      */
-    function remove(bytes32 _key, address _address) internal {
+    function remove(bytes32 _key, bytes32 _ID) internal {
         SortitionSumTree storage tree = sortitionSumTrees[_key];
-        uint _treeIndex = tree.addressesToTreeIndexes[_address];
-        require(_treeIndex != 0, "Address does not have a value in this tree.");
+        uint _treeIndex = tree.IDsToTreeIndexes[_ID];
+        require(_treeIndex != 0, "ID does not have a value in this tree.");
 
         // Remember value and set to 0.
         uint _value = tree.tree[_treeIndex];
@@ -108,8 +108,8 @@ contract SortitionSumTreeFactory {
         tree.stack.push(_treeIndex);
 
         // Clear label.
-        delete tree.addressesToTreeIndexes[tree.treeIndexesToAddresses[_treeIndex]];
-        delete tree.treeIndexesToAddresses[_treeIndex];
+        delete tree.IDsToTreeIndexes[tree.treeIndexesToIDs[_treeIndex]];
+        delete tree.treeIndexesToIDs[_treeIndex];
 
         updateParents(_key, _treeIndex, false, _value);
     }
@@ -118,12 +118,12 @@ contract SortitionSumTreeFactory {
      *  @dev Set a value of a tree.
      *  @param _key The key of the tree.
      *  @param _value The new value.
-     *  @param _address The candidate's address.
+     *  @param _ID The ID of the value.
      */
-    function set(bytes32 _key, uint _value, address _address) internal {
+    function set(bytes32 _key, uint _value, bytes32 _ID) internal {
         SortitionSumTree storage tree = sortitionSumTrees[_key];
-        uint _treeIndex = tree.addressesToTreeIndexes[_address];
-        require(_treeIndex != 0, "Address does not have a value in this tree.");
+        uint _treeIndex = tree.IDsToTreeIndexes[_ID];
+        require(_treeIndex != 0, "ID does not have a value in this tree.");
 
         bool _plusOrMinus = tree.tree[_treeIndex] <= _value;
         uint _plusOrMinusValue = _plusOrMinus ? _value - tree.tree[_treeIndex] : tree.tree[_treeIndex] - _value;
@@ -169,13 +169,13 @@ contract SortitionSumTreeFactory {
     }
 
     /**
-     *  @dev Draw an address from a tree using a number. Note that this function reverts if the sum of all values in the tree is 0.
+     *  @dev Draw an ID from a tree using a number. Note that this function reverts if the sum of all values in the tree is 0.
      *  @param _key The key of the tree.
      *  @param _drawnNumber The drawn number.
-     *  @return The drawn address.
+     *  @return The drawn ID.
      *  Complexity: This function is O(n) where `n` is the max number of elements ever appended.
      */
-    function draw(bytes32 _key, uint _drawnNumber) internal view returns(address _address) {
+    function draw(bytes32 _key, uint _drawnNumber) internal view returns(bytes32 ID) {
         SortitionSumTree storage tree = sortitionSumTrees[_key];
         uint _treeIndex = 0;
         uint _currentDrawnNumber = _drawnNumber % tree.tree[0];
@@ -192,16 +192,17 @@ contract SortitionSumTreeFactory {
                 }
             }
         
-        _address = tree.treeIndexesToAddresses[_treeIndex];
+        ID = tree.treeIndexesToIDs[_treeIndex];
     }
 
-    /** @dev Gets a specified candidate's associated value.
+    /** @dev Gets a specified ID's associated value.
      *  @param _key The key of the tree.
-     *  @param _address The candidate's address.
+     *  @param _ID The ID of the value.
+     *  @return The associated value.
      */
-    function stakeOf(bytes32 _key, address _address) internal view returns(uint value) {
+    function stakeOf(bytes32 _key, bytes32 _ID) internal view returns(uint value) {
         SortitionSumTree storage tree = sortitionSumTrees[_key];
-        uint _treeIndex = tree.addressesToTreeIndexes[_address];
+        uint _treeIndex = tree.IDsToTreeIndexes[_ID];
 
         if (_treeIndex == 0) value = 0;
         else value = tree.tree[_treeIndex];

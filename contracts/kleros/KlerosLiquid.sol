@@ -35,7 +35,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
 
     // General
     struct Court {
-        uint parent; // The parent court.
+        uint96 parent; // The parent court.
         uint[] children; // List of child courts.
         bool hiddenVotes; // Wether to use commit and reveal or not.
         uint minStake; // Minimum tokens needed to stake in the court.
@@ -47,9 +47,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     }
     struct DelayedSetStake {
         address account; // The address of the juror.
-        uint subcourtID; // The ID of the subcourt.
-        uint128 stake; // The new stake.
-        bool unstakeAll; // True if called in the process of unstaking from all subcourts for a juror, false otherwise.
+        uint96 subcourtID; // The ID of the subcourt.
+        uint stake; // The new stake.
     }
 
     // Dispute
@@ -66,7 +65,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         bool tied; // True if there is a tie, false otherwise.
     }
     struct Dispute { // Note that appeal `0` is equivalent to the first round of the dispute.
-        uint subcourtID; // The ID of the subcourt the dispute is in.
+        uint96 subcourtID; // The ID of the subcourt the dispute is in.
         Arbitrable arbitrated; // The arbitrated arbitrable contract.
         // The number of choices jurors have when voting. This does not include choice `0` which is reserved for "refuse to arbitrate"/"no ruling".
         uint numberOfChoices;
@@ -88,7 +87,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
 
     // Juror
     struct Juror {
-        uint[] subcourtIDs; // The IDs of subcourts where the juror has stake path ends.
+        uint96[] subcourtIDs; // The IDs of subcourts where the juror has stake path ends.
+        uint stakedTokens; // The juror's total amount of tokens staked in subcourts.
         uint lockedTokens; // The juror's total amount of tokens at stake in disputes.
     }
 
@@ -109,9 +109,9 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param _address The address of the juror.
      *  @param _subcourtID The ID of the subcourt at the end of the stake path.
      *  @param _stake The new stake.
-     *  @param _stakeDiff The stake diff.
+     *  @param _newTotalStake The new total stake.
      */
-    event StakeSet(address indexed _address, uint indexed _subcourtID, uint _stake, int _stakeDiff);
+    event StakeSet(address indexed _address, uint indexed _subcourtID, uint _stake, uint _newTotalStake);
 
     /** @dev Emitted when a juror is drawn.
      *  @param _disputeID The ID of the dispute.
@@ -283,7 +283,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param _sortitionSumTreeK The number of children per node of the subcourt's sortition sum tree.
      */
     function createSubcourt(
-        uint _parent,
+        uint96 _parent,
         bool _hiddenVotes,
         uint _minStake,
         uint _alpha,
@@ -292,19 +292,22 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint[4] _timesPerPeriod,
         uint _sortitionSumTreeK
     ) external onlyByGovernor {
+        require(courts.length < 2 ** 96, "Maximum number of subcourts reached.");
         require(courts[_parent].minStake <= _minStake, "A subcourt cannot be a child of a subcourt with a higher minimum stake.");
 
         // Create the subcourt.
-        uint subcourtID = courts.push(Court({
-            parent: _parent,
-            children: new uint[](0),
-            hiddenVotes: _hiddenVotes,
-            minStake: _minStake,
-            alpha: _alpha,
-            jurorFee: _jurorFee,
-            jurorsForJump: _jurorsForJump,
-            timesPerPeriod: _timesPerPeriod
-        })) - 1;
+        uint96 subcourtID = uint96(
+            courts.push(Court({
+                parent: _parent,
+                children: new uint[](0),
+                hiddenVotes: _hiddenVotes,
+                minStake: _minStake,
+                alpha: _alpha,
+                jurorFee: _jurorFee,
+                jurorsForJump: _jurorsForJump,
+                timesPerPeriod: _timesPerPeriod
+            })) - 1
+        );
         createTree(bytes32(subcourtID), _sortitionSumTreeK);
 
         // Update the parent.
@@ -315,7 +318,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param _subcourtID The ID of the subcourt.
      *  @param _hiddenVotes The new value for the `hiddenVotes` property value.
      */
-    function changeSubcourtHiddenVotes(uint _subcourtID, bool _hiddenVotes) external onlyByGovernor {
+    function changeSubcourtHiddenVotes(uint96 _subcourtID, bool _hiddenVotes) external onlyByGovernor {
         courts[_subcourtID].hiddenVotes = _hiddenVotes;
     }
 
@@ -323,7 +326,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param _subcourtID The ID of the subcourt.
      *  @param _minStake The new value for the `minStake` property value.
      */
-    function changeSubcourtMinStake(uint _subcourtID, uint _minStake) external onlyByGovernor {
+    function changeSubcourtMinStake(uint96 _subcourtID, uint _minStake) external onlyByGovernor {
         courts[_subcourtID].minStake = _minStake;
     }
 
@@ -331,7 +334,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param _subcourtID The ID of the subcourt.
      *  @param _alpha The new value for the `alpha` property value.
      */
-    function changeSubcourtAlpha(uint _subcourtID, uint _alpha) external onlyByGovernor {
+    function changeSubcourtAlpha(uint96 _subcourtID, uint _alpha) external onlyByGovernor {
         courts[_subcourtID].alpha = _alpha;
     }
 
@@ -339,7 +342,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param _subcourtID The ID of the subcourt.
      *  @param _jurorFee The new value for the `jurorFee` property value.
      */
-    function changeSubcourtJurorFee(uint _subcourtID, uint _jurorFee) external onlyByGovernor {
+    function changeSubcourtJurorFee(uint96 _subcourtID, uint _jurorFee) external onlyByGovernor {
         courts[_subcourtID].jurorFee = _jurorFee;
     }
 
@@ -347,7 +350,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param _subcourtID The ID of the subcourt.
      *  @param _jurorsForJump The new value for the `jurorsForJump` property value.
      */
-    function changeSubcourtJurorsForJump(uint _subcourtID, uint _jurorsForJump) external onlyByGovernor {
+    function changeSubcourtJurorsForJump(uint96 _subcourtID, uint _jurorsForJump) external onlyByGovernor {
         courts[_subcourtID].jurorsForJump = _jurorsForJump;
     }
 
@@ -355,7 +358,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param _subcourtID The ID of the subcourt.
      *  @param _timesPerPeriod The new value for the `timesPerPeriod` property value.
      */
-    function changeSubcourtTimesPerPeriod(uint _subcourtID, uint[4] _timesPerPeriod) external onlyByGovernor {
+    function changeSubcourtTimesPerPeriod(uint96 _subcourtID, uint[4] _timesPerPeriod) external onlyByGovernor {
         courts[_subcourtID].timesPerPeriod = _timesPerPeriod;
     }
 
@@ -416,8 +419,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param _subcourtID The ID of the subcourt.
      *  @param _stake The new stake.
      */
-    function setStake(uint _subcourtID, uint128 _stake) external {
-        _setStake(msg.sender, _subcourtID, _stake, false);
+    function setStake(uint96 _subcourtID, uint128 _stake) external {
+        _setStake(msg.sender, _subcourtID, _stake);
     }
 
     /** @dev Execute the next delayed set stakes.
@@ -431,8 +434,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             _setStake(
                 delayedSetStake.account,
                 delayedSetStake.subcourtID,
-                delayedSetStake.stake,
-                delayedSetStake.unstakeAll
+                delayedSetStake.stake
             );
             delete delayedSetStakes[i];
         }
@@ -452,7 +454,10 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         if (endIndex > dispute.votes[dispute.votes.length - 1].length) endIndex = dispute.votes[dispute.votes.length - 1].length;
         for (uint i = startIndex; i < endIndex; i++) {
             // Draw from sortition tree.
-            address drawnAddress = super.draw(bytes32(dispute.subcourtID), uint(keccak256(RN, _disputeID, i)));
+            (
+                address drawnAddress,
+                uint subcourtID
+            ) = stakePathIDToAccountAndSubcourtID(super.draw(bytes32(dispute.subcourtID), uint(keccak256(RN, _disputeID, i))));
 
             // Save the vote.
             dispute.votes[dispute.votes.length - 1][i].account = drawnAddress;
@@ -569,9 +574,9 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
                     jurors[vote.account].lockedTokens -= dispute.jurorAtStake[_appeal];
 
                     // Unstake juror if his penalty made balance less than his total stake or if he lost due to inactivity.
-                    if (jurors[vote.account].subcourtIDs.length > 0 && (pinakion.balanceOf(vote.account) < stakeOf(bytes32(0), vote.account) || !vote.voted))
+                    if (pinakion.balanceOf(vote.account) < jurors[vote.account].stakedTokens || !vote.voted)
                         for (uint j = 0; j < jurors[vote.account].subcourtIDs.length; j++)
-                            _setStake(vote.account, jurors[vote.account].subcourtIDs[j], 0, true);
+                            _setStake(vote.account, jurors[vote.account].subcourtIDs[j], 0);
                 }
             }
             dispute.repartitionsPerRound[_appeal]++;
@@ -605,7 +610,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint _numberOfChoices,
         bytes _extraData
     ) public payable requireArbitrationFee(_extraData) returns(uint disputeID)  {
-        uint subcourtID = extraDataToSubcourtID(_extraData);
+        uint96 subcourtID = extraDataToSubcourtID(_extraData);
         disputeID = disputes.length++;
         Dispute storage dispute = disputes[disputeID];
         dispute.subcourtID = subcourtID;
@@ -674,7 +679,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     function onTransfer(address _from, address _to, uint _amount) public returns(bool allowed) {
         if (_from != address(this) && _to != address(this)) { // Never block penalties or rewards.
             uint newBalance = pinakion.balanceOf(_from) - _amount;
-            require(newBalance >= stakeOf(bytes32(0), msg.sender), "Cannot transfer an amount that would make balance less than stake.");
+            require(newBalance >= jurors[_from].stakedTokens, "Cannot transfer an amount that would make balance less than stake.");
             require(newBalance >= jurors[_from].lockedTokens, "Cannot transfer an amount that would make balance less than locked stake.");
         }
         allowed = true;
@@ -695,7 +700,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @return The cost.
      */
     function arbitrationCost(bytes _extraData) public view returns(uint cost) {
-        uint subcourtID = extraDataToSubcourtID(_extraData);
+        uint96 subcourtID = extraDataToSubcourtID(_extraData);
         cost = courts[subcourtID].jurorFee;
     }
 
@@ -739,29 +744,16 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
 
     /* Internal */
 
-    /** @dev Computes new total stake for the specified juror, given a stake diff. NOTE: Temporary function until solidity increases local variable allowance.
-     *  @param _account The address of the juror.
-     *  @param _stakeDiff The stake diff.
-     *  @return The new total stake.
-     */
-    function computeNewTotalStake(address _account, int _stakeDiff) private view returns(uint newTotalStake) {
-        newTotalStake = stakeOf(bytes32(0), _account);
-        // Avoid overflows when performing the `uint` and `int` arithmetic operations.
-        if (newTotalStake > uint128(-1)) newTotalStake = newTotalStake - uint128(-1) + uint(int(uint128(-1)) + _stakeDiff);
-        else newTotalStake = uint(int(newTotalStake) + _stakeDiff);
-    }
-
     /** @dev Sets the the specified juror's stake in a subcourt.
-     *  `O(n + c + p * log(s))` where `n` is the number of children of the subcourt, `c` is the number of subcourts the juror has staked in, `p` is the depth of the subcourt tree, and `s` is the maximum number of stakers in one of these subcourts.
+     *  `O(n + p * log(s))` where `n` is the number of subcourts the juror has staked in, `p` is the depth of the subcourt tree, and `s` is the maximum number of stakers in one of these subcourts.
      *  @param _account The address of the juror.
      *  @param _subcourtID The ID of the subcourt.
      *  @param _stake The new stake.
-     *  @param _unstakeAll True if called in the process of unstaking from all subcourts for a juror, false otherwise.
      */
-    function _setStake(address _account, uint _subcourtID, uint128 _stake, bool _unstakeAll) internal {
+    function _setStake(address _account, uint96 _subcourtID, uint _stake) internal {
         // Delayed action logic.
         if (phase != Phase.staking) {
-            delayedSetStakes[++lastDelayedSetStake] = DelayedSetStake({ account: _account, subcourtID: _subcourtID, stake: _stake, unstakeAll: _unstakeAll });
+            delayedSetStakes[++lastDelayedSetStake] = DelayedSetStake({ account: _account, subcourtID: _subcourtID, stake: _stake });
             return;
         }
 
@@ -769,25 +761,19 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             _stake == 0 || courts[_subcourtID].minStake <= _stake,
             "The juror's stake cannot be lower than the minimum stake for the subcourt."
         );
-        uint currentStake = stakeOf(bytes32(_subcourtID), _account);
-        int stakeDiff = int(_stake) - int(currentStake);
+        Juror storage juror = jurors[_account];
+        bytes32 stakePathID = accountAndSubcourtIDToStakePathID(_account, _subcourtID);
+        uint currentStake = stakeOf(bytes32(_subcourtID), stakePathID);
+        uint newTotalStake = juror.stakedTokens - currentStake + _stake;
         require(
-            _stake == 0 || pinakion.balanceOf(_account) >= computeNewTotalStake(_account, stakeDiff),
+            _stake == 0 || pinakion.balanceOf(_account) >= newTotalStake,
             "The juror's total amount of staked tokens cannot be higher than the juror's balance."
         );
 
-        // Block invalid stake tree states.
-        if (stakeDiff < 0 && !_unstakeAll) {
-            uint sumOfChildStakes = 0;
-            for (uint i = 0; i < courts[_subcourtID].children.length; i++)
-                sumOfChildStakes += stakeOf(bytes32(courts[_subcourtID].children[i]), _account);
-            require(sumOfChildStakes <= _stake, "Children can not have more stake than the parent.");
-        }
-
-        // Update juror's record of subcourts.
-        Juror storage juror = jurors[_account];
+        // Update juror's records.
+        juror.stakedTokens = newTotalStake;
         if (_stake == 0) {
-            for (i = 0; i < juror.subcourtIDs.length; i++)
+            for (uint i = 0; i < juror.subcourtIDs.length; i++)
                 if (juror.subcourtIDs[i] == _subcourtID) {
                     juror.subcourtIDs[i] = juror.subcourtIDs[juror.subcourtIDs.length - 1];
                     juror.subcourtIDs.length--;
@@ -795,32 +781,65 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
                 }
         } else if (currentStake == 0) juror.subcourtIDs.push(_subcourtID);
 
-        // Update parents.
+        // Update subcourt parents.
         bool finished = false;
         uint currentSubcourtID = _subcourtID;
         while (!finished) {
-            uint currentSubcourtStake = stakeOf(bytes32(currentSubcourtID), _account);
-            if (currentSubcourtStake == 0) append(bytes32(currentSubcourtID), _stake, _account);
+            uint currentSubcourtStake = stakeOf(bytes32(currentSubcourtID), stakePathID);
+            if (currentSubcourtStake == 0) append(bytes32(currentSubcourtID), _stake, stakePathID);
             else set(
                 bytes32(currentSubcourtID),
-                uint(int(currentSubcourtStake) + stakeDiff),
-                _account
+                _stake,
+                stakePathID
             );
             if (currentSubcourtID == 0) finished = true;
             else currentSubcourtID = courts[currentSubcourtID].parent;
         }
-        emit StakeSet(_account, _subcourtID, _stake, stakeDiff);
+        emit StakeSet(_account, _subcourtID, _stake, newTotalStake);
     }
 
     /** @dev Get a subcourt ID from the specified extra data bytes array.
      *  @param _extraData The extra data.
      */
-    function extraDataToSubcourtID(bytes _extraData) internal view returns (uint subcourtID) {
+    function extraDataToSubcourtID(bytes _extraData) internal view returns (uint96 subcourtID) {
         if (_extraData.length >= 32) {
             assembly { // solium-disable-line security/no-inline-assembly
                 subcourtID := mload(add(_extraData, 0x20))
             }
             if (subcourtID >= courts.length) subcourtID = 0;
         } else subcourtID = 0;
+    }
+
+    /** @dev Pack an account and a subcourt ID into a stake path ID.
+     *  @param _account The account to pack.
+     *  @param _subcourtID The subcourt ID to pack.
+     *  @return The stake path ID.
+     */
+    function accountAndSubcourtIDToStakePathID(address _account, uint96 _subcourtID) internal pure returns (bytes32 stakePathID) {
+        assembly { // solium-disable-line security/no-inline-assembly
+            let ptr := mload(0x40)
+            for { let i := 0x00 } lt(i, 0x14) { i := add(i, 0x01) } {
+                mstore8(add(ptr, i), byte(add(0x0c, i), _account))
+            }
+            for { let i := 0x14 } lt(i, 0x20) { i := add(i, 0x01) } {
+                mstore8(add(ptr, i), byte(i, _subcourtID))
+            }
+            stakePathID := mload(ptr)
+        }
+    }
+    
+    /** @dev Unpack a stake path ID into an account and a subcourt ID.
+     *  @param _stakePathID The stake path ID to unpack.
+     *  @return The account and subcourt ID.
+     */
+    function stakePathIDToAccountAndSubcourtID(bytes32 _stakePathID) internal pure returns (address account, uint96 subcourtID) {
+        assembly { // solium-disable-line security/no-inline-assembly
+            let ptr := mload(0x40)
+            for { let i := 0x00 } lt(i, 0x14) { i := add(i, 0x01) } {
+                mstore8(add(add(ptr, 0x0c), i), byte(i, _stakePathID))
+            }
+            account := mload(ptr)
+            subcourtID := _stakePathID
+        }
     }
 }

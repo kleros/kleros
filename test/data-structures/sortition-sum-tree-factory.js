@@ -4,7 +4,7 @@ const ExposedSortitionSumTreeFactory = artifacts.require(
 )
 
 contract('SortitionSumTreeFactory', () =>
-  it('Should successfully keep track of address ownership of values and draw them from the tree appropriately.', async () => {
+  it('Should successfully keep track of ID ownership of values and draw them from the tree appropriately.', async () => {
     // Deploy contract
     const sortitionSumTreeFactory = await ExposedSortitionSumTreeFactory.new()
 
@@ -12,22 +12,26 @@ contract('SortitionSumTreeFactory', () =>
     const tree = { key: '0x01', K: 2 }
     const candidates = {
       bob: {
-        address: '0x0000000000000000000000000000000000000002',
+        ID:
+          '0x0000000000000000000000000000000000000000000000000000000000000002',
         treeIndex: 0,
         value: 15
       },
       dave: {
-        address: '0x0000000000000000000000000000000000000004',
+        ID:
+          '0x0000000000000000000000000000000000000000000000000000000000000004',
         treeIndex: 0,
         value: 5
       },
       alice: {
-        address: '0x0000000000000000000000000000000000000001',
+        ID:
+          '0x0000000000000000000000000000000000000000000000000000000000000001',
         treeIndex: 0,
         value: 10
       },
       carl: {
-        address: '0x0000000000000000000000000000000000000003',
+        ID:
+          '0x0000000000000000000000000000000000000000000000000000000000000003',
         treeIndex: 0,
         value: 20
       }
@@ -37,56 +41,56 @@ contract('SortitionSumTreeFactory', () =>
       candidate.treeIndex = await sortitionSumTreeFactory._append.call(
         tree.key,
         candidate.value,
-        candidate.address
+        candidate.ID
       )
       await sortitionSumTreeFactory._append(
         tree.key,
         candidate.value,
-        candidate.address
+        candidate.ID
       )
     }
 
     // Test drawing Bob with 13 and Carl with 27
     expect(await sortitionSumTreeFactory._draw(tree.key, 13)).to.equal(
-      candidates.bob.address
+      candidates.bob.ID
     )
     expect(await sortitionSumTreeFactory._draw(tree.key, 27)).to.equal(
-      candidates.carl.address
+      candidates.carl.ID
     )
 
     // Set Alice to 14 to draw her with 13 and then set her back to 10 to draw Bob again
-    await sortitionSumTreeFactory._set(tree.key, 14, candidates.alice.address)
+    await sortitionSumTreeFactory._set(tree.key, 14, candidates.alice.ID)
     expect(await sortitionSumTreeFactory._draw(tree.key, 13)).to.equal(
-      candidates.alice.address
+      candidates.alice.ID
     )
-    await sortitionSumTreeFactory._set(tree.key, 10, candidates.alice.address)
+    await sortitionSumTreeFactory._set(tree.key, 10, candidates.alice.ID)
     expect(await sortitionSumTreeFactory._draw(tree.key, 13)).to.equal(
-      candidates.bob.address
+      candidates.bob.ID
     )
 
     // Remove Carl to draw Dave with 27 and add him back in to draw him again
-    await sortitionSumTreeFactory._remove(tree.key, candidates.carl.address)
+    await sortitionSumTreeFactory._remove(tree.key, candidates.carl.ID)
     expect(await sortitionSumTreeFactory._draw(tree.key, 27)).to.equal(
-      candidates.dave.address
+      candidates.dave.ID
     )
     candidates.carl.treeIndex = await sortitionSumTreeFactory._append.call(
       tree.key,
       candidates.carl.value,
-      candidates.carl.address
+      candidates.carl.ID
     )
     await sortitionSumTreeFactory._append(
       tree.key,
       candidates.carl.value,
-      candidates.carl.address
+      candidates.carl.ID
     )
     expect(await sortitionSumTreeFactory._draw(tree.key, 27)).to.equal(
-      candidates.carl.address
+      candidates.carl.ID
     )
 
     // Test stake view
     for (const candidate of Object.values(candidates))
       expect(
-        await sortitionSumTreeFactory._stakeOf(tree.key, candidate.address)
+        await sortitionSumTreeFactory._stakeOf(tree.key, candidate.ID)
       ).to.deep.equal(web3.toBigNumber(candidate.value))
 
     // Delete the tree

@@ -42,30 +42,30 @@ contract ExposedSortitionSumTreeFactory is SortitionSumTreeFactory {
      *  @dev Append a value to a tree.
      *  @param _key The key of the tree to append to.
      *  @param _value The value to append.
-     *  @param _address The candidate's address.
+     *  @param _ID The ID of the value.
      *  @return The index of the appended value in the tree.
      */
-    function _append(bytes32 _key, uint _value, address _address) public returns(uint treeIndex) {
-        return append(_key, _value, _address);
+    function _append(bytes32 _key, uint _value, bytes32 _ID) public returns(uint treeIndex) {
+        return append(_key, _value, _ID);
     }
 
     /**
      *  @dev Remove a value from a tree.
      *  @param _key The key of the tree to remove from.
-     *  @param _address The candidate's address.
+     *  @param _ID The ID of the value.
      */
-    function _remove(bytes32 _key, address _address) public {
-        remove(_key, _address);
+    function _remove(bytes32 _key, bytes32 _ID) public {
+        remove(_key, _ID);
     }
 
     /**
      *  @dev Set a value of a tree.
      *  @param _key The key of the tree.
      *  @param _value The new value.
-     *  @param _address The candidate's address.
+     *  @param _ID The ID of the value.
      */
-    function _set(bytes32 _key, uint _value, address _address) public {
-        set(_key, _value, _address);
+    function _set(bytes32 _key, uint _value, bytes32 _ID) public {
+        set(_key, _value, _ID);
     }
 
     /* Public Views */
@@ -82,20 +82,21 @@ contract ExposedSortitionSumTreeFactory is SortitionSumTreeFactory {
     }
 
     /**
-     *  @dev Draw an address from a tree using a number.
+     *  @dev Draw an ID from a tree using a number.
      *  @param _key The key of the tree.
      *  @param _drawnNumber The drawn number.
-     *  @return The drawn address.
+     *  @return The drawn ID.
      */
-    function _draw(bytes32 _key, uint _drawnNumber) public view returns(address _address) {
+    function _draw(bytes32 _key, uint _drawnNumber) public view returns(bytes32 ID) {
         return draw(_key, _drawnNumber);
     }
 
     /** @dev Gets a specified candidate's associated value.
      *  @param _key The key of the tree.
-     *  @param _address The candidate's address.
+     *  @param _ID The ID of the value.
+     *  @return The associated value.
      */
-    function _stakeOf(bytes32 _key, address _address) public view returns(uint value) {
-        return stakeOf(_key, _address);
+    function _stakeOf(bytes32 _key, bytes32 _ID) public view returns(uint value) {
+        return stakeOf(_key, _ID);
     }
 }
