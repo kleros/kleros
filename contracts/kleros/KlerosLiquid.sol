@@ -111,23 +111,22 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
      *  @param _stake The new stake.
      *  @param _newTotalStake The new total stake.
      */
-    event StakeSet(address indexed _address, uint indexed _subcourtID, uint _stake, uint _newTotalStake);
+    event StakeSet(address indexed _address, uint _subcourtID, uint _stake, uint _newTotalStake);
 
     /** @dev Emitted when a juror is drawn.
-     *  @param _disputeID The ID of the dispute.
-     *  @param _arbitrable The arbitrable contract that is ruled by the dispute.
      *  @param _address The drawn address.
+     *  @param _disputeID The ID of the dispute.
      *  @param _voteID The vote ID.
      */
-    event Draw(uint indexed _disputeID, Arbitrable indexed _arbitrable, address indexed _address, uint _voteID);
+    event Draw(address indexed _address, uint indexed _disputeID, uint _voteID);
 
     /** @dev Emitted when a juror wins or loses tokens and ETH from a dispute.
-     *  @param _disputeID The ID of the dispute.
      *  @param _address The juror affected.
+     *  @param _disputeID The ID of the dispute.
      *  @param _tokenAmount The amount of tokens won or lost.
      *  @param _ETHAmount The amount of ETH won or lost.
      */
-    event TokenAndETHShift(uint indexed _disputeID, address indexed _address, int _tokenAmount, int _ETHAmount);
+    event TokenAndETHShift(address indexed _address, uint indexed _disputeID, int _tokenAmount, int _ETHAmount);
 
     /* Storage */
 
@@ -463,7 +462,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             dispute.votes[dispute.votes.length - 1][i].account = drawnAddress;
             dispute.drawsPerRound++;
             jurors[msg.sender].lockedTokens += dispute.jurorAtStake[dispute.jurorAtStake.length - 1];
-            emit Draw(_disputeID, dispute.arbitrated, drawnAddress, i);
+            emit Draw(drawnAddress, _disputeID, i);
 
             // If dispute is fully drawn.
             if (i == dispute.votes[dispute.votes.length - 1].length - 1) disputesWithoutJurors--;
@@ -560,7 +559,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
                     uint ETHReward = dispute.rewardsPerRound[_appeal][1];
                     pinakion.transfer(vote.account, tokenReward);
                     vote.account.send(ETHReward);
-                    emit TokenAndETHShift(_disputeID, vote.account, int(tokenReward), int(ETHReward));
+                    emit TokenAndETHShift(vote.account, _disputeID, int(tokenReward), int(ETHReward));
                     jurors[vote.account].lockedTokens -= dispute.jurorAtStake[_appeal];
                 }
             } else { // Losing vote and it's not a tie.
@@ -569,7 +568,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
                     // Penalize.
                     uint penalty = dispute.jurorAtStake[_appeal] > pinakion.balanceOf(vote.account) ? pinakion.balanceOf(vote.account) : dispute.jurorAtStake[_appeal];
                     pinakion.transferFrom(vote.account, this, penalty);
-                    emit TokenAndETHShift(_disputeID, vote.account, -int(penalty), 0);
+                    emit TokenAndETHShift(vote.account, _disputeID, -int(penalty), 0);
                     dispute.penaltiesPerRound[_appeal] += penalty;
                     jurors[vote.account].lockedTokens -= dispute.jurorAtStake[_appeal];
 
