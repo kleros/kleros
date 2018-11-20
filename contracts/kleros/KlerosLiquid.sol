@@ -1,9 +1,9 @@
 pragma solidity ^0.4.24;
 
-import "kleros-interaction/contracts/standard/arbitration/Arbitrable.sol";
 import "kleros-interaction/contracts/standard/rng/RNG.sol";
+import "kleros-interaction/contracts/standard/arbitration/Arbitrable.sol";
 import { MiniMeTokenERC20 as Pinakion } from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
-import { TokenController } from "minimetoken/contracts/TokenController.sol";
+import "minimetoken/contracts/TokenController.sol";
 
 import "../data-structures/SortitionSumTreeFactory.sol";
 
@@ -596,6 +596,101 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint winningChoice = dispute.voteCounters[dispute.voteCounters.length - 1].tied ? 0
             : dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice;
         dispute.arbitrated.rule(_disputeID, winningChoice);
+    }
+
+    /* External Views */
+
+    /** @dev Gets a specified subcourt.
+     *  @param _subcourtID The ID of the subcourt.
+     */
+    function getSubcourt(uint96 _subcourtID) external view returns(
+        uint96 parent,
+        uint[] children,
+        bool hiddenVotes,
+        uint minStake,
+        uint alpha,
+        uint jurorFee,
+        uint jurorsForJump,
+        uint[4] timesPerPeriod
+    ) {
+        Court storage subcourt = courts[_subcourtID];
+        parent = subcourt.parent;
+        children = subcourt.children;
+        hiddenVotes = subcourt.hiddenVotes;
+        minStake = subcourt.minStake;
+        alpha = subcourt.alpha;
+        jurorFee = subcourt.jurorFee;
+        jurorsForJump = subcourt.jurorsForJump;
+        timesPerPeriod = subcourt.timesPerPeriod;
+    }
+
+    /** @dev Gets a specified vote for a specified appeal in a specified dispute.
+     *  @param _disputeID The ID of the dispute.
+     *  @param _appeal The appeal.
+     *  @param _voteID The ID of the vote.
+     */
+    function getVote(uint _disputeID, uint _appeal, uint _voteID) external view returns(
+        address account,
+        bytes32 commit,
+        uint choice,
+        bool voted
+    ) {
+        Vote storage vote = disputes[_disputeID].votes[_appeal][_voteID];
+        account = vote.account;
+        commit = vote.commit;
+        choice = vote.choice;
+        voted = vote.voted;
+    }
+
+    /** @dev Gets the vote counter for a specified appeal in a specified dispute.
+     *  @param _disputeID The ID of the dispute.
+     *  @param _appeal The appeal.
+     */
+    function getVoteCounter(uint _disputeID, uint _appeal) external view returns(
+        uint winningChoice,
+        uint[] counts,
+        bool tied
+    ) {
+        VoteCounter storage voteCounter = disputes[_disputeID].voteCounters[_appeal];
+        winningChoice = voteCounter.winningChoice;
+        counts = voteCounter.counts;
+        tied = voteCounter.tied;
+    }
+
+    /** @dev Gets a specified dispute's non primitive properties.
+     *  @param _disputeID The ID of the dispute.
+     */
+    function getDispute(uint _disputeID) external view returns(
+        uint[] jurorAtStake,
+        uint[] totalJurorFees,
+        uint[] repartitionsPerRound,
+        uint[] penaltiesPerRound,
+        uint[] tokenRewardPerRound,
+        uint[] ETHRewardPerRound
+    ) {
+        Dispute storage dispute = disputes[_disputeID];
+        jurorAtStake = dispute.jurorAtStake;
+        totalJurorFees = dispute.totalJurorFees;
+        repartitionsPerRound = dispute.repartitionsPerRound;
+        penaltiesPerRound = dispute.penaltiesPerRound;
+        for (uint i = 0; i < dispute.rewardsPerRound.length; i++) {
+            tokenRewardPerRound[i] = dispute.rewardsPerRound[i][0];
+            ETHRewardPerRound[i] = dispute.rewardsPerRound[i][1];
+        }
+    }
+
+    /** @dev Gets a specified juror.
+     *  @param _jurorID The ID of the juror.
+     */
+    function getJuror(address _jurorID) external view returns(
+        uint96[] subcourtIDs,
+        uint stakedTokens,
+        uint lockedTokens
+    ) {
+        Juror storage juror = jurors[_jurorID];
+        subcourtIDs = juror.subcourtIDs;
+        stakedTokens = juror.stakedTokens;
+        lockedTokens = juror.lockedTokens;
     }
 
     /* Public */

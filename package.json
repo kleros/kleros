@@ -18,7 +18,7 @@
     "lint:sol": "kleros-scripts lint:sol",
     "lint:js": "kleros-scripts lint:js",
     "lint": "yarn run lint:sol && yarn run lint:js",
-    "test:ganache": "ganache-cli &",
+    "test:ganache": "ganache-cli --gasLimit 8000000 &",
     "test:truffle": "truffle test",
     "test": "run-p test:*",
     "precommit": "kleros-scripts precommit",
@@ -32,7 +32,6 @@
     ]
   },
   "devDependencies": {
-    "eth-gas-reporter": "0.1.1",
     "ganache-cli": "^6.1.6",
     "husky": "^0.14.3",
     "kleros-scripts": "^0.12.0",
