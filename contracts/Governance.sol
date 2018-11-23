@@ -228,7 +228,7 @@ contract Governance is TokenController{
     /** @dev Ends a voting, moves proposal to decided state, sets the decision.
      *  @param _id ID of a proposal.
      */
-    function finalizeVoting(bytes32 _id) onlyWhenProposalInStateOf(_id, ProposalState.PutToVote) external  {
+    function finalizeVoting(bytes32 _id) external onlyWhenProposalInStateOf(_id, ProposalState.PutToVote) {
         require(now - proposals[_id].whenPutToVote >= proposalVotingTime[_id], "Voting period must be ended.");
 
         proposals[_id].state = ProposalState.Decided;
@@ -241,7 +241,7 @@ contract Governance is TokenController{
     /** @dev General purpose call function for executing a proposal UNTRUSTED.
      *  @param _id ID of a proposal.
      */
-    function executeProposal(bytes32 _id) onlyWhenProposalInStateOf(_id, ProposalState.Decided) external {
+    function executeProposal(bytes32 _id) external onlyWhenProposalInStateOf(_id, ProposalState.Decided) {
         Proposal storage proposal = proposals[_id];
 
         require(proposal.approved, "Proposal must be approved.");
