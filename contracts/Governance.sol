@@ -1,8 +1,9 @@
 /**
- *  @title Governance
- *  @author Ferit Tunçer - <ferit@cryptolab.net>
- *  This contract implements the governance mechanism of Kleros Athena release.
- *  Bug Bounties: This code hasn't undertaken a bug bounty program yet.
+ *  @authors: [@ferittuncer]
+ *  @reviewers: []
+ *  @auditors: []
+ *  @bounties: []
+ *  @deployments: []
  */
 
 pragma solidity ^0.4.24;
@@ -11,6 +12,10 @@ import "kleros-interaction/contracts/standard/permission/ArbitrablePermissionLis
 import "kleros-interaction/contracts/standard/arbitration/CentralizedArbitrator.sol"; // I need this contract to be deployed for tests, Truffle issue.
 import { MiniMeTokenERC20, TokenController } from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
 
+/**
+ *  @title Governance
+ *  @dev This contract implements the governance mechanism of Kleros Athena release.
+ */
 contract Governance is TokenController{
 
     MiniMeTokenERC20 public pinakion;
