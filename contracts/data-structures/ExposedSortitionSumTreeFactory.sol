@@ -15,8 +15,8 @@ contract ExposedSortitionSumTreeFactory is SortitionSumTreeFactory {
      *  @param _key The key of the tree to get.
      *  @return All of the tree's properties.
      */
-    function _sortitionSumTrees(bytes32 _key) public view returns(uint K, uint[] stack, uint[] tree) {
-        return (sortitionSumTrees[_key].K, sortitionSumTrees[_key].stack, sortitionSumTrees[_key].tree);
+    function _sortitionSumTrees(bytes32 _key) public view returns(uint K, uint[] stack, uint[] nodes) {
+        return (sortitionSumTrees[_key].K, sortitionSumTrees[_key].stack, sortitionSumTrees[_key].nodes);
     }
 
     /* Public */

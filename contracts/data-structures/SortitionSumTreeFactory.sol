@@ -11,9 +11,10 @@ contract SortitionSumTreeFactory {
     struct SortitionSumTree {
         uint K;
         uint[] stack;
-        uint[] tree;
+        uint[] nodes;
+        // Two-way mapping of IDs to node indexes. Note that node index 0 is reserved for the root node, and means the ID does not have a node.
         mapping(bytes32 => uint) IDsToTreeIndexes;
-        mapping(uint => bytes32) treeIndexesToIDs;
+        mapping(uint => bytes32) nodeIndexesToIDs;
     }
 
     /* Storage */
@@ -33,8 +34,8 @@ contract SortitionSumTreeFactory {
         require(_K > 1, "K must be greater than one.");
         tree.K = _K;
         tree.stack.length = 0;
-        tree.tree.length = 0;
-        tree.tree.push(0);
+        tree.nodes.length = 0;
+        tree.nodes.push(0);
     }
 
     /**
@@ -45,7 +46,7 @@ contract SortitionSumTreeFactory {
         SortitionSumTree storage tree = sortitionSumTrees[_key];
         tree.K = 0;
         tree.stack.length = 0;
-        tree.tree.length = 0;
+        tree.nodes.length = 0;
         delete sortitionSumTrees[_key];
     }
 
@@ -63,29 +64,29 @@ contract SortitionSumTreeFactory {
         // Add node.
         if (tree.stack.length == 0) { // No vacant spots.
             // Get the index and append the value.
-            treeIndex = tree.tree.length;
-            tree.tree.push(_value);
+            treeIndex = tree.nodes.length;
+            tree.nodes.push(_value);
 
             // Potentially append a new node and make the parent a sum node.
             if (treeIndex != 1 && (treeIndex - 1) % tree.K == 0) { // Is first child.
-                tree.tree.push(tree.tree[treeIndex / tree.K]);
-                uint _parentIndex = treeIndex / tree.K;
-                bytes32 _parentID = tree.treeIndexesToIDs[_parentIndex];
-                uint _newIndex = treeIndex + 1;
-                delete tree.treeIndexesToIDs[_parentIndex];
-                tree.IDsToTreeIndexes[_parentID] = _newIndex;
-                tree.treeIndexesToIDs[_newIndex] = _parentID;
+                uint parentIndex = treeIndex / tree.K;
+                bytes32 parentID = tree.nodeIndexesToIDs[parentIndex];
+                uint newIndex = treeIndex + 1;
+                tree.nodes.push(tree.nodes[parentIndex]);
+                delete tree.nodeIndexesToIDs[parentIndex];
+                tree.IDsToTreeIndexes[parentID] = newIndex;
+                tree.nodeIndexesToIDs[newIndex] = parentID;
             }
         } else { // Some vacant spot.
             // Pop the stack and append the value.
             treeIndex = tree.stack[tree.stack.length - 1];
             tree.stack.length--;
-            tree.tree[treeIndex] = _value;
+            tree.nodes[treeIndex] = _value;
         }
 
         // Add label.
         tree.IDsToTreeIndexes[_ID] = treeIndex;
-        tree.treeIndexesToIDs[treeIndex] = _ID;
+        tree.nodeIndexesToIDs[treeIndex] = _ID;
 
         updateParents(_key, treeIndex, true, _value);
     }
@@ -97,21 +98,21 @@ contract SortitionSumTreeFactory {
      */
     function remove(bytes32 _key, bytes32 _ID) internal {
         SortitionSumTree storage tree = sortitionSumTrees[_key];
-        uint _treeIndex = tree.IDsToTreeIndexes[_ID];
-        require(_treeIndex != 0, "ID does not have a value in this tree.");
+        uint treeIndex = tree.IDsToTreeIndexes[_ID];
+        require(treeIndex != 0, "ID does not have a value in this tree.");
 
         // Remember value and set to 0.
-        uint _value = tree.tree[_treeIndex];
-        tree.tree[_treeIndex] = 0;
+        uint value = tree.nodes[treeIndex];
+        tree.nodes[treeIndex] = 0;
 
         // Push to stack.
-        tree.stack.push(_treeIndex);
+        tree.stack.push(treeIndex);
 
         // Clear label.
-        delete tree.IDsToTreeIndexes[tree.treeIndexesToIDs[_treeIndex]];
-        delete tree.treeIndexesToIDs[_treeIndex];
+        delete tree.IDsToTreeIndexes[tree.nodeIndexesToIDs[treeIndex]];
+        delete tree.nodeIndexesToIDs[treeIndex];
 
-        updateParents(_key, _treeIndex, false, _value);
+        updateParents(_key, treeIndex, false, value);
     }
 
     /**
@@ -122,14 +123,14 @@ contract SortitionSumTreeFactory {
      */
     function set(bytes32 _key, uint _value, bytes32 _ID) internal {
         SortitionSumTree storage tree = sortitionSumTrees[_key];
-        uint _treeIndex = tree.IDsToTreeIndexes[_ID];
-        require(_treeIndex != 0, "ID does not have a value in this tree.");
+        uint treeIndex = tree.IDsToTreeIndexes[_ID];
+        require(treeIndex != 0, "ID does not have a value in this tree.");
 
-        bool _plusOrMinus = tree.tree[_treeIndex] <= _value;
-        uint _plusOrMinusValue = _plusOrMinus ? _value - tree.tree[_treeIndex] : tree.tree[_treeIndex] - _value;
-        tree.tree[_treeIndex] = _value;
+        bool plusOrMinus = tree.nodes[treeIndex] <= _value;
+        uint plusOrMinusValue = plusOrMinus ? _value - tree.nodes[treeIndex] : tree.nodes[treeIndex] - _value;
+        tree.nodes[treeIndex] = _value;
 
-        updateParents(_key, _treeIndex, _plusOrMinus, _plusOrMinusValue);
+        updateParents(_key, treeIndex, plusOrMinus, plusOrMinusValue);
     }
 
     /* Internal Views */
@@ -146,21 +147,21 @@ contract SortitionSumTreeFactory {
         SortitionSumTree storage tree = sortitionSumTrees[_key];
 
         // Find the start index.
-        for (uint i = 0; i < tree.tree.length; i++) {
-            if ((tree.K * i) + 1 >= tree.tree.length) {
+        for (uint i = 0; i < tree.nodes.length; i++) {
+            if ((tree.K * i) + 1 >= tree.nodes.length) {
                 startIndex = i;
                 break;
             }
         }
 
         // Get the values.
-        uint _startIndex = startIndex + _cursor;
-        values = new uint[](_startIndex + _count > tree.tree.length ? tree.tree.length - _startIndex : _count);
-        uint _valuesIndex = 0;
-        for (uint j = _startIndex; j < tree.tree.length; j++) {
-            if (_valuesIndex < _count) {
-                values[_valuesIndex] = tree.tree[j];
-                _valuesIndex++;
+        uint loopStartIndex = startIndex + _cursor;
+        values = new uint[](loopStartIndex + _count > tree.nodes.length ? tree.nodes.length - loopStartIndex : _count);
+        uint valuesIndex = 0;
+        for (uint j = loopStartIndex; j < tree.nodes.length; j++) {
+            if (valuesIndex < _count) {
+                values[valuesIndex] = tree.nodes[j];
+                valuesIndex++;
             } else {
                 hasMore = true;
                 break;
@@ -177,22 +178,22 @@ contract SortitionSumTreeFactory {
      */
     function draw(bytes32 _key, uint _drawnNumber) internal view returns(bytes32 ID) {
         SortitionSumTree storage tree = sortitionSumTrees[_key];
-        uint _treeIndex = 0;
-        uint _currentDrawnNumber = _drawnNumber % tree.tree[0];
+        uint treeIndex = 0;
+        uint currentDrawnNumber = _drawnNumber % tree.nodes[0];
 
-        while ((tree.K * _treeIndex) + 1 < tree.tree.length)  // While it still has children.
+        while ((tree.K * treeIndex) + 1 < tree.nodes.length)  // While it still has children.
             for (uint i = 1; i <= tree.K; i++) { // Loop over children.
-                uint _nodeIndex = (tree.K * _treeIndex) + i;
-                uint _nodeValue = tree.tree[_nodeIndex];
+                uint nodeIndex = (tree.K * treeIndex) + i;
+                uint nodeValue = tree.nodes[nodeIndex];
 
-                if (_currentDrawnNumber >= _nodeValue) _currentDrawnNumber -= _nodeValue; // Go to the next child.
+                if (currentDrawnNumber >= nodeValue) currentDrawnNumber -= nodeValue; // Go to the next child.
                 else { // Pick this child.
-                    _treeIndex = _nodeIndex;
+                    treeIndex = nodeIndex;
                     break;
                 }
             }
         
-        ID = tree.treeIndexesToIDs[_treeIndex];
+        ID = tree.nodeIndexesToIDs[treeIndex];
     }
 
     /** @dev Gets a specified ID's associated value.
@@ -202,10 +203,10 @@ contract SortitionSumTreeFactory {
      */
     function stakeOf(bytes32 _key, bytes32 _ID) internal view returns(uint value) {
         SortitionSumTree storage tree = sortitionSumTrees[_key];
-        uint _treeIndex = tree.IDsToTreeIndexes[_ID];
+        uint treeIndex = tree.IDsToTreeIndexes[_ID];
 
-        if (_treeIndex == 0) value = 0;
-        else value = tree.tree[_treeIndex];
+        if (treeIndex == 0) value = 0;
+        else value = tree.nodes[treeIndex];
     }
 
     /* Private */
@@ -224,7 +225,7 @@ contract SortitionSumTreeFactory {
         uint parentIndex = _treeIndex;
         while (parentIndex != 0) {
             parentIndex = (parentIndex - 1) / tree.K;
-            tree.tree[parentIndex] = _plusOrMinus ? tree.tree[parentIndex] + _value : tree.tree[parentIndex] - _value;
+            tree.nodes[parentIndex] = _plusOrMinus ? tree.nodes[parentIndex] + _value : tree.nodes[parentIndex] - _value;
         }
     }
 }
