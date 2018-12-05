@@ -286,6 +286,7 @@ contract('KlerosLiquid', accounts =>
     for (const dispute of disputes) {
       const numberOfDraws = []
       const totalJurorFees = []
+      const votes = []
       const voteRatioDivisor = dispute.voteRatios.reduce((acc, v) => acc + v, 0)
       for (let i = 0; i <= dispute.appeals; i++) {
         const subcourt = subcourtMap[dispute.subcourtID] || subcourtTree
@@ -310,36 +311,38 @@ contract('KlerosLiquid', accounts =>
         await klerosLiquid.passPeriod(dispute.ID)
 
         // Decide votes
-        let votes = dispute.voteRatios
-          .map((voteRatio, index) =>
-            [
-              ...new Array(
-                Math.floor(numberOfDraws[i] * (voteRatio / voteRatioDivisor))
-              )
-            ].map(_ => index)
-          )
-          .reduce((acc, a) => [...acc, ...a], [])
-        if (votes.length < numberOfDraws[i])
-          votes = [
-            ...votes,
-            ...[...new Array(numberOfDraws[i] - votes.length)].map(_ => 0)
+        votes.push(
+          dispute.voteRatios
+            .map((voteRatio, index) =>
+              [
+                ...new Array(
+                  Math.floor(numberOfDraws[i] * (voteRatio / voteRatioDivisor))
+                )
+              ].map(_ => index)
+            )
+            .reduce((acc, a) => [...acc, ...a], [])
+        )
+        if (votes[i].length < numberOfDraws[i])
+          votes[i] = [
+            ...votes[i],
+            ...[...new Array(numberOfDraws[i] - votes[i].length)].map(_ => 0)
           ]
 
         // Commit
         if (subcourt.hiddenVotes) {
-          for (let i = 0; i < votes.length; i++)
+          for (let j = 0; j < votes[i].length; j++)
             await klerosLiquid.commit(
               dispute.ID,
-              [i],
-              [soliditySha3(votes[i], i)]
+              [j],
+              [soliditySha3(votes[i][j], j)]
             )
           await increaseTime(subcourt.timesPerPeriod[1])
           await klerosLiquid.passPeriod(dispute.ID)
         }
 
         // Vote
-        for (let i = 0; i < votes.length; i++)
-          await klerosLiquid.vote(dispute.ID, [i], votes[i], [i])
+        for (let j = 0; j < votes[i].length; j++)
+          await klerosLiquid.vote(dispute.ID, [j], votes[i][j], [j])
         await increaseTime(subcourt.timesPerPeriod[2])
         await klerosLiquid.passPeriod(dispute.ID)
 
@@ -362,29 +365,40 @@ contract('KlerosLiquid', accounts =>
           await increaseTime(subcourt.timesPerPeriod[3])
           await klerosLiquid.passPeriod(dispute.ID)
           for (let i = 0; i <= dispute.appeals; i++) {
-            // TODO: Update with new contract logic
-            // const PNKBefore = await pinakion.balanceOf(governor)
-            // const executeBlockNumber = (await klerosLiquid.execute(
-            //   dispute.ID,
-            //   i,
-            //   -1
-            // )).receipt.blockNumber
-            // expect(PNKBefore).to.deep.equal(await pinakion.balanceOf(governor))
-            // expect(
-            //   (await new Promise((resolve, reject) =>
-            //     klerosLiquid
-            //       .TokenAndETHShift(
-            //         { _disputeID: dispute.ID },
-            //         { fromBlock: executeBlockNumber }
-            //       )
-            //       .get((err, logs) => (err ? reject(err) : resolve(logs)))
-            //   ))
-            //     .reduce(
-            //       (acc, e) => acc.plus(e.args._ETHAmount),
-            //       web3.toBigNumber(0)
-            //     )
-            //     .toNumber()
-            // ).to.be.closeTo(totalJurorFees[i], numberOfDraws[i])
+            const voteCounters = Object.entries(
+              votes[votes.length - 1].reduce((acc, v) => {
+                acc[v] = (acc[v] || 0) + 1
+                return acc
+              }, {})
+            ).sort((a, b) => b[1] - a[1])
+            const notTieAndNoCoherent =
+              !(voteCounters[1] && voteCounters[1][1] === voteCounters[0][1]) &&
+              !votes[i].includes(Number(voteCounters[0][0]))
+            const PNKBefore = await pinakion.balanceOf(governor)
+            const executeBlockNumber = (await klerosLiquid.execute(
+              dispute.ID,
+              i,
+              -1
+            )).receipt.blockNumber
+            expect(PNKBefore).to.deep.equal(await pinakion.balanceOf(governor))
+            expect(
+              (await new Promise((resolve, reject) =>
+                klerosLiquid
+                  .TokenAndETHShift(
+                    { _disputeID: dispute.ID },
+                    { fromBlock: executeBlockNumber }
+                  )
+                  .get((err, logs) => (err ? reject(err) : resolve(logs)))
+              ))
+                .reduce(
+                  (acc, e) => acc.plus(e.args._ETHAmount),
+                  web3.toBigNumber(0)
+                )
+                .toNumber()
+            ).to.be.closeTo(
+              notTieAndNoCoherent ? 0 : totalJurorFees[i],
+              numberOfDraws[i]
+            )
           }
         }
 

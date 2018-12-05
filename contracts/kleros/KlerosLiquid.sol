@@ -545,12 +545,12 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint winningChoice = dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice;
         uint coherentCount = dispute.voteCounters[_appeal].counts[winningChoice];
 
-        // Distribute penalties and arbitration fees between coherent voters,
-        // if there is a tie or no one in the round is coherent, there are no penalties to distribute and arbitration fees are distributed between every juror.
-        if (dispute.voteCounters[dispute.voteCounters.length - 1].tied || coherentCount == 0) {
-            tokenReward = 0;
-            ETHReward = dispute.totalJurorFees[_appeal] / dispute.votes[_appeal].length;
+        // Distribute penalties and arbitration fees.
+        if (dispute.voteCounters[dispute.voteCounters.length - 1].tied) {
+            tokenReward = 0; // No penalties to distribute.
+            ETHReward = dispute.totalJurorFees[_appeal] / dispute.votes[_appeal].length; // Distribute fees evenly.
         } else {
+            // Distribute penalties and fees evenly between coherent jurors.
             tokenReward = dispute.penaltiesPerRound[_appeal] / coherentCount;
             ETHReward = dispute.totalJurorFees[_appeal] / coherentCount;
         }
@@ -571,14 +571,22 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     function execute(uint _disputeID, uint _appeal, uint _iterations) external onlyDuringPeriod(_disputeID, Period.execution) {
         lockInsolventTransfers = false;
         Dispute storage dispute = disputes[_disputeID];
-        uint start = dispute.repartitionsPerRound[_appeal];
-        uint end = start + _iterations;
-        (uint tokenReward, uint ETHReward) = start >= dispute.votes[_appeal].length ? computeTokenAndETHRewards(_disputeID, _appeal) : (0, 0);
-        uint penaltiesInRoundCache = dispute.penaltiesPerRound[_appeal];
+        uint end = dispute.repartitionsPerRound[_appeal] + _iterations;
+        uint penaltiesInRoundCache = dispute.penaltiesPerRound[_appeal]; // For saving gas.
 
-        // Avoid going out of range. We loop over the votes twice, first to collect penalties, and second to distribute them as rewards along with arbitration fees.
-        if (end > dispute.votes[_appeal].length * 2) end = dispute.votes[_appeal].length * 2;
-        for (uint i = start; i < end; i++) {
+        // Avoid going out of range.
+        if (
+            !dispute.voteCounters[dispute.voteCounters.length - 1].tied &&
+            dispute.voteCounters[_appeal].counts[dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice] == 0
+        ) {
+            // We loop over the votes once as there are no rewards because it is not a tie and no one in this round is coherent with the final outcome.
+            if (end > dispute.votes[_appeal].length) end = dispute.votes[_appeal].length;
+        } else {
+            // We loop over the votes twice, first to collect penalties, and second to distribute them as rewards along with arbitration fees.
+            (uint tokenReward, uint ETHReward) = dispute.repartitionsPerRound[_appeal] >= dispute.votes[_appeal].length ? computeTokenAndETHRewards(_disputeID, _appeal) : (0, 0);
+            if (end > dispute.votes[_appeal].length * 2) end = dispute.votes[_appeal].length * 2;
+        }
+        for (uint i = dispute.repartitionsPerRound[_appeal]; i < end; i++) {
             Vote storage vote = dispute.votes[_appeal][i % dispute.votes[_appeal].length];
             if (
                 vote.choice == dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice ||
@@ -610,15 +618,21 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
                                 abi.encodeWithSignature("_setStake(address,uint96,uint128)", vote.account, jurors[vote.account].subcourtIDs[j], 0)
                             ); // Intentional use to avoid blocking.
 
-                    if (i == dispute.votes[_appeal].length - 1) {
-                        dispute.penaltiesPerRound[_appeal] = penaltiesInRoundCache;
-                        (tokenReward, ETHReward) = computeTokenAndETHRewards(_disputeID, _appeal);
-                    }
+                }
+            }
+            if (i == dispute.votes[_appeal].length - 1) {
+                // Send fees to the governor if it is not a tie and no one in this round is coherent with the final outcome.
+                if (!dispute.voteCounters[dispute.voteCounters.length - 1].tied && dispute.voteCounters[_appeal].counts[dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice] == 0)
+                    // Intentional use to avoid blocking.
+                    governor.send(dispute.totalJurorFees[_appeal]); // solium-disable-line security/no-send
+                else {
+                    dispute.penaltiesPerRound[_appeal] = penaltiesInRoundCache;
+                    (tokenReward, ETHReward) = computeTokenAndETHRewards(_disputeID, _appeal);
                 }
             }
         }
         if (dispute.penaltiesPerRound[_appeal] != penaltiesInRoundCache) dispute.penaltiesPerRound[_appeal] = penaltiesInRoundCache;
-        dispute.repartitionsPerRound[_appeal] += end - start;
+        dispute.repartitionsPerRound[_appeal] += end - dispute.repartitionsPerRound[_appeal];
         lockInsolventTransfers = true;
     }
 
@@ -636,98 +650,98 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
 
     /* External Views */
 
-    /** @dev Gets a specified subcourt.
-     *  @param _subcourtID The ID of the subcourt.
-     */
-    function getSubcourt(uint96 _subcourtID) external view returns(
-        uint96 parent,
-        uint[] children,
-        bool hiddenVotes,
-        uint minStake,
-        uint alpha,
-        uint jurorFee,
-        uint jurorsForJump,
-        uint[4] timesPerPeriod
-    ) {
-        Court storage subcourt = courts[_subcourtID];
-        parent = subcourt.parent;
-        children = subcourt.children;
-        hiddenVotes = subcourt.hiddenVotes;
-        minStake = subcourt.minStake;
-        alpha = subcourt.alpha;
-        jurorFee = subcourt.jurorFee;
-        jurorsForJump = subcourt.jurorsForJump;
-        timesPerPeriod = subcourt.timesPerPeriod;
-    }
+    // /** @dev Gets a specified subcourt.
+    //  *  @param _subcourtID The ID of the subcourt.
+    //  */
+    // function getSubcourt(uint96 _subcourtID) external view returns(
+    //     uint96 parent,
+    //     uint[] children,
+    //     bool hiddenVotes,
+    //     uint minStake,
+    //     uint alpha,
+    //     uint jurorFee,
+    //     uint jurorsForJump,
+    //     uint[4] timesPerPeriod
+    // ) {
+    //     Court storage subcourt = courts[_subcourtID];
+    //     parent = subcourt.parent;
+    //     children = subcourt.children;
+    //     hiddenVotes = subcourt.hiddenVotes;
+    //     minStake = subcourt.minStake;
+    //     alpha = subcourt.alpha;
+    //     jurorFee = subcourt.jurorFee;
+    //     jurorsForJump = subcourt.jurorsForJump;
+    //     timesPerPeriod = subcourt.timesPerPeriod;
+    // }
 
-    /** @dev Gets a specified vote for a specified appeal in a specified dispute.
-     *  @param _disputeID The ID of the dispute.
-     *  @param _appeal The appeal.
-     *  @param _voteID The ID of the vote.
-     */
-    function getVote(uint _disputeID, uint _appeal, uint _voteID) external view returns(
-        address account,
-        bytes32 commit,
-        uint choice,
-        bool voted
-    ) {
-        Vote storage vote = disputes[_disputeID].votes[_appeal][_voteID];
-        account = vote.account;
-        commit = vote.commit;
-        choice = vote.choice;
-        voted = vote.voted;
-    }
+    // /** @dev Gets a specified vote for a specified appeal in a specified dispute.
+    //  *  @param _disputeID The ID of the dispute.
+    //  *  @param _appeal The appeal.
+    //  *  @param _voteID The ID of the vote.
+    //  */
+    // function getVote(uint _disputeID, uint _appeal, uint _voteID) external view returns(
+    //     address account,
+    //     bytes32 commit,
+    //     uint choice,
+    //     bool voted
+    // ) {
+    //     Vote storage vote = disputes[_disputeID].votes[_appeal][_voteID];
+    //     account = vote.account;
+    //     commit = vote.commit;
+    //     choice = vote.choice;
+    //     voted = vote.voted;
+    // }
 
-    /** @dev Gets the vote counter for a specified appeal in a specified dispute.
-     *  @param _disputeID The ID of the dispute.
-     *  @param _appeal The appeal.
-     */
-    function getVoteCounter(uint _disputeID, uint _appeal) external view returns(
-        uint winningChoice,
-        uint[] counts,
-        bool tied
-    ) {
-        VoteCounter storage voteCounter = disputes[_disputeID].voteCounters[_appeal];
-        winningChoice = voteCounter.winningChoice;
-        counts = voteCounter.counts;
-        tied = voteCounter.tied;
-    }
+    // /** @dev Gets the vote counter for a specified appeal in a specified dispute.
+    //  *  @param _disputeID The ID of the dispute.
+    //  *  @param _appeal The appeal.
+    //  */
+    // function getVoteCounter(uint _disputeID, uint _appeal) external view returns(
+    //     uint winningChoice,
+    //     uint[] counts,
+    //     bool tied
+    // ) {
+    //     VoteCounter storage voteCounter = disputes[_disputeID].voteCounters[_appeal];
+    //     winningChoice = voteCounter.winningChoice;
+    //     counts = voteCounter.counts;
+    //     tied = voteCounter.tied;
+    // }
 
-    /** @dev Gets a specified dispute's non primitive properties.
-     *  @param _disputeID The ID of the dispute.
-     */
-    function getDispute(uint _disputeID) external view returns(
-        uint[] jurorAtStake,
-        uint[] totalJurorFees,
-        uint[] repartitionsPerRound,
-        uint[] penaltiesPerRound,
-        uint[] tokenRewardPerRound,
-        uint[] ETHRewardPerRound
-    ) {
-        Dispute storage dispute = disputes[_disputeID];
-        jurorAtStake = dispute.jurorAtStake;
-        totalJurorFees = dispute.totalJurorFees;
-        repartitionsPerRound = dispute.repartitionsPerRound;
-        penaltiesPerRound = dispute.penaltiesPerRound;
-        for (uint i = 0; i < dispute.rewardsPerRound.length; i++) {
-            tokenRewardPerRound[i] = dispute.rewardsPerRound[i][0];
-            ETHRewardPerRound[i] = dispute.rewardsPerRound[i][1];
-        }
-    }
+    // /** @dev Gets a specified dispute's non primitive properties.
+    //  *  @param _disputeID The ID of the dispute.
+    //  */
+    // function getDispute(uint _disputeID) external view returns(
+    //     uint[] jurorAtStake,
+    //     uint[] totalJurorFees,
+    //     uint[] repartitionsPerRound,
+    //     uint[] penaltiesPerRound,
+    //     uint[] tokenRewardPerRound,
+    //     uint[] ETHRewardPerRound
+    // ) {
+    //     Dispute storage dispute = disputes[_disputeID];
+    //     jurorAtStake = dispute.jurorAtStake;
+    //     totalJurorFees = dispute.totalJurorFees;
+    //     repartitionsPerRound = dispute.repartitionsPerRound;
+    //     penaltiesPerRound = dispute.penaltiesPerRound;
+    //     for (uint i = 0; i < dispute.rewardsPerRound.length; i++) {
+    //         tokenRewardPerRound[i] = dispute.rewardsPerRound[i][0];
+    //         ETHRewardPerRound[i] = dispute.rewardsPerRound[i][1];
+    //     }
+    // }
 
-    /** @dev Gets a specified juror.
-     *  @param _jurorID The ID of the juror.
-     */
-    function getJuror(address _jurorID) external view returns(
-        uint96[] subcourtIDs,
-        uint stakedTokens,
-        uint lockedTokens
-    ) {
-        Juror storage juror = jurors[_jurorID];
-        subcourtIDs = juror.subcourtIDs;
-        stakedTokens = juror.stakedTokens;
-        lockedTokens = juror.lockedTokens;
-    }
+    // /** @dev Gets a specified juror.
+    //  *  @param _jurorID The ID of the juror.
+    //  */
+    // function getJuror(address _jurorID) external view returns(
+    //     uint96[] subcourtIDs,
+    //     uint stakedTokens,
+    //     uint lockedTokens
+    // ) {
+    //     Juror storage juror = jurors[_jurorID];
+    //     subcourtIDs = juror.subcourtIDs;
+    //     stakedTokens = juror.stakedTokens;
+    //     lockedTokens = juror.lockedTokens;
+    // }
 
     /* Public */
 
