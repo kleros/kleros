@@ -318,7 +318,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         courts[_parent].children.push(subcourtID);
     }
 
-    /** @dev Changes the `hiddenVotes` property value of the specified subcourt.
+    /** @dev Changes the `hiddenVotes` property value of a specified subcourt.
      *  @param _subcourtID The ID of the subcourt.
      *  @param _hiddenVotes The new value for the `hiddenVotes` property value.
      */
@@ -326,7 +326,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         courts[_subcourtID].hiddenVotes = _hiddenVotes;
     }
 
-    /** @dev Changes the `minStake` property value of the specified subcourt.
+    /** @dev Changes the `minStake` property value of a specified subcourt. Don't set to a value lower than its parent's `minStake` property value.
      *  @param _subcourtID The ID of the subcourt.
      *  @param _minStake The new value for the `minStake` property value.
      */
@@ -334,7 +334,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         courts[_subcourtID].minStake = _minStake;
     }
 
-    /** @dev Changes the `alpha` property value of the specified subcourt.
+    /** @dev Changes the `alpha` property value of a specified subcourt.
      *  @param _subcourtID The ID of the subcourt.
      *  @param _alpha The new value for the `alpha` property value.
      */
@@ -342,7 +342,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         courts[_subcourtID].alpha = _alpha;
     }
 
-    /** @dev Changes the `jurorFee` property value of the specified subcourt.
+    /** @dev Changes the `jurorFee` property value of a specified subcourt.
      *  @param _subcourtID The ID of the subcourt.
      *  @param _jurorFee The new value for the `jurorFee` property value.
      */
@@ -350,7 +350,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         courts[_subcourtID].jurorFee = _jurorFee;
     }
 
-    /** @dev Changes the `jurorsForJump` property value of the specified subcourt.
+    /** @dev Changes the `jurorsForJump` property value of a specified subcourt.
      *  @param _subcourtID The ID of the subcourt.
      *  @param _jurorsForJump The new value for the `jurorsForJump` property value.
      */
@@ -358,7 +358,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         courts[_subcourtID].jurorsForJump = _jurorsForJump;
     }
 
-    /** @dev Changes the `timesPerPeriod` property value of the specified subcourt.
+    /** @dev Changes the `timesPerPeriod` property value of a specified subcourt.
      *  @param _subcourtID The ID of the subcourt.
      *  @param _timesPerPeriod The new value for the `timesPerPeriod` property value.
      */
@@ -905,7 +905,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
 
     /* Internal */
 
-    /** @dev Sets the the specified juror's stake in a subcourt.
+    /** @dev Sets the specified juror's stake in a subcourt.
      *  `O(n + p * log_k(j))` where
      *  `n` is the number of subcourts the juror has staked in,
      *  `p` is the depth of the subcourt tree,
@@ -965,7 +965,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         emit StakeSet(_account, _subcourtID, _stake, newTotalStake);
     }
 
-    /** @dev Gets a subcourt ID and the minimum number of jurors required from the specified extra data bytes array.
+    /** @dev Gets a subcourt ID and the minimum number of jurors required from a specified extra data bytes array.
      *  @param _extraData The extra data.
      *  @return The subcourt ID and the minimum number of jurors required.
      */
