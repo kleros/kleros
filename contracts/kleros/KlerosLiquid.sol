@@ -857,7 +857,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
 
     /* Public Views */
 
-    /** @dev Get the cost of arbitration in a specified subcourt.
+    /** @dev Gets the cost of arbitration in a specified subcourt.
      *  @param _extraData Additional info about the dispute. We use it to pass the ID of the subcourt to create the dispute in (first 32 bytes) and the minimum number of jurors required (next 32 bytes).
      *  @return The cost.
      */
@@ -866,7 +866,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         cost = courts[subcourtID].jurorFee * minJurors;
     }
 
-    /** @dev Get the cost of appealing a specified dispute.
+    /** @dev Gets the cost of appealing a specified dispute.
      *  @param _disputeID The ID of the dispute.
      *  @param _extraData Additional info about the appeal. Not used by this contract.
      *  @return The cost.
@@ -883,7 +883,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
             cost = courts[dispute.subcourtID].jurorFee * ((lastNumberOfJurors * 2) + 1);
     }
 
-    /** @dev Get the status of a specified dispute.
+    /** @dev Gets the status of a specified dispute.
      *  @param _disputeID The ID of the dispute.
      *  @return The status.
      */
@@ -894,7 +894,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         else status = DisputeStatus.Solved;
     }
 
-    /** @dev Get the current ruling of a specified dispute.
+    /** @dev Gets the current ruling of a specified dispute.
      *  @param _disputeID The ID of the dispute.
      *  @return The current ruling.
      */
@@ -966,7 +966,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         emit StakeSet(_account, _subcourtID, _stake, newTotalStake);
     }
 
-    /** @dev Get a subcourt ID and the minimum number of jurors required from the specified extra data bytes array.
+    /** @dev Gets a subcourt ID and the minimum number of jurors required from the specified extra data bytes array.
      *  @param _extraData The extra data.
      *  @return The subcourt ID and the minimum number of jurors required.
      */
