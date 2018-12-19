@@ -653,6 +653,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
 
     /** @dev Gets a specified subcourt.
      *  @param _subcourtID The ID of the subcourt.
+     *  @return The subcourt.
      */
     function getSubcourt(uint96 _subcourtID) external view returns(
         uint96 parent,
@@ -679,6 +680,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _disputeID The ID of the dispute.
      *  @param _appeal The appeal.
      *  @param _voteID The ID of the vote.
+     *  @return The vote.
      */
     function getVote(uint _disputeID, uint _appeal, uint _voteID) external view returns(
         address account,
@@ -696,6 +698,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
     /** @dev Gets the vote counter for a specified appeal in a specified dispute.
      *  @param _disputeID The ID of the dispute.
      *  @param _appeal The appeal.
+     *  @return The vote counter.
      */
     function getVoteCounter(uint _disputeID, uint _appeal) external view returns(
         uint winningChoice,
@@ -710,6 +713,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
 
     /** @dev Gets a specified dispute's non primitive properties.
      *  @param _disputeID The ID of the dispute.
+     *  @return The dispute.
      */
     function getDispute(uint _disputeID) external view returns(
         uint[] jurorAtStake,
@@ -731,17 +735,27 @@ contract KlerosLiquid is TokenController, Arbitrator {
     }
 
     /** @dev Gets a specified juror.
-     *  @param _jurorID The ID of the juror.
+     *  @param _account The address of the juror.
+     *  @return The juror.
      */
-    function getJuror(address _jurorID) external view returns(
+    function getJuror(address _account) external view returns(
         uint96[] subcourtIDs,
         uint stakedTokens,
         uint lockedTokens
     ) {
-        Juror storage juror = jurors[_jurorID];
+        Juror storage juror = jurors[_account];
         subcourtIDs = juror.subcourtIDs;
         stakedTokens = juror.stakedTokens;
         lockedTokens = juror.lockedTokens;
+    }
+
+    /** @dev Gets the stake of a specified juror in a specified subcourt.
+     *  @param _account The address of the juror.
+     *  @param _subcourtID The ID of the subcourt.
+     *  @return The stake.
+     */
+    function stakeOf(address _account, uint96 _subcourtID) external view returns(uint stake) {
+        return sortitionSumTrees.stakeOf(bytes32(_subcourtID), accountAndSubcourtIDToStakePathID(_account, _subcourtID));
     }
 
     /* Public */
