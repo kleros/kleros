@@ -5,7 +5,7 @@ pragma solidity ^0.4.24;
  *  @author Enrique Piqueras - <epiquerass@gmail.com>
  *  @dev A factory of trees that keep track of staked values for sortition.
  */
-contract SortitionSumTreeFactory {
+library SortitionSumTreeFactory {
     /* Structs */
 
     struct SortitionSumTree {
@@ -19,17 +19,19 @@ contract SortitionSumTreeFactory {
 
     /* Storage */
 
-    mapping(bytes32 => SortitionSumTree) internal sortitionSumTrees;
+    struct SortitionSumTrees {
+        mapping(bytes32 => SortitionSumTree) sortitionSumTrees;
+    }
 
-    /* Internal */
+    /* Public */
 
     /**
      *  @dev Create a sortition sum tree at the specified key.
      *  @param _key The key of the new tree.
      *  @param _K The number of children each node in the tree should have.
      */
-    function createTree(bytes32 _key, uint _K) internal {
-        SortitionSumTree storage tree = sortitionSumTrees[_key];
+    function createTree(SortitionSumTrees storage self, bytes32 _key, uint _K) public {
+        SortitionSumTree storage tree = self.sortitionSumTrees[_key];
         require(tree.K == 0, "Tree already exists.");
         require(_K > 1, "K must be greater than one.");
         tree.K = _K;
@@ -42,12 +44,12 @@ contract SortitionSumTreeFactory {
      *  @dev Delete a sortition sum tree at the specified key.
      *  @param _key The key of the tree to delete.
      */
-    function deleteTree(bytes32 _key) internal {
-        SortitionSumTree storage tree = sortitionSumTrees[_key];
+    function deleteTree(SortitionSumTrees storage self, bytes32 _key) public {
+        SortitionSumTree storage tree = self.sortitionSumTrees[_key];
         tree.K = 0;
         tree.stack.length = 0;
         tree.nodes.length = 0;
-        delete sortitionSumTrees[_key];
+        delete self.sortitionSumTrees[_key];
     }
 
     /**
@@ -57,8 +59,8 @@ contract SortitionSumTreeFactory {
      *  @param _ID The ID of the value.
      *  @return The index of the appended value in the tree.
      */
-    function append(bytes32 _key, uint _value, bytes32 _ID) internal returns(uint treeIndex) {
-        SortitionSumTree storage tree = sortitionSumTrees[_key];
+    function append(SortitionSumTrees storage self, bytes32 _key, uint _value, bytes32 _ID) public returns(uint treeIndex) {
+        SortitionSumTree storage tree = self.sortitionSumTrees[_key];
         require(tree.IDsToTreeIndexes[_ID] == 0, "ID already has a value in this tree.");
         
         // Add node.
@@ -88,7 +90,7 @@ contract SortitionSumTreeFactory {
         tree.IDsToTreeIndexes[_ID] = treeIndex;
         tree.nodeIndexesToIDs[treeIndex] = _ID;
 
-        updateParents(_key, treeIndex, true, _value);
+        updateParents(self, _key, treeIndex, true, _value);
     }
 
     /**
@@ -96,8 +98,8 @@ contract SortitionSumTreeFactory {
      *  @param _key The key of the tree to remove from.
      *  @param _ID The ID of the value.
      */
-    function remove(bytes32 _key, bytes32 _ID) internal {
-        SortitionSumTree storage tree = sortitionSumTrees[_key];
+    function remove(SortitionSumTrees storage self, bytes32 _key, bytes32 _ID) public {
+        SortitionSumTree storage tree = self.sortitionSumTrees[_key];
         uint treeIndex = tree.IDsToTreeIndexes[_ID];
         require(treeIndex != 0, "ID does not have a value in this tree.");
 
@@ -112,7 +114,7 @@ contract SortitionSumTreeFactory {
         delete tree.IDsToTreeIndexes[tree.nodeIndexesToIDs[treeIndex]];
         delete tree.nodeIndexesToIDs[treeIndex];
 
-        updateParents(_key, treeIndex, false, value);
+        updateParents(self, _key, treeIndex, false, value);
     }
 
     /**
@@ -121,8 +123,8 @@ contract SortitionSumTreeFactory {
      *  @param _value The new value.
      *  @param _ID The ID of the value.
      */
-    function set(bytes32 _key, uint _value, bytes32 _ID) internal {
-        SortitionSumTree storage tree = sortitionSumTrees[_key];
+    function set(SortitionSumTrees storage self, bytes32 _key, uint _value, bytes32 _ID) public {
+        SortitionSumTree storage tree = self.sortitionSumTrees[_key];
         uint treeIndex = tree.IDsToTreeIndexes[_ID];
         require(treeIndex != 0, "ID does not have a value in this tree.");
 
@@ -130,10 +132,10 @@ contract SortitionSumTreeFactory {
         uint plusOrMinusValue = plusOrMinus ? _value - tree.nodes[treeIndex] : tree.nodes[treeIndex] - _value;
         tree.nodes[treeIndex] = _value;
 
-        updateParents(_key, treeIndex, plusOrMinus, plusOrMinusValue);
+        updateParents(self, _key, treeIndex, plusOrMinus, plusOrMinusValue);
     }
 
-    /* Internal Views */
+    /* Public Views */
 
     /**
      *  @dev Query the leafs of a tree.
@@ -143,8 +145,8 @@ contract SortitionSumTreeFactory {
      *  @return The index at which leafs start, the values of the returned leafs, and wether there are more for pagination.
      *  Complexity: This function is O(n) where `n` is the max number of elements ever appended.
      */
-    function queryLeafs(bytes32 _key, uint _cursor, uint _count) internal view returns(uint startIndex, uint[] values, bool hasMore) {
-        SortitionSumTree storage tree = sortitionSumTrees[_key];
+    function queryLeafs(SortitionSumTrees storage self, bytes32 _key, uint _cursor, uint _count) public view returns(uint startIndex, uint[] values, bool hasMore) {
+        SortitionSumTree storage tree = self.sortitionSumTrees[_key];
 
         // Find the start index.
         for (uint i = 0; i < tree.nodes.length; i++) {
@@ -176,8 +178,8 @@ contract SortitionSumTreeFactory {
      *  @return The drawn ID.
      *  Complexity: This function is O(n) where `n` is the max number of elements ever appended.
      */
-    function draw(bytes32 _key, uint _drawnNumber) internal view returns(bytes32 ID) {
-        SortitionSumTree storage tree = sortitionSumTrees[_key];
+    function draw(SortitionSumTrees storage self, bytes32 _key, uint _drawnNumber) public view returns(bytes32 ID) {
+        SortitionSumTree storage tree = self.sortitionSumTrees[_key];
         uint treeIndex = 0;
         uint currentDrawnNumber = _drawnNumber % tree.nodes[0];
 
@@ -201,8 +203,8 @@ contract SortitionSumTreeFactory {
      *  @param _ID The ID of the value.
      *  @return The associated value.
      */
-    function stakeOf(bytes32 _key, bytes32 _ID) internal view returns(uint value) {
-        SortitionSumTree storage tree = sortitionSumTrees[_key];
+    function stakeOf(SortitionSumTrees storage self, bytes32 _key, bytes32 _ID) public view returns(uint value) {
+        SortitionSumTree storage tree = self.sortitionSumTrees[_key];
         uint treeIndex = tree.IDsToTreeIndexes[_ID];
 
         if (treeIndex == 0) value = 0;
@@ -219,8 +221,8 @@ contract SortitionSumTreeFactory {
      *  @param _value The value to add or substract.
      *  Complexity: This function is O(log(k)(n)) where `n` is the max number of elements ever appended.
      */
-    function updateParents(bytes32 _key, uint _treeIndex, bool _plusOrMinus, uint _value) private {
-        SortitionSumTree storage tree = sortitionSumTrees[_key];
+    function updateParents(SortitionSumTrees storage self, bytes32 _key, uint _treeIndex, bool _plusOrMinus, uint _value) private {
+        SortitionSumTree storage tree = self.sortitionSumTrees[_key];
 
         uint parentIndex = _treeIndex;
         while (parentIndex != 0) {

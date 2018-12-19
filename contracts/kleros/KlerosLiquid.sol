@@ -12,7 +12,7 @@ import "../data-structures/SortitionSumTreeFactory.sol";
  *  @author Enrique Piqueras - <epiquerass@gmail.com>
  *  @dev The main Kleros contract with dispute resolution logic for the Athena release.
  */
-contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
+contract KlerosLiquid is TokenController, Arbitrator {
     /* Enums */
 
     // General
@@ -149,6 +149,8 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
     bool public lockInsolventTransfers = true;
     // General Storage
     Court[] public courts;
+    using SortitionSumTreeFactory for SortitionSumTreeFactory.SortitionSumTrees;
+    SortitionSumTreeFactory.SortitionSumTrees internal sortitionSumTrees;
     mapping(uint => DelayedSetStake) public delayedSetStakes;
     // The index of the next `delayedSetStakes` item to execute. Starts at 1 because `lastDelayedSetStake` starts at 0.
     uint public nextDelayedSetStake = 1;
@@ -225,7 +227,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             jurorsForJump: _jurorsForJump,
             timesPerPeriod: _timesPerPeriod
         }));
-        createTree(bytes32(0), _sortitionSumTreeK);
+        sortitionSumTrees.createTree(bytes32(0), _sortitionSumTreeK);
     }
 
     /* External */
@@ -310,7 +312,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
                 timesPerPeriod: _timesPerPeriod
             })) - 1
         );
-        createTree(bytes32(subcourtID), _sortitionSumTreeK);
+        sortitionSumTrees.createTree(bytes32(subcourtID), _sortitionSumTreeK);
 
         // Update the parent.
         courts[_parent].children.push(subcourtID);
@@ -455,17 +457,16 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         uint _iterations
     ) external onlyDuringPhase(Phase.drawing) onlyDuringPeriod(_disputeID, Period.evidence) {
         Dispute storage dispute = disputes[_disputeID];
-        uint startIndex = dispute.drawsInRound;
-        uint endIndex = startIndex + _iterations;
+        uint endIndex = dispute.drawsInRound + _iterations;
 
         // Avoid going out of range.
         if (endIndex > dispute.votes[dispute.votes.length - 1].length) endIndex = dispute.votes[dispute.votes.length - 1].length;
-        for (uint i = startIndex; i < endIndex; i++) {
+        for (uint i = dispute.drawsInRound; i < endIndex; i++) {
             // Draw from sortition tree.
             (
                 address drawnAddress,
                 uint subcourtID
-            ) = stakePathIDToAccountAndSubcourtID(super.draw(bytes32(dispute.subcourtID), uint(keccak256(RN, _disputeID, i))));
+            ) = stakePathIDToAccountAndSubcourtID(sortitionSumTrees.draw(bytes32(dispute.subcourtID), uint(keccak256(RN, _disputeID, i))));
 
             // Save the vote.
             dispute.votes[dispute.votes.length - 1][i].account = drawnAddress;
@@ -475,7 +476,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
             // If dispute is fully drawn.
             if (i == dispute.votes[dispute.votes.length - 1].length - 1) disputesWithoutJurors--;
         }
-        dispute.drawsInRound += endIndex - startIndex;
+        dispute.drawsInRound += endIndex - dispute.drawsInRound;
     }
 
     /** @dev Sets the caller's commits for the specified votes.
@@ -650,98 +651,98 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
 
     /* External Views */
 
-    // /** @dev Gets a specified subcourt.
-    //  *  @param _subcourtID The ID of the subcourt.
-    //  */
-    // function getSubcourt(uint96 _subcourtID) external view returns(
-    //     uint96 parent,
-    //     uint[] children,
-    //     bool hiddenVotes,
-    //     uint minStake,
-    //     uint alpha,
-    //     uint jurorFee,
-    //     uint jurorsForJump,
-    //     uint[4] timesPerPeriod
-    // ) {
-    //     Court storage subcourt = courts[_subcourtID];
-    //     parent = subcourt.parent;
-    //     children = subcourt.children;
-    //     hiddenVotes = subcourt.hiddenVotes;
-    //     minStake = subcourt.minStake;
-    //     alpha = subcourt.alpha;
-    //     jurorFee = subcourt.jurorFee;
-    //     jurorsForJump = subcourt.jurorsForJump;
-    //     timesPerPeriod = subcourt.timesPerPeriod;
-    // }
+    /** @dev Gets a specified subcourt.
+     *  @param _subcourtID The ID of the subcourt.
+     */
+    function getSubcourt(uint96 _subcourtID) external view returns(
+        uint96 parent,
+        uint[] children,
+        bool hiddenVotes,
+        uint minStake,
+        uint alpha,
+        uint jurorFee,
+        uint jurorsForJump,
+        uint[4] timesPerPeriod
+    ) {
+        Court storage subcourt = courts[_subcourtID];
+        parent = subcourt.parent;
+        children = subcourt.children;
+        hiddenVotes = subcourt.hiddenVotes;
+        minStake = subcourt.minStake;
+        alpha = subcourt.alpha;
+        jurorFee = subcourt.jurorFee;
+        jurorsForJump = subcourt.jurorsForJump;
+        timesPerPeriod = subcourt.timesPerPeriod;
+    }
 
-    // /** @dev Gets a specified vote for a specified appeal in a specified dispute.
-    //  *  @param _disputeID The ID of the dispute.
-    //  *  @param _appeal The appeal.
-    //  *  @param _voteID The ID of the vote.
-    //  */
-    // function getVote(uint _disputeID, uint _appeal, uint _voteID) external view returns(
-    //     address account,
-    //     bytes32 commit,
-    //     uint choice,
-    //     bool voted
-    // ) {
-    //     Vote storage vote = disputes[_disputeID].votes[_appeal][_voteID];
-    //     account = vote.account;
-    //     commit = vote.commit;
-    //     choice = vote.choice;
-    //     voted = vote.voted;
-    // }
+    /** @dev Gets a specified vote for a specified appeal in a specified dispute.
+     *  @param _disputeID The ID of the dispute.
+     *  @param _appeal The appeal.
+     *  @param _voteID The ID of the vote.
+     */
+    function getVote(uint _disputeID, uint _appeal, uint _voteID) external view returns(
+        address account,
+        bytes32 commit,
+        uint choice,
+        bool voted
+    ) {
+        Vote storage vote = disputes[_disputeID].votes[_appeal][_voteID];
+        account = vote.account;
+        commit = vote.commit;
+        choice = vote.choice;
+        voted = vote.voted;
+    }
 
-    // /** @dev Gets the vote counter for a specified appeal in a specified dispute.
-    //  *  @param _disputeID The ID of the dispute.
-    //  *  @param _appeal The appeal.
-    //  */
-    // function getVoteCounter(uint _disputeID, uint _appeal) external view returns(
-    //     uint winningChoice,
-    //     uint[] counts,
-    //     bool tied
-    // ) {
-    //     VoteCounter storage voteCounter = disputes[_disputeID].voteCounters[_appeal];
-    //     winningChoice = voteCounter.winningChoice;
-    //     counts = voteCounter.counts;
-    //     tied = voteCounter.tied;
-    // }
+    /** @dev Gets the vote counter for a specified appeal in a specified dispute.
+     *  @param _disputeID The ID of the dispute.
+     *  @param _appeal The appeal.
+     */
+    function getVoteCounter(uint _disputeID, uint _appeal) external view returns(
+        uint winningChoice,
+        uint[] counts,
+        bool tied
+    ) {
+        VoteCounter storage voteCounter = disputes[_disputeID].voteCounters[_appeal];
+        winningChoice = voteCounter.winningChoice;
+        counts = voteCounter.counts;
+        tied = voteCounter.tied;
+    }
 
-    // /** @dev Gets a specified dispute's non primitive properties.
-    //  *  @param _disputeID The ID of the dispute.
-    //  */
-    // function getDispute(uint _disputeID) external view returns(
-    //     uint[] jurorAtStake,
-    //     uint[] totalJurorFees,
-    //     uint[] repartitionsPerRound,
-    //     uint[] penaltiesPerRound,
-    //     uint[] tokenRewardPerRound,
-    //     uint[] ETHRewardPerRound
-    // ) {
-    //     Dispute storage dispute = disputes[_disputeID];
-    //     jurorAtStake = dispute.jurorAtStake;
-    //     totalJurorFees = dispute.totalJurorFees;
-    //     repartitionsPerRound = dispute.repartitionsPerRound;
-    //     penaltiesPerRound = dispute.penaltiesPerRound;
-    //     for (uint i = 0; i < dispute.rewardsPerRound.length; i++) {
-    //         tokenRewardPerRound[i] = dispute.rewardsPerRound[i][0];
-    //         ETHRewardPerRound[i] = dispute.rewardsPerRound[i][1];
-    //     }
-    // }
+    /** @dev Gets a specified dispute's non primitive properties.
+     *  @param _disputeID The ID of the dispute.
+     */
+    function getDispute(uint _disputeID) external view returns(
+        uint[] jurorAtStake,
+        uint[] totalJurorFees,
+        uint[] repartitionsPerRound,
+        uint[] penaltiesPerRound,
+        uint[] tokenRewardPerRound,
+        uint[] ETHRewardPerRound
+    ) {
+        Dispute storage dispute = disputes[_disputeID];
+        jurorAtStake = dispute.jurorAtStake;
+        totalJurorFees = dispute.totalJurorFees;
+        repartitionsPerRound = dispute.repartitionsPerRound;
+        penaltiesPerRound = dispute.penaltiesPerRound;
+        for (uint i = 0; i < dispute.rewardsPerRound.length; i++) {
+            tokenRewardPerRound[i] = dispute.rewardsPerRound[i][0];
+            ETHRewardPerRound[i] = dispute.rewardsPerRound[i][1];
+        }
+    }
 
-    // /** @dev Gets a specified juror.
-    //  *  @param _jurorID The ID of the juror.
-    //  */
-    // function getJuror(address _jurorID) external view returns(
-    //     uint96[] subcourtIDs,
-    //     uint stakedTokens,
-    //     uint lockedTokens
-    // ) {
-    //     Juror storage juror = jurors[_jurorID];
-    //     subcourtIDs = juror.subcourtIDs;
-    //     stakedTokens = juror.stakedTokens;
-    //     lockedTokens = juror.lockedTokens;
-    // }
+    /** @dev Gets a specified juror.
+     *  @param _jurorID The ID of the juror.
+     */
+    function getJuror(address _jurorID) external view returns(
+        uint96[] subcourtIDs,
+        uint stakedTokens,
+        uint lockedTokens
+    ) {
+        Juror storage juror = jurors[_jurorID];
+        subcourtIDs = juror.subcourtIDs;
+        stakedTokens = juror.stakedTokens;
+        lockedTokens = juror.lockedTokens;
+    }
 
     /* Public */
 
@@ -915,7 +916,7 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         );
         Juror storage juror = jurors[_account];
         bytes32 stakePathID = accountAndSubcourtIDToStakePathID(_account, _subcourtID);
-        uint currentStake = stakeOf(bytes32(_subcourtID), stakePathID);
+        uint currentStake = sortitionSumTrees.stakeOf(bytes32(_subcourtID), stakePathID);
         require(_stake == 0 || currentStake > 0 || juror.subcourtIDs.length < MAX_STAKE_PATHS, "Maximum stake paths reached.");
         uint newTotalStake = juror.stakedTokens - currentStake + _stake; // Can't overflow because _stake is a uint128.
         require(
@@ -938,9 +939,9 @@ contract KlerosLiquid is SortitionSumTreeFactory, TokenController, Arbitrator {
         bool finished = false;
         uint currentSubcourtID = _subcourtID;
         while (!finished) {
-            uint currentSubcourtStake = stakeOf(bytes32(currentSubcourtID), stakePathID);
-            if (currentSubcourtStake == 0) append(bytes32(currentSubcourtID), _stake, stakePathID);
-            else set(
+            uint currentSubcourtStake = sortitionSumTrees.stakeOf(bytes32(currentSubcourtID), stakePathID);
+            if (currentSubcourtStake == 0) sortitionSumTrees.append(bytes32(currentSubcourtID), _stake, stakePathID);
+            else sortitionSumTrees.set(
                 bytes32(currentSubcourtID),
                 _stake,
                 stakePathID
