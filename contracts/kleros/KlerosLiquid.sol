@@ -366,7 +366,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         courts[_subcourtID].timesPerPeriod = _timesPerPeriod;
     }
 
-    /** @dev Pass the phase. TRUSTED */
+    /** @dev Passes the phase. TRUSTED */
     function passPhase() external {
         if (phase == Phase.staking) {
             require(now - lastPhaseChange >= minStakingTime, "The minimum staking time has not passed yet.");
@@ -387,7 +387,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         emit NewPhase(phase);
     }
 
-    /** @dev Pass the period of a specified dispute.
+    /** @dev Passes the period of a specified dispute.
      *  @param _disputeID The ID of the dispute.
      */
     function passPeriod(uint _disputeID) external {
@@ -427,7 +427,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         _setStake(msg.sender, _subcourtID, _stake);
     }
 
-    /** @dev Execute the next delayed set stakes.
+    /** @dev Executes the next delayed set stakes.
      *  @param _iterations The number of delayed set stakes to execute.
      */
     function executeDelayedSetStakes(uint _iterations) external onlyDuringPhase(Phase.staking) {
@@ -651,28 +651,16 @@ contract KlerosLiquid is TokenController, Arbitrator {
 
     /* External Views */
 
-    /** @dev Gets a specified subcourt.
+    /** @dev Gets a specified subcourt's non primitive properties.
      *  @param _subcourtID The ID of the subcourt.
-     *  @return The subcourt.
+     *  @return The subcourt's non primitive properties.
      */
     function getSubcourt(uint96 _subcourtID) external view returns(
-        uint96 parent,
         uint[] children,
-        bool hiddenVotes,
-        uint minStake,
-        uint alpha,
-        uint jurorFee,
-        uint jurorsForJump,
         uint[4] timesPerPeriod
     ) {
         Court storage subcourt = courts[_subcourtID];
-        parent = subcourt.parent;
         children = subcourt.children;
-        hiddenVotes = subcourt.hiddenVotes;
-        minStake = subcourt.minStake;
-        alpha = subcourt.alpha;
-        jurorFee = subcourt.jurorFee;
-        jurorsForJump = subcourt.jurorsForJump;
         timesPerPeriod = subcourt.timesPerPeriod;
     }
 
@@ -713,7 +701,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
 
     /** @dev Gets a specified dispute's non primitive properties.
      *  @param _disputeID The ID of the dispute.
-     *  @return The dispute.
+     *  @return The dispute's non primitive properties.
      */
     function getDispute(uint _disputeID) external view returns(
         uint[] jurorAtStake,
@@ -734,19 +722,15 @@ contract KlerosLiquid is TokenController, Arbitrator {
         }
     }
 
-    /** @dev Gets a specified juror.
+    /** @dev Gets a specified juror's non primitive properties.
      *  @param _account The address of the juror.
-     *  @return The juror.
+     *  @return The juror's non primitive properties.
      */
     function getJuror(address _account) external view returns(
-        uint96[] subcourtIDs,
-        uint stakedTokens,
-        uint lockedTokens
+        uint96[] subcourtIDs
     ) {
         Juror storage juror = jurors[_account];
         subcourtIDs = juror.subcourtIDs;
-        stakedTokens = juror.stakedTokens;
-        lockedTokens = juror.lockedTokens;
     }
 
     /** @dev Gets the stake of a specified juror in a specified subcourt.
@@ -792,7 +776,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         emit DisputeCreation(disputeID, Arbitrable(msg.sender));
     }
 
-    /** @dev Appeal the ruling of a specified dispute.
+    /** @dev Appeals the ruling of a specified dispute.
      *  @param _disputeID The ID of the dispute.
      *  @param _extraData Additional info about the appeal. Not used by this contract.
      */
@@ -881,6 +865,21 @@ contract KlerosLiquid is TokenController, Arbitrator {
                 cost = courts[courts[dispute.subcourtID].parent].jurorFee * ((lastNumberOfJurors * 2) + 1);
         } else // Stay in current subcourt.
             cost = courts[dispute.subcourtID].jurorFee * ((lastNumberOfJurors * 2) + 1);
+    }
+
+    /** @dev Gets the start and end of a specified dispute's current appeal period.
+     *  @param _disputeID The ID of the dispute.
+     *  @return The start and end of the appeal period.
+     */
+    function appealPeriod(uint _disputeID) public view returns(uint start, uint end) {
+        Dispute storage dispute = disputes[_disputeID];
+        if (dispute.period == Period.appeal) {
+            start = dispute.lastPeriodChange;
+            end = dispute.lastPeriodChange + courts[dispute.subcourtID].timesPerPeriod[uint(Period.appeal)];
+        } else {
+            start = 0;
+            end = 0;
+        }
     }
 
     /** @dev Gets the status of a specified dispute.
@@ -984,7 +983,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         }
     }
 
-    /** @dev Pack an account and a subcourt ID into a stake path ID.
+    /** @dev Packs an account and a subcourt ID into a stake path ID.
      *  @param _account The account to pack.
      *  @param _subcourtID The subcourt ID to pack.
      *  @return The stake path ID.
@@ -1002,7 +1001,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         }
     }
     
-    /** @dev Unpack a stake path ID into an account and a subcourt ID.
+    /** @dev Unpacks a stake path ID into an account and a subcourt ID.
      *  @param _stakePathID The stake path ID to unpack.
      *  @return The account and subcourt ID.
      */
