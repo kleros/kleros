@@ -716,6 +716,8 @@ contract KlerosLiquid is TokenController, Arbitrator {
         totalJurorFees = dispute.totalJurorFees;
         repartitionsPerRound = dispute.repartitionsPerRound;
         penaltiesPerRound = dispute.penaltiesPerRound;
+        tokenRewardPerRound = new uint[](dispute.rewardsPerRound.length);
+        ETHRewardPerRound = new uint[](dispute.rewardsPerRound.length);
         for (uint i = 0; i < dispute.rewardsPerRound.length; i++) {
             tokenRewardPerRound[i] = dispute.rewardsPerRound[i][0];
             ETHRewardPerRound[i] = dispute.rewardsPerRound[i][1];
