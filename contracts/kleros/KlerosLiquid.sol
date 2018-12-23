@@ -318,13 +318,13 @@ contract KlerosLiquid is TokenController, Arbitrator {
         courts[_parent].children.push(subcourtID);
     }
 
-    /** @dev Changes the `hiddenVotes` property value of a specified subcourt.
-     *  @param _subcourtID The ID of the subcourt.
-     *  @param _hiddenVotes The new value for the `hiddenVotes` property value.
-     */
-    function changeSubcourtHiddenVotes(uint96 _subcourtID, bool _hiddenVotes) external onlyByGovernor {
-        courts[_subcourtID].hiddenVotes = _hiddenVotes;
-    }
+    // /** @dev Changes the `hiddenVotes` property value of a specified subcourt.
+    //  *  @param _subcourtID The ID of the subcourt.
+    //  *  @param _hiddenVotes The new value for the `hiddenVotes` property value.
+    //  */
+    // function changeSubcourtHiddenVotes(uint96 _subcourtID, bool _hiddenVotes) external onlyByGovernor {
+    //     courts[_subcourtID].hiddenVotes = _hiddenVotes;
+    // }
 
     /** @dev Changes the `minStake` property value of a specified subcourt. Don't set to a value lower than its parent's `minStake` property value.
      *  @param _subcourtID The ID of the subcourt.
@@ -393,7 +393,10 @@ contract KlerosLiquid is TokenController, Arbitrator {
     function passPeriod(uint _disputeID) external {
         Dispute storage dispute = disputes[_disputeID];
         if (dispute.period == Period.evidence) {
-            require(now - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[uint(dispute.period)], "The evidence period time has not passed yet.");
+            require(
+                dispute.votes.length > 0 || now - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[uint(dispute.period)],
+                "The evidence period time has not passed yet."
+            );
             require(dispute.drawsInRound == dispute.votes[dispute.votes.length - 1].length, "The dispute has not finished drawing yet.");
             dispute.period = courts[dispute.subcourtID].hiddenVotes ? Period.commit : Period.vote;
         } else if (dispute.period == Period.commit) {
