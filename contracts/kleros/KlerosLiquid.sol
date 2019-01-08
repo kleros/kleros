@@ -27,7 +27,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
     enum Period {
       evidence, // Evidence can be submitted. This is also when drawing has to take place.
       commit, // Jurors commit a hashed vote. This is skipped for courts without hidden votes.
-      vote, // Jurors reveal/cast their vote depending on wether the court has hidden votes or not.
+      vote, // Jurors reveal/cast their vote depending on whether the court has hidden votes or not.
       appeal, // The dispute can be appealed.
       execution // Tokens are redistributed and the ruling is executed.
     }
@@ -38,7 +38,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
     struct Court {
         uint96 parent; // The parent court.
         uint[] children; // List of child courts.
-        bool hiddenVotes; // Wether to use commit and reveal or not.
+        bool hiddenVotes; // Whether to use commit and reveal or not.
         uint minStake; // Minimum tokens needed to stake in the court.
         uint alpha; // Basis point of tokens that are lost when incoherent.
         uint jurorFee; // Arbitration fee paid per juror.
@@ -817,7 +817,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
 
     /** @dev Called when `_owner` sends ether to the MiniMe Token contract.
      *  @param _owner The address that sent the ether to create tokens.
-     *  @return Wether the operation should be allowed or not.
+     *  @return Whether the operation should be allowed or not.
      */
     function proxyPayment(address _owner) public payable returns(bool allowed) { allowed = false; }
 
@@ -825,7 +825,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _from The origin of the transfer.
      *  @param _to The destination of the transfer.
      *  @param _amount The amount of the transfer.
-     *  @return Wether the operation should be allowed or not.
+     *  @return Whether the operation should be allowed or not.
      */
     function onTransfer(address _from, address _to, uint _amount) public returns(bool allowed) {
         if (lockInsolventTransfers) { // Never block penalties or rewards.
@@ -839,7 +839,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _owner The address that calls `approve()`.
      *  @param _spender The spender in the `approve()` call.
      *  @param _amount The amount in the `approve()` call.
-     *  @return Wether the operation should be allowed or not.
+     *  @return Whether the operation should be allowed or not.
      */
     function onApprove(address _owner, address _spender, uint _amount) public returns(bool allowed) { allowed = true; }
 
