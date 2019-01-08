@@ -602,9 +602,9 @@ contract KlerosLiquid is TokenController, Arbitrator {
         for (uint i = dispute.repartitionsPerRound[_appeal]; i < end; i++) {
             Vote storage vote = dispute.votes[_appeal][i % dispute.votes[_appeal].length];
             if (
-                vote.choice == dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice ||
-                (dispute.voteCounters[dispute.voteCounters.length - 1].tied && vote.voted)
-            ) { // Winning vote or it's a tie and the juror was not inactive.
+                vote.voted &&
+                (vote.choice == dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice || dispute.voteCounters[dispute.voteCounters.length - 1].tied)
+            ) { // Juror was active, and voted coherently or it was a tie.
                 if (i >= dispute.votes[_appeal].length) { // Only execute in the second half of the iterations.
 
                     // Reward.
@@ -614,7 +614,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
                     emit TokenAndETHShift(vote.account, _disputeID, int(tokenReward), int(ETHReward));
                     jurors[vote.account].lockedTokens -= dispute.jurorAtStake[_appeal];
                 }
-            } else { // Losing vote and it's not a tie where the juror was active.
+            } else { // Juror was inactive, or voted incoherently and it was not a tie.
                 if (i < dispute.votes[_appeal].length) { // Only execute in the first half of the iterations.
 
                     // Penalize.
