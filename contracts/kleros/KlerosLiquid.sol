@@ -116,9 +116,10 @@ contract KlerosLiquid is TokenController, Arbitrator {
     /** @dev Emitted when a juror is drawn.
      *  @param _address The drawn address.
      *  @param _disputeID The ID of the dispute.
+     *  @param _appeal The appeal the draw is for. 0 is for the first round.
      *  @param _voteID The vote ID.
      */
-    event Draw(address indexed _address, uint indexed _disputeID, uint _voteID);
+    event Draw(address indexed _address, uint indexed _disputeID, uint _appeal, uint _voteID);
 
     /** @dev Emitted when a juror wins or loses tokens and ETH from a dispute.
      *  @param _address The juror affected.
@@ -487,7 +488,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
             // Save the vote.
             dispute.votes[dispute.votes.length - 1][i].account = drawnAddress;
             jurors[msg.sender].lockedTokens += dispute.jurorAtStake[dispute.jurorAtStake.length - 1];
-            emit Draw(drawnAddress, _disputeID, i);
+            emit Draw(drawnAddress, _disputeID, dispute.votes.length - 1, i);
 
             // If dispute is fully drawn.
             if (i == dispute.votes[dispute.votes.length - 1].length - 1) disputesWithoutJurors--;
