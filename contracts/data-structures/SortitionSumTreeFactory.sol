@@ -145,7 +145,12 @@ library SortitionSumTreeFactory {
      *  @return The index at which leafs start, the values of the returned leafs, and wether there are more for pagination.
      *  Complexity: This function is O(n) where `n` is the max number of elements ever appended.
      */
-    function queryLeafs(SortitionSumTrees storage self, bytes32 _key, uint _cursor, uint _count) public view returns(uint startIndex, uint[] values, bool hasMore) {
+    function queryLeafs(
+        SortitionSumTrees storage self,
+        bytes32 _key,
+        uint _cursor,
+        uint _count
+    ) public view returns(uint startIndex, uint[] values, bool hasMore) {
         SortitionSumTree storage tree = self.sortitionSumTrees[_key];
 
         // Find the start index.

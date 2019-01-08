@@ -1,11 +1,12 @@
+/* solium-disable security/no-block-members */
 pragma solidity ^0.4.24;
 
-import "kleros-interaction/contracts/standard/rng/RNG.sol";
-import "kleros-interaction/contracts/standard/arbitration/Arbitrable.sol";
+import { TokenController } from "minimetoken/contracts/TokenController.sol";
+import { Arbitrator, Arbitrable } from "kleros-interaction/contracts/standard/arbitration/Arbitrable.sol";
 import { MiniMeTokenERC20 as Pinakion } from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
-import "minimetoken/contracts/TokenController.sol";
+import { RNG } from "kleros-interaction/contracts/standard/rng/RNG.sol";
 
-import "../data-structures/SortitionSumTreeFactory.sol";
+import { SortitionSumTreeFactory } from "../data-structures/SortitionSumTreeFactory.sol";
 
 /**
  *  @title KlerosLiquid
@@ -71,7 +72,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         uint numberOfChoices;
         Period period; // The current period of the dispute.
         uint lastPeriodChange; // The last time the period was changed.
-        // The votes in the form `votes[appeal][voteID]`. On each round, a new list is pushed and packed with as many empty votes as there are draws. We use `dispute.votes.length` to get the number of appeals.
+        // The votes in the form `votes[appeal][voteID]`. On each round, a new list is pushed and packed with as many empty votes as there are draws. We use `dispute.votes.length` to get the number of appeals plus 1 for the first round.
         Vote[][] votes;
         VoteCounter[] voteCounters; // The vote counters in the form `voteCounters[appeal]`.
         uint[] jurorAtStake; // The amount of tokens at stake for each juror in the form `jurorAtStake[appeal]`.
@@ -81,7 +82,6 @@ contract KlerosLiquid is TokenController, Arbitrator {
         uint votesInRound; // A counter of votes made in the current round.
         uint[] repartitionsPerRound; // A counter of vote reward repartitions made in each round in the form `repartitionsPerRound[appeal]`.
         uint[] penaltiesPerRound; // The amount of tokens collected from penalties in each round in the form `penaltiesPerRound[appeal]`.
-        uint[2][] rewardsPerRound; // The amount of tokens and ETH rewarded in each round in the form `rewardsPerRound[appeal][tokens, ETH]`.
         bool ruled; // True if the ruling has been executed, false otherwise.
     }
 
@@ -131,36 +131,40 @@ contract KlerosLiquid is TokenController, Arbitrator {
     /* Storage */
 
     // General Constants
-    uint public constant NON_PAYABLE_AMOUNT = (2 ** 256 - 2) / 2;
-    uint public constant ALPHA_DIVISOR = 1e4;
-    uint public constant MAX_STAKE_PATHS = 4;
+    uint public constant MAX_STAKE_PATHS = 4; // The maximum number of stake paths a juror can have.
+    uint public constant MIN_JURORS = 3; // The global default minimum number of jurors in a dispute.
+    uint public constant NON_PAYABLE_AMOUNT = (2 ** 256 - 2) / 2; // An amount higher than the supply of ETH.
+    uint public constant ALPHA_DIVISOR = 1e4; // The number to divide `Court.alpha` by.
     // General Contracts
-    address public governor;
-    Pinakion public pinakion;
-    RNG public RNGenerator;
+    address public governor; // The governor of the contract.
+    Pinakion public pinakion; // The Pinakion token contract.
+    RNG public RNGenerator; // The random number generator contract.
     // General Dynamic
-    Phase public phase;
-    uint public lastPhaseChange;
-    uint public disputesWithoutJurors;
+    Phase public phase; // The current phase.
+    uint public lastPhaseChange; // The last time the phase was changed.
+    uint public disputesWithoutJurors; // The number of disputes that have not finished drawing jurors.
+    // The block number to get the next random number from. Used so there is at least a 1 block difference from the staking phase.
     uint public RNBlock;
-    uint public RN;
-    uint public minStakingTime;
-    uint public maxDrawingTime;
+    uint public RN; // The current random number.
+    uint public minStakingTime; // The minimum staking time.
+    uint public maxDrawingTime; // The maximum drawing time.
+    // True if insolvent (`balance < stakedTokens || balance < lockedTokens`) token transfers should be blocked. Used to avoid blocking penalties.
     bool public lockInsolventTransfers = true;
     // General Storage
-    Court[] public courts;
-    using SortitionSumTreeFactory for SortitionSumTreeFactory.SortitionSumTrees;
-    SortitionSumTreeFactory.SortitionSumTrees internal sortitionSumTrees;
+    Court[] public courts; // The subcourts.
+    using SortitionSumTreeFactory for SortitionSumTreeFactory.SortitionSumTrees; // Use library functions for sortition sum trees.
+    SortitionSumTreeFactory.SortitionSumTrees internal sortitionSumTrees; // The sortition sum trees.
+    // The delayed calls to `setStake`. Used to schedule `setStake`s when not in the staking phase.
     mapping(uint => DelayedSetStake) public delayedSetStakes;
     // The index of the next `delayedSetStakes` item to execute. Starts at 1 because `lastDelayedSetStake` starts at 0.
     uint public nextDelayedSetStake = 1;
     uint public lastDelayedSetStake; // The index of the last `delayedSetStakes` item. 0 is skipped because it is the initial value.
 
     // Dispute
-    Dispute[] public disputes;
+    Dispute[] public disputes; // The disputes.
 
     // Juror
-    mapping(address => Juror) public jurors;
+    mapping(address => Juror) public jurors; // The jurors.
 
     /* Modifiers */
 
@@ -175,7 +179,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      */
     modifier onlyDuringPeriod(uint _disputeID, Period _period) {require(disputes[_disputeID].period == _period, "Incorrect period."); _;}
 
-    /** @dev Requires that the sender is the governor. */
+    /** @dev Requires that the sender is the governor. Note that the governor is expected to not be malicious. */
     modifier onlyByGovernor() {require(governor == msg.sender, "Can only be called by the governor."); _;}
 
     /* Constructor */
@@ -260,6 +264,10 @@ contract KlerosLiquid is TokenController, Arbitrator {
      */
     function changeRNGenerator(RNG _RNGenerator) external onlyByGovernor {
         RNGenerator = _RNGenerator;
+        if (phase == Phase.generating) {
+            RNBlock = block.number + 1;
+            RNGenerator.requestRN(RNBlock);
+        }
     }
 
     /** @dev Changes the `minStakingTime` storage variable.
@@ -296,7 +304,6 @@ contract KlerosLiquid is TokenController, Arbitrator {
         uint[4] _timesPerPeriod,
         uint _sortitionSumTreeK
     ) external onlyByGovernor {
-        require(courts.length < 2 ** 96, "Maximum number of subcourts reached.");
         require(courts[_parent].minStake <= _minStake, "A subcourt cannot be a child of a subcourt with a higher minimum stake.");
 
         // Create the subcourt.
@@ -318,19 +325,23 @@ contract KlerosLiquid is TokenController, Arbitrator {
         courts[_parent].children.push(subcourtID);
     }
 
-    // /** @dev Changes the `hiddenVotes` property value of a specified subcourt.
-    //  *  @param _subcourtID The ID of the subcourt.
-    //  *  @param _hiddenVotes The new value for the `hiddenVotes` property value.
-    //  */
-    // function changeSubcourtHiddenVotes(uint96 _subcourtID, bool _hiddenVotes) external onlyByGovernor {
-    //     courts[_subcourtID].hiddenVotes = _hiddenVotes;
-    // }
+    /** @dev Changes the `hiddenVotes` property value of a specified subcourt.
+     *  @param _subcourtID The ID of the subcourt.
+     *  @param _hiddenVotes The new value for the `hiddenVotes` property value.
+     */
+    function changeSubcourtHiddenVotes(uint96 _subcourtID, bool _hiddenVotes) external onlyByGovernor {
+        courts[_subcourtID].hiddenVotes = _hiddenVotes;
+    }
 
     /** @dev Changes the `minStake` property value of a specified subcourt. Don't set to a value lower than its parent's `minStake` property value.
      *  @param _subcourtID The ID of the subcourt.
      *  @param _minStake The new value for the `minStake` property value.
      */
     function changeSubcourtMinStake(uint96 _subcourtID, uint _minStake) external onlyByGovernor {
+        require(
+            courts[_subcourtID].parent == _subcourtID || courts[courts[_subcourtID].parent].minStake <= _minStake,
+            "A subcourt cannot be a child of a subcourt with a higher minimum stake."
+        );
         courts[_subcourtID].minStake = _minStake;
     }
 
@@ -394,7 +405,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         Dispute storage dispute = disputes[_disputeID];
         if (dispute.period == Period.evidence) {
             require(
-                dispute.votes.length > 0 || now - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[uint(dispute.period)],
+                dispute.votes.length > 1 || now - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[uint(dispute.period)],
                 "The evidence period time has not passed yet."
             );
             require(dispute.drawsInRound == dispute.votes[dispute.votes.length - 1].length, "The dispute has not finished drawing yet.");
@@ -437,6 +448,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         uint actualIterations = (nextDelayedSetStake + _iterations) - 1 > lastDelayedSetStake ?
             (lastDelayedSetStake - nextDelayedSetStake) + 1 : _iterations;
         uint newNextDelayedSetStake = nextDelayedSetStake + actualIterations;
+        require(newNextDelayedSetStake >= nextDelayedSetStake); // solium-disable-line error-reason
         for (uint i = nextDelayedSetStake; i < newNextDelayedSetStake; i++) {
             DelayedSetStake storage delayedSetStake = delayedSetStakes[i];
             this.call( // solium-disable-line security/no-low-level-calls
@@ -461,6 +473,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
     ) external onlyDuringPhase(Phase.drawing) onlyDuringPeriod(_disputeID, Period.evidence) {
         Dispute storage dispute = disputes[_disputeID];
         uint endIndex = dispute.drawsInRound + _iterations;
+        require(endIndex >= dispute.drawsInRound); // solium-disable-line error-reason
 
         // Avoid going out of range.
         if (endIndex > dispute.votes[dispute.votes.length - 1].length) endIndex = dispute.votes[dispute.votes.length - 1].length;
@@ -479,22 +492,22 @@ contract KlerosLiquid is TokenController, Arbitrator {
             // If dispute is fully drawn.
             if (i == dispute.votes[dispute.votes.length - 1].length - 1) disputesWithoutJurors--;
         }
-        dispute.drawsInRound += endIndex - dispute.drawsInRound;
+        dispute.drawsInRound = endIndex;
     }
 
-    /** @dev Sets the caller's commits for the specified votes.
+    /** @dev Sets the caller's commit for the specified votes.
      *  `O(n)` where
-     *  `n` is the number of commits.
+     *  `n` is the number of votes.
      *  @param _disputeID The ID of the dispute.
      *  @param _voteIDs The IDs of the votes.
-     *  @param _commits The commits.
+     *  @param _commit The commit.
      */
-    function commit(uint _disputeID, uint[] _voteIDs, bytes32[] _commits) external onlyDuringPeriod(_disputeID, Period.commit) {
+    function commit(uint _disputeID, uint[] _voteIDs, bytes32 _commit) external onlyDuringPeriod(_disputeID, Period.commit) {
         Dispute storage dispute = disputes[_disputeID];
         for (uint i = 0; i < _voteIDs.length; i++) {
             require(dispute.votes[dispute.votes.length - 1][_voteIDs[i]].account == msg.sender, "The caller has to own the vote.");
             require(dispute.votes[dispute.votes.length - 1][_voteIDs[i]].commit == bytes32(0), "Already committed this vote.");
-            dispute.votes[dispute.votes.length - 1][_voteIDs[i]].commit = _commits[i];
+            dispute.votes[dispute.votes.length - 1][_voteIDs[i]].commit = _commit;
         }
         dispute.commitsInRound += _voteIDs.length;
     }
@@ -505,17 +518,18 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _disputeID The ID of the dispute.
      *  @param _voteIDs The IDs of the votes.
      *  @param _choice The choice.
-     *  @param _salts The salts for the commits if the votes were hidden.
+     *  @param _salt The salt for the commit if the votes were hidden.
      */
-    function vote(uint _disputeID, uint[] _voteIDs, uint _choice, uint[] _salts) external onlyDuringPeriod(_disputeID, Period.vote) {
+    function vote(uint _disputeID, uint[] _voteIDs, uint _choice, uint _salt) external onlyDuringPeriod(_disputeID, Period.vote) {
         Dispute storage dispute = disputes[_disputeID];
+        require(_voteIDs.length > 0); // solium-disable-line error-reason
+        require(dispute.numberOfChoices >= _choice, "The choice has to be less than or equal to the number of choices for the dispute.");
 
         // Save the votes.
         for (uint i = 0; i < _voteIDs.length; i++) {
             require(dispute.votes[dispute.votes.length - 1][_voteIDs[i]].account == msg.sender, "The caller has to own the vote.");
-            require(dispute.numberOfChoices >= _choice, "The choice has to be less than or equal to the number of choices for the dispute.");
             require(
-                !courts[dispute.subcourtID].hiddenVotes || dispute.votes[dispute.votes.length - 1][_voteIDs[i]].commit == keccak256(_choice, _salts[i]),
+                !courts[dispute.subcourtID].hiddenVotes || dispute.votes[dispute.votes.length - 1][_voteIDs[i]].commit == keccak256(_choice, _salt),
                 "The commit must match the choice in subcourts with hidden votes."
             );
             require(!dispute.votes[dispute.votes.length - 1][_voteIDs[i]].voted, "Vote already cast.");
@@ -576,7 +590,9 @@ contract KlerosLiquid is TokenController, Arbitrator {
         lockInsolventTransfers = false;
         Dispute storage dispute = disputes[_disputeID];
         uint end = dispute.repartitionsPerRound[_appeal] + _iterations;
+        require(end >= dispute.repartitionsPerRound[_appeal]); // solium-disable-line error-reason
         uint penaltiesInRoundCache = dispute.penaltiesPerRound[_appeal]; // For saving gas.
+        (uint tokenReward, uint ETHReward) = (0, 0);
 
         // Avoid going out of range.
         if (
@@ -587,15 +603,15 @@ contract KlerosLiquid is TokenController, Arbitrator {
             if (end > dispute.votes[_appeal].length) end = dispute.votes[_appeal].length;
         } else {
             // We loop over the votes twice, first to collect penalties, and second to distribute them as rewards along with arbitration fees.
-            (uint tokenReward, uint ETHReward) = dispute.repartitionsPerRound[_appeal] >= dispute.votes[_appeal].length ? computeTokenAndETHRewards(_disputeID, _appeal) : (0, 0);
+            (tokenReward, ETHReward) = dispute.repartitionsPerRound[_appeal] >= dispute.votes[_appeal].length ? computeTokenAndETHRewards(_disputeID, _appeal) : (0, 0);
             if (end > dispute.votes[_appeal].length * 2) end = dispute.votes[_appeal].length * 2;
         }
         for (uint i = dispute.repartitionsPerRound[_appeal]; i < end; i++) {
             Vote storage vote = dispute.votes[_appeal][i % dispute.votes[_appeal].length];
             if (
                 vote.choice == dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice ||
-                dispute.voteCounters[dispute.voteCounters.length - 1].tied
-            ) { // Winning vote or it's a tie.
+                (dispute.voteCounters[dispute.voteCounters.length - 1].tied && vote.voted)
+            ) { // Winning vote or it's a tie and the juror was not inactive.
                 if (i >= dispute.votes[_appeal].length) { // Only execute in the second half of the iterations.
 
                     // Reward.
@@ -605,7 +621,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
                     emit TokenAndETHShift(vote.account, _disputeID, int(tokenReward), int(ETHReward));
                     jurors[vote.account].lockedTokens -= dispute.jurorAtStake[_appeal];
                 }
-            } else { // Losing vote and it's not a tie.
+            } else { // Losing vote and it's not a tie where the juror was active.
                 if (i < dispute.votes[_appeal].length) { // Only execute in the first half of the iterations.
 
                     // Penalize.
@@ -625,7 +641,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
                 }
             }
             if (i == dispute.votes[_appeal].length - 1) {
-                // Send fees to the governor if it is not a tie and no one in this round is coherent with the final outcome.
+                // Send fees and tokens to the governor if it is not a tie and no one in this round is coherent with the final outcome.
                 if (!dispute.voteCounters[dispute.voteCounters.length - 1].tied && dispute.voteCounters[_appeal].counts[dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice] == 0)
                     // Intentional use to avoid blocking.
                     governor.send(dispute.totalJurorFees[_appeal]); // solium-disable-line security/no-send
@@ -636,7 +652,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
             }
         }
         if (dispute.penaltiesPerRound[_appeal] != penaltiesInRoundCache) dispute.penaltiesPerRound[_appeal] = penaltiesInRoundCache;
-        dispute.repartitionsPerRound[_appeal] += end - dispute.repartitionsPerRound[_appeal];
+        dispute.repartitionsPerRound[_appeal] = end;
         lockInsolventTransfers = true;
     }
 
@@ -710,21 +726,13 @@ contract KlerosLiquid is TokenController, Arbitrator {
         uint[] jurorAtStake,
         uint[] totalJurorFees,
         uint[] repartitionsPerRound,
-        uint[] penaltiesPerRound,
-        uint[] tokenRewardPerRound,
-        uint[] ETHRewardPerRound
+        uint[] penaltiesPerRound
     ) {
         Dispute storage dispute = disputes[_disputeID];
         jurorAtStake = dispute.jurorAtStake;
         totalJurorFees = dispute.totalJurorFees;
         repartitionsPerRound = dispute.repartitionsPerRound;
         penaltiesPerRound = dispute.penaltiesPerRound;
-        tokenRewardPerRound = new uint[](dispute.rewardsPerRound.length);
-        ETHRewardPerRound = new uint[](dispute.rewardsPerRound.length);
-        for (uint i = 0; i < dispute.rewardsPerRound.length; i++) {
-            tokenRewardPerRound[i] = dispute.rewardsPerRound[i][0];
-            ETHRewardPerRound[i] = dispute.rewardsPerRound[i][1];
-        }
     }
 
     /** @dev Gets a specified juror's non primitive properties.
@@ -775,7 +783,6 @@ contract KlerosLiquid is TokenController, Arbitrator {
         dispute.totalJurorFees.push(msg.value);
         dispute.repartitionsPerRound.push(0);
         dispute.penaltiesPerRound.push(0);
-        dispute.rewardsPerRound.length++;
         disputesWithoutJurors++;
 
         emit DisputeCreation(disputeID, Arbitrable(msg.sender));
@@ -791,7 +798,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
     ) public payable requireAppealFee(_disputeID, _extraData) onlyDuringPeriod(_disputeID, Period.appeal) {
         Dispute storage dispute = disputes[_disputeID];
         require(
-            msg.sender == governor || msg.sender == address(dispute.arbitrated),
+            msg.sender == address(dispute.arbitrated),
             "Can only be called by the governor or the arbitrable contract."
         );
         if (dispute.votes[dispute.votes.length - 1].length >= courts[dispute.subcourtID].jurorsForJump) // Jump to parent subcourt.
@@ -810,7 +817,6 @@ contract KlerosLiquid is TokenController, Arbitrator {
         dispute.votesInRound = 0;
         dispute.repartitionsPerRound.push(0);
         dispute.penaltiesPerRound.push(0);
-        dispute.rewardsPerRound.length++;
         disputesWithoutJurors++;
 
         emit AppealDecision(_disputeID, Arbitrable(msg.sender));
@@ -958,12 +964,10 @@ contract KlerosLiquid is TokenController, Arbitrator {
         uint currentSubcourtID = _subcourtID;
         while (!finished) {
             uint currentSubcourtStake = sortitionSumTrees.stakeOf(bytes32(currentSubcourtID), stakePathID);
-            if (currentSubcourtStake == 0) sortitionSumTrees.append(bytes32(currentSubcourtID), _stake, stakePathID);
-            else sortitionSumTrees.set(
-                bytes32(currentSubcourtID),
-                _stake,
-                stakePathID
-            );
+            if (currentSubcourtStake == 0 && _stake != 0) sortitionSumTrees.append(bytes32(currentSubcourtID), _stake, stakePathID);
+            else if (currentSubcourtStake != 0 && _stake != 0) sortitionSumTrees.set(bytes32(currentSubcourtID), _stake, stakePathID);
+            else if (currentSubcourtStake != 0 && _stake == 0) sortitionSumTrees.remove(bytes32(currentSubcourtID), stakePathID);
+
             if (currentSubcourtID == 0) finished = true;
             else currentSubcourtID = courts[currentSubcourtID].parent;
         }
@@ -971,7 +975,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
     }
 
     /** @dev Gets a subcourt ID and the minimum number of jurors required from a specified extra data bytes array.
-     *  @param _extraData The extra data.
+     *  @param _extraData The extra data bytes array. The first 32 bytes are the subcourt ID and the next 32 bytes are the minimum number of jurors.
      *  @return The subcourt ID and the minimum number of jurors required.
      */
     function extraDataToSubcourtIDAndMinJurors(bytes _extraData) internal view returns (uint96 subcourtID, uint minJurors) {
@@ -981,10 +985,10 @@ contract KlerosLiquid is TokenController, Arbitrator {
                 minJurors := mload(add(_extraData, 0x40))
             }
             if (subcourtID >= courts.length) subcourtID = 0;
-            if (minJurors == 0) minJurors = 1;
+            if (minJurors == 0) minJurors = MIN_JURORS;
         } else {
             subcourtID = 0;
-            minJurors = 1;
+            minJurors = MIN_JURORS;
         }
     }
 
