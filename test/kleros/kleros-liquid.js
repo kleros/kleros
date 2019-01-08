@@ -180,14 +180,6 @@ contract('KlerosLiquid', accounts =>
     )
 
     // Test subcourt governance
-    // await checkOnlyByGovernor(
-    //   async () => (await klerosLiquid.courts(0))[1],
-    //   subcourtTree.hiddenVotes,
-    //   (nextValue, ...args) =>
-    //     klerosLiquid.changeSubcourtHiddenVotes(0, nextValue, ...args),
-    //   true,
-    //   accounts[2]
-    // )
     await checkOnlyByGovernor(
       async () => (await klerosLiquid.courts(0))[2],
       subcourtTree.minStake,

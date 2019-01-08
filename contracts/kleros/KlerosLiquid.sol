@@ -326,14 +326,6 @@ contract KlerosLiquid is TokenController, Arbitrator {
         courts[_parent].children.push(subcourtID);
     }
 
-    /** @dev Changes the `hiddenVotes` property value of a specified subcourt.
-     *  @param _subcourtID The ID of the subcourt.
-     *  @param _hiddenVotes The new value for the `hiddenVotes` property value.
-     */
-    function changeSubcourtHiddenVotes(uint96 _subcourtID, bool _hiddenVotes) external onlyByGovernor {
-        courts[_subcourtID].hiddenVotes = _hiddenVotes;
-    }
-
     /** @dev Changes the `minStake` property value of a specified subcourt. Don't set to a value lower than its parent's `minStake` property value.
      *  @param _subcourtID The ID of the subcourt.
      *  @param _minStake The new value for the `minStake` property value.
