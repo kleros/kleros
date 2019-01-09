@@ -80,14 +80,16 @@ contract KlerosLiquid is TokenController, Arbitrator {
         uint drawsInRound; // A counter of draws made in the current round.
         uint commitsInRound; // A counter of commits made in the current round.
         uint votesInRound; // A counter of votes made in the current round.
-        uint[] repartitionsPerRound; // A counter of vote reward repartitions made in each round in the form `repartitionsPerRound[appeal]`.
-        uint[] penaltiesPerRound; // The amount of tokens collected from penalties in each round in the form `penaltiesPerRound[appeal]`.
+        // A counter of vote reward repartitions made in each round in the form `repartitionsInEachRound[appeal]`.
+        uint[] repartitionsInEachRound;
+        uint[] penaltiesInEachRound; // The amount of tokens collected from penalties in each round in the form `penaltiesInEachRound[appeal]`.
         bool ruled; // True if the ruling has been executed, false otherwise.
     }
 
     // Juror
     struct Juror {
-        uint96[] subcourtIDs; // The IDs of subcourts where the juror has stake path ends.
+        // The IDs of subcourts where the juror has stake path ends. A stake path is a path from the general court to a court the juror directly staked in using `_setStake`.
+        uint96[] subcourtIDs;
         uint stakedTokens; // The juror's total amount of tokens staked in subcourts.
         uint lockedTokens; // The juror's total amount of tokens locked in disputes.
     }
@@ -155,7 +157,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
     Court[] public courts; // The subcourts.
     using SortitionSumTreeFactory for SortitionSumTreeFactory.SortitionSumTrees; // Use library functions for sortition sum trees.
     SortitionSumTreeFactory.SortitionSumTrees internal sortitionSumTrees; // The sortition sum trees.
-    // The delayed calls to `setStake`. Used to schedule `setStake`s when not in the staking phase.
+    // The delayed calls to `_setStake`. Used to schedule `_setStake`s when not in the staking phase.
     mapping(uint => DelayedSetStake) public delayedSetStakes;
     // The index of the next `delayedSetStakes` item to execute. Starts at 1 because `lastDelayedSetStake` starts at 0.
     uint public nextDelayedSetStake = 1;
@@ -399,7 +401,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         if (dispute.period == Period.evidence) {
             require(
                 dispute.votes.length > 1 || now - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[uint(dispute.period)],
-                "The evidence period time has not passed yet."
+                "The evidence period time has not passed yet and it is not an appeal."
             );
             require(dispute.drawsInRound == dispute.votes[dispute.votes.length - 1].length, "The dispute has not finished drawing yet.");
             dispute.period = courts[dispute.subcourtID].hiddenVotes ? Period.commit : Period.vote;
@@ -562,7 +564,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
             ETHReward = dispute.totalJurorFees[_appeal] / dispute.votes[_appeal].length; // Distribute fees evenly.
         } else {
             // Distribute penalties and fees evenly between coherent jurors.
-            tokenReward = dispute.penaltiesPerRound[_appeal] / coherentCount;
+            tokenReward = dispute.penaltiesInEachRound[_appeal] / coherentCount;
             ETHReward = dispute.totalJurorFees[_appeal] / coherentCount;
         }
     }
@@ -582,9 +584,9 @@ contract KlerosLiquid is TokenController, Arbitrator {
     function execute(uint _disputeID, uint _appeal, uint _iterations) external onlyDuringPeriod(_disputeID, Period.execution) {
         lockInsolventTransfers = false;
         Dispute storage dispute = disputes[_disputeID];
-        uint end = dispute.repartitionsPerRound[_appeal] + _iterations;
-        require(end >= dispute.repartitionsPerRound[_appeal]); // solium-disable-line error-reason
-        uint penaltiesInRoundCache = dispute.penaltiesPerRound[_appeal]; // For saving gas.
+        uint end = dispute.repartitionsInEachRound[_appeal] + _iterations;
+        require(end >= dispute.repartitionsInEachRound[_appeal]); // solium-disable-line error-reason
+        uint penaltiesInRoundCache = dispute.penaltiesInEachRound[_appeal]; // For saving gas.
         (uint tokenReward, uint ETHReward) = (0, 0);
 
         // Avoid going out of range.
@@ -596,10 +598,10 @@ contract KlerosLiquid is TokenController, Arbitrator {
             if (end > dispute.votes[_appeal].length) end = dispute.votes[_appeal].length;
         } else {
             // We loop over the votes twice, first to collect penalties, and second to distribute them as rewards along with arbitration fees.
-            (tokenReward, ETHReward) = dispute.repartitionsPerRound[_appeal] >= dispute.votes[_appeal].length ? computeTokenAndETHRewards(_disputeID, _appeal) : (0, 0);
+            (tokenReward, ETHReward) = dispute.repartitionsInEachRound[_appeal] >= dispute.votes[_appeal].length ? computeTokenAndETHRewards(_disputeID, _appeal) : (0, 0); // Compute rewards if rewarding.
             if (end > dispute.votes[_appeal].length * 2) end = dispute.votes[_appeal].length * 2;
         }
-        for (uint i = dispute.repartitionsPerRound[_appeal]; i < end; i++) {
+        for (uint i = dispute.repartitionsInEachRound[_appeal]; i < end; i++) {
             Vote storage vote = dispute.votes[_appeal][i % dispute.votes[_appeal].length];
             if (
                 vote.voted &&
@@ -639,13 +641,13 @@ contract KlerosLiquid is TokenController, Arbitrator {
                     // Intentional use to avoid blocking.
                     governor.send(dispute.totalJurorFees[_appeal]); // solium-disable-line security/no-send
                 else {
-                    dispute.penaltiesPerRound[_appeal] = penaltiesInRoundCache;
-                    (tokenReward, ETHReward) = computeTokenAndETHRewards(_disputeID, _appeal);
+                    dispute.penaltiesInEachRound[_appeal] = penaltiesInRoundCache;
+                    (tokenReward, ETHReward) = computeTokenAndETHRewards(_disputeID, _appeal); // Compute rewards because we are going into rewarding.
                 }
             }
         }
-        if (dispute.penaltiesPerRound[_appeal] != penaltiesInRoundCache) dispute.penaltiesPerRound[_appeal] = penaltiesInRoundCache;
-        dispute.repartitionsPerRound[_appeal] = end;
+        if (dispute.penaltiesInEachRound[_appeal] != penaltiesInRoundCache) dispute.penaltiesInEachRound[_appeal] = penaltiesInRoundCache;
+        dispute.repartitionsInEachRound[_appeal] = end;
         lockInsolventTransfers = true;
     }
 
@@ -718,14 +720,14 @@ contract KlerosLiquid is TokenController, Arbitrator {
     function getDispute(uint _disputeID) external view returns(
         uint[] jurorAtStake,
         uint[] totalJurorFees,
-        uint[] repartitionsPerRound,
-        uint[] penaltiesPerRound
+        uint[] repartitionsInEachRound,
+        uint[] penaltiesInEachRound
     ) {
         Dispute storage dispute = disputes[_disputeID];
         jurorAtStake = dispute.jurorAtStake;
         totalJurorFees = dispute.totalJurorFees;
-        repartitionsPerRound = dispute.repartitionsPerRound;
-        penaltiesPerRound = dispute.penaltiesPerRound;
+        repartitionsInEachRound = dispute.repartitionsInEachRound;
+        penaltiesInEachRound = dispute.penaltiesInEachRound;
     }
 
     /** @dev Gets a specified juror's non primitive properties.
@@ -774,8 +776,8 @@ contract KlerosLiquid is TokenController, Arbitrator {
         dispute.voteCounters[dispute.voteCounters.length - 1].tied = true;
         dispute.jurorAtStake.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalJurorFees.push(msg.value);
-        dispute.repartitionsPerRound.push(0);
-        dispute.penaltiesPerRound.push(0);
+        dispute.repartitionsInEachRound.push(0);
+        dispute.penaltiesInEachRound.push(0);
         disputesWithoutJurors++;
 
         emit DisputeCreation(disputeID, Arbitrable(msg.sender));
@@ -808,8 +810,8 @@ contract KlerosLiquid is TokenController, Arbitrator {
         dispute.drawsInRound = 0;
         dispute.commitsInRound = 0;
         dispute.votesInRound = 0;
-        dispute.repartitionsPerRound.push(0);
-        dispute.penaltiesPerRound.push(0);
+        dispute.repartitionsInEachRound.push(0);
+        dispute.penaltiesInEachRound.push(0);
         disputesWithoutJurors++;
 
         emit AppealDecision(_disputeID, Arbitrable(msg.sender));
