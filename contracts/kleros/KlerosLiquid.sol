@@ -718,12 +718,15 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @return The dispute's non primitive properties.
      */
     function getDispute(uint _disputeID) external view returns(
+        uint[] votesLengths,
         uint[] jurorAtStake,
         uint[] totalJurorFees,
         uint[] repartitionsInEachRound,
         uint[] penaltiesInEachRound
     ) {
         Dispute storage dispute = disputes[_disputeID];
+        votesLengths = new uint[](dispute.votes.length);
+        for (uint i = 0; i < dispute.votes.length; i++) votesLengths[i] = dispute.votes[i].length;
         jurorAtStake = dispute.jurorAtStake;
         totalJurorFees = dispute.totalJurorFees;
         repartitionsInEachRound = dispute.repartitionsInEachRound;
