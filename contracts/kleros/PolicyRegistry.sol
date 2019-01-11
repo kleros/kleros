@@ -6,26 +6,18 @@ pragma solidity ^0.4.24;
  *  @dev A contract to maintain a policy for each subcourt.
  */
 contract PolicyRegistry {
-    /* Structs */
-
-    struct Policy {
-        string fileURI;
-        bytes32 fileHash;
-    }
-
     /* Events */
 
     /** @dev Emitted when a policy is updated.
      *  @param _subcourtID The ID of the policy's subcourt.
-     *  @param _fileURI The URI to the file containing the policy text.
-     *  @param _fileHash The hash of the file's contents.
+     *  @param _policy The URI of the policy JSON.
      */
-    event PolicyUpdate(uint indexed _subcourtID, string _fileURI, bytes32 _fileHash);
+    event PolicyUpdate(uint indexed _subcourtID, string _policy);
 
     /* Storage */
 
     address public governor;
-    mapping(uint => Policy) public policies;
+    mapping(uint => string) public policies;
 
     /* Modifiers */
 
@@ -48,15 +40,10 @@ contract PolicyRegistry {
 
     /** @dev Sets the policy for the specified subcourt.
      *  @param _subcourtID The ID of the specified subcourt.
-     *  @param _fileURI The URI to the file containing the policy text.
-     *  @param _fileHash The hash of the file's contents.
+     *  @param _policy The URI of the policy JSON.
      */
-    function setPolicy(uint _subcourtID, string _fileURI, bytes32 _fileHash) external onlyByGovernor {
-        Policy storage policy = policies[_subcourtID];
-        emit PolicyUpdate(_subcourtID, policy.fileURI, policy.fileHash);
-        policies[_subcourtID] = Policy({
-            fileURI: _fileURI,
-            fileHash: _fileHash
-        });
+    function setPolicy(uint _subcourtID, string _policy) external onlyByGovernor {
+        emit PolicyUpdate(_subcourtID, policies[_subcourtID]);
+        policies[_subcourtID] = _policy;
     }
 }
