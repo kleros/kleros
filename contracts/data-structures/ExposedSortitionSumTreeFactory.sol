@@ -46,26 +46,6 @@ contract ExposedSortitionSumTreeFactory {
     }
 
     /**
-     *  @dev Append a value to a tree.
-     *  @param _key The key of the tree to append to.
-     *  @param _value The value to append.
-     *  @param _ID The ID of the value.
-     *  @return The index of the appended value in the tree.
-     */
-    function _append(bytes32 _key, uint _value, bytes32 _ID) public returns(uint treeIndex) {
-        return sortitionSumTrees.append(_key, _value, _ID);
-    }
-
-    /**
-     *  @dev Remove a value from a tree.
-     *  @param _key The key of the tree to remove from.
-     *  @param _ID The ID of the value.
-     */
-    function _remove(bytes32 _key, bytes32 _ID) public {
-        sortitionSumTrees.remove(_key, _ID);
-    }
-
-    /**
      *  @dev Set a value of a tree.
      *  @param _key The key of the tree.
      *  @param _value The new value.

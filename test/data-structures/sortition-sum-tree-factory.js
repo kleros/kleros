@@ -38,12 +38,12 @@ contract('SortitionSumTreeFactory', () =>
     }
     await sortitionSumTreeFactory._createTree(tree.key, tree.K)
     for (const candidate of Object.values(candidates)) {
-      candidate.treeIndex = await sortitionSumTreeFactory._append.call(
+      candidate.treeIndex = await sortitionSumTreeFactory._set.call(
         tree.key,
         candidate.value,
         candidate.ID
       )
-      await sortitionSumTreeFactory._append(
+      await sortitionSumTreeFactory._set(
         tree.key,
         candidate.value,
         candidate.ID
@@ -69,16 +69,16 @@ contract('SortitionSumTreeFactory', () =>
     )
 
     // Remove Carl to draw Dave with 27 and add him back in to draw him again
-    await sortitionSumTreeFactory._remove(tree.key, candidates.carl.ID)
+    await sortitionSumTreeFactory._set(tree.key, 0, candidates.carl.ID)
     expect(await sortitionSumTreeFactory._draw(tree.key, 27)).to.equal(
       candidates.dave.ID
     )
-    candidates.carl.treeIndex = await sortitionSumTreeFactory._append.call(
+    candidates.carl.treeIndex = await sortitionSumTreeFactory._set.call(
       tree.key,
       candidates.carl.value,
       candidates.carl.ID
     )
-    await sortitionSumTreeFactory._append(
+    await sortitionSumTreeFactory._set(
       tree.key,
       candidates.carl.value,
       candidates.carl.ID

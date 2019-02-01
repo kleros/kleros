@@ -9,7 +9,8 @@ library SortitionSumTreeFactory {
     /* Structs */
 
     struct SortitionSumTree {
-        uint K;
+        uint K; // The maximum number of childs per node.
+        // We use this to keep track of vacant positions in the tree after removing a leaf. This is for keeping the tree as balanced as possible without spending gas on moving nodes around.
         uint[] stack;
         uint[] nodes;
         // Two-way mapping of IDs to node indexes. Note that node index 0 is reserved for the root node, and means the ID does not have a node.
@@ -53,97 +54,86 @@ library SortitionSumTreeFactory {
     }
 
     /**
-     *  @dev Append a value to a tree.
-     *  @param _key The key of the tree to append to.
-     *  @param _value The value to append.
-     *  @param _ID The ID of the value.
-     *  @return The index of the appended value in the tree.
-     */
-    function append(SortitionSumTrees storage self, bytes32 _key, uint _value, bytes32 _ID) public returns(uint treeIndex) {
-        SortitionSumTree storage tree = self.sortitionSumTrees[_key];
-        require(tree.IDsToTreeIndexes[_ID] == 0, "ID already has a value in this tree.");
-        
-        // Add node.
-        if (tree.stack.length == 0) { // No vacant spots.
-            // Get the index and append the value.
-            treeIndex = tree.nodes.length;
-            tree.nodes.push(_value);
-
-            // Potentially append a new node and make the parent a sum node.
-            if (treeIndex != 1 && (treeIndex - 1) % tree.K == 0) { // Is first child.
-                uint parentIndex = treeIndex / tree.K;
-                bytes32 parentID = tree.nodeIndexesToIDs[parentIndex];
-                uint newIndex = treeIndex + 1;
-                tree.nodes.push(tree.nodes[parentIndex]);
-                delete tree.nodeIndexesToIDs[parentIndex];
-                tree.IDsToTreeIndexes[parentID] = newIndex;
-                tree.nodeIndexesToIDs[newIndex] = parentID;
-            }
-        } else { // Some vacant spot.
-            // Pop the stack and append the value.
-            treeIndex = tree.stack[tree.stack.length - 1];
-            tree.stack.length--;
-            tree.nodes[treeIndex] = _value;
-        }
-
-        // Add label.
-        tree.IDsToTreeIndexes[_ID] = treeIndex;
-        tree.nodeIndexesToIDs[treeIndex] = _ID;
-
-        updateParents(self, _key, treeIndex, true, _value);
-    }
-
-    /**
-     *  @dev Remove a value from a tree.
-     *  @param _key The key of the tree to remove from.
-     *  @param _ID The ID of the value.
-     */
-    function remove(SortitionSumTrees storage self, bytes32 _key, bytes32 _ID) public {
-        SortitionSumTree storage tree = self.sortitionSumTrees[_key];
-        uint treeIndex = tree.IDsToTreeIndexes[_ID];
-        require(treeIndex != 0, "ID does not have a value in this tree.");
-
-        // Remember value and set to 0.
-        uint value = tree.nodes[treeIndex];
-        tree.nodes[treeIndex] = 0;
-
-        // Push to stack.
-        tree.stack.push(treeIndex);
-
-        // Clear label.
-        delete tree.IDsToTreeIndexes[tree.nodeIndexesToIDs[treeIndex]];
-        delete tree.nodeIndexesToIDs[treeIndex];
-
-        updateParents(self, _key, treeIndex, false, value);
-    }
-
-    /**
      *  @dev Set a value of a tree.
      *  @param _key The key of the tree.
      *  @param _value The new value.
      *  @param _ID The ID of the value.
+     *  `O(log_k(n))` where
+     *  `k` is the maximum number of childs per node in the tree,
+     *   and `n` is the maximum number of nodes ever appended.
      */
     function set(SortitionSumTrees storage self, bytes32 _key, uint _value, bytes32 _ID) public {
         SortitionSumTree storage tree = self.sortitionSumTrees[_key];
         uint treeIndex = tree.IDsToTreeIndexes[_ID];
-        require(treeIndex != 0, "ID does not have a value in this tree.");
 
-        bool plusOrMinus = tree.nodes[treeIndex] <= _value;
-        uint plusOrMinusValue = plusOrMinus ? _value - tree.nodes[treeIndex] : tree.nodes[treeIndex] - _value;
-        tree.nodes[treeIndex] = _value;
+        if (treeIndex == 0) { // No existing node.
+            if (_value != 0) { // Non zero value.
+                // Append.
+                // Add node.
+                if (tree.stack.length == 0) { // No vacant spots.
+                    // Get the index and append the value.
+                    treeIndex = tree.nodes.length;
+                    tree.nodes.push(_value);
 
-        updateParents(self, _key, treeIndex, plusOrMinus, plusOrMinusValue);
+                    // Potentially append a new node and make the parent a sum node.
+                    if (treeIndex != 1 && (treeIndex - 1) % tree.K == 0) { // Is first child.
+                        uint parentIndex = treeIndex / tree.K;
+                        bytes32 parentID = tree.nodeIndexesToIDs[parentIndex];
+                        uint newIndex = treeIndex + 1;
+                        tree.nodes.push(tree.nodes[parentIndex]);
+                        delete tree.nodeIndexesToIDs[parentIndex];
+                        tree.IDsToTreeIndexes[parentID] = newIndex;
+                        tree.nodeIndexesToIDs[newIndex] = parentID;
+                    }
+                } else { // Some vacant spot.
+                    // Pop the stack and append the value.
+                    treeIndex = tree.stack[tree.stack.length - 1];
+                    tree.stack.length--;
+                    tree.nodes[treeIndex] = _value;
+                }
+
+                // Add label.
+                tree.IDsToTreeIndexes[_ID] = treeIndex;
+                tree.nodeIndexesToIDs[treeIndex] = _ID;
+
+                updateParents(self, _key, treeIndex, true, _value);
+            }
+        } else { // Existing node.
+            if (_value == 0) { // Zero value.
+                // Remove.
+                // Remember value and set to 0.
+                uint value = tree.nodes[treeIndex];
+                tree.nodes[treeIndex] = 0;
+
+                // Push to stack.
+                tree.stack.push(treeIndex);
+
+                // Clear label.
+                delete tree.IDsToTreeIndexes[_ID];
+                delete tree.nodeIndexesToIDs[treeIndex];
+
+                updateParents(self, _key, treeIndex, false, value);
+            } else if (_value != tree.nodes[treeIndex]) { // New, non zero value.
+                // Set.
+                bool plusOrMinus = tree.nodes[treeIndex] <= _value;
+                uint plusOrMinusValue = plusOrMinus ? _value - tree.nodes[treeIndex] : tree.nodes[treeIndex] - _value;
+                tree.nodes[treeIndex] = _value;
+
+                updateParents(self, _key, treeIndex, plusOrMinus, plusOrMinusValue);
+            }
+        }
     }
 
     /* Public Views */
 
     /**
-     *  @dev Query the leafs of a tree.
+     *  @dev Query the leafs of a tree. Note that if `startIndex == 0`, the tree is empty and the root node will be returned.
      *  @param _key The key of the tree to get the leafs from.
      *  @param _cursor The pagination cursor.
      *  @param _count The number of items to return.
      *  @return The index at which leafs start, the values of the returned leafs, and wether there are more for pagination.
-     *  Complexity: This function is O(n) where `n` is the max number of elements ever appended.
+     *  `O(n)` where
+     *  `n` is the maximum number of nodes ever appended.
      */
     function queryLeafs(
         SortitionSumTrees storage self,
@@ -181,7 +171,9 @@ library SortitionSumTreeFactory {
      *  @param _key The key of the tree.
      *  @param _drawnNumber The drawn number.
      *  @return The drawn ID.
-     *  Complexity: This function is O(n) where `n` is the max number of elements ever appended.
+     *  `O(k * log_k(n))` where
+     *  `k` is the maximum number of childs per node in the tree,
+     *   and `n` is the maximum number of nodes ever appended.
      */
     function draw(SortitionSumTrees storage self, bytes32 _key, uint _drawnNumber) public view returns(bytes32 ID) {
         SortitionSumTree storage tree = self.sortitionSumTrees[_key];
@@ -224,7 +216,9 @@ library SortitionSumTreeFactory {
      *  @param _treeIndex The index of the node to start from.
      *  @param _plusOrMinus Wether to add (true) or substract (false).
      *  @param _value The value to add or substract.
-     *  Complexity: This function is O(log(k)(n)) where `n` is the max number of elements ever appended.
+     *  `O(log_k(n))` where
+     *  `k` is the maximum number of childs per node in the tree,
+     *   and `n` is the maximum number of nodes ever appended.
      */
     function updateParents(SortitionSumTrees storage self, bytes32 _key, uint _treeIndex, bool _plusOrMinus, uint _value) private {
         SortitionSumTree storage tree = self.sortitionSumTrees[_key];

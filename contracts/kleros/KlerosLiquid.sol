@@ -961,11 +961,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         bool finished = false;
         uint currentSubcourtID = _subcourtID;
         while (!finished) {
-            uint currentSubcourtStake = sortitionSumTrees.stakeOf(bytes32(currentSubcourtID), stakePathID);
-            if (currentSubcourtStake == 0 && _stake != 0) sortitionSumTrees.append(bytes32(currentSubcourtID), _stake, stakePathID);
-            else if (currentSubcourtStake != 0 && _stake != 0) sortitionSumTrees.set(bytes32(currentSubcourtID), _stake, stakePathID);
-            else if (currentSubcourtStake != 0 && _stake == 0) sortitionSumTrees.remove(bytes32(currentSubcourtID), stakePathID);
-
+            sortitionSumTrees.set(bytes32(currentSubcourtID), _stake, stakePathID);
             if (currentSubcourtID == 0) finished = true;
             else currentSubcourtID = courts[currentSubcourtID].parent;
         }
