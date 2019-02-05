@@ -38,14 +38,6 @@ contract ExposedSortitionSumTreeFactory {
     }
 
     /**
-     *  @dev Delete a sortition sum tree at the specified key.
-     *  @param _key The key of the tree to delete.
-     */
-    function _deleteTree(bytes32 _key) public {
-        sortitionSumTrees.deleteTree(_key);
-    }
-
-    /**
      *  @dev Set a value of a tree.
      *  @param _key The key of the tree.
      *  @param _value The new value.

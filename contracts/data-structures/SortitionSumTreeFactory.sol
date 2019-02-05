@@ -47,18 +47,6 @@ library SortitionSumTreeFactory {
     }
 
     /**
-     *  @dev Delete a sortition sum tree at the specified key.
-     *  @param _key The key of the tree to delete.
-     */
-    function deleteTree(SortitionSumTrees storage self, bytes32 _key) public {
-        SortitionSumTree storage tree = self.sortitionSumTrees[_key];
-        tree.K = 0;
-        tree.stack.length = 0;
-        tree.nodes.length = 0;
-        delete self.sortitionSumTrees[_key];
-    }
-
-    /**
      *  @dev Set a value of a tree.
      *  @param _key The key of the tree.
      *  @param _value The new value.

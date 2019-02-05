@@ -92,8 +92,5 @@ contract('SortitionSumTreeFactory', () =>
       expect(
         await sortitionSumTreeFactory._stakeOf(tree.key, candidate.ID)
       ).to.deep.equal(web3.toBigNumber(candidate.value))
-
-    // Delete the tree
-    await sortitionSumTreeFactory._deleteTree(tree.key)
   })
 )
