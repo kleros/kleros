@@ -4,7 +4,7 @@ pragma solidity ^0.4.24;
  *  @title SortitionSumTreeFactory
  *  @author Enrique Piqueras - <epiquerass@gmail.com>
  *  @dev A factory of trees that keep track of staked values for sortition.
- *  @reviewers: [@clesaege]
+ *  @reviewers: [@clesaege, @unknownunknown1]
  *  @auditors: []
  *  @bounties: []
  *  @deployments: []
