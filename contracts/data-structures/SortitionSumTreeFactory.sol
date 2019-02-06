@@ -120,11 +120,11 @@ library SortitionSumTreeFactory {
     /* Public Views */
 
     /**
-     *  @dev Query the leafs of a tree. Note that if `startIndex == 0`, the tree is empty and the root node will be returned.
-     *  @param _key The key of the tree to get the leafs from.
+     *  @dev Query the leaves of a tree. Note that if `startIndex == 0`, the tree is empty and the root node will be returned.
+     *  @param _key The key of the tree to get the leaves from.
      *  @param _cursor The pagination cursor.
      *  @param _count The number of items to return.
-     *  @return The index at which leafs start, the values of the returned leafs, and whether there are more for pagination.
+     *  @return The index at which leaves start, the values of the returned leaves, and whether there are more for pagination.
      *  `O(n)` where
      *  `n` is the maximum number of nodes ever appended.
      */

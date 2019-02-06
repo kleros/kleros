@@ -50,11 +50,11 @@ contract ExposedSortitionSumTreeFactory {
     /* Public Views */
 
     /**
-     *  @dev Query the leafs of a tree.
-     *  @param _key The key of the tree to get the leafs from.
+     *  @dev Query the leaves of a tree.
+     *  @param _key The key of the tree to get the leaves from.
      *  @param _cursor The pagination cursor.
      *  @param _count The number of items to return.
-     *  @return The index at which leafs start, the values of the returned leafs, and whether there are more for pagination.
+     *  @return The index at which leaves start, the values of the returned leaves, and whether there are more for pagination.
      */
     function _queryLeafs(bytes32 _key, uint _cursor, uint _count) public view returns(uint startIndex, uint[] values, bool hasMore) {
         return sortitionSumTrees.queryLeafs(_key, _cursor, _count);
