@@ -124,7 +124,7 @@ library SortitionSumTreeFactory {
      *  @param _key The key of the tree to get the leafs from.
      *  @param _cursor The pagination cursor.
      *  @param _count The number of items to return.
-     *  @return The index at which leafs start, the values of the returned leafs, and wether there are more for pagination.
+     *  @return The index at which leafs start, the values of the returned leafs, and whether there are more for pagination.
      *  `O(n)` where
      *  `n` is the maximum number of nodes ever appended.
      */
