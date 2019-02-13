@@ -1,15 +1,17 @@
+/**
+ *  @reviewers: [@clesaege, @unknownunknown1]
+ *  @auditors: []
+ *  @bounties: []
+ *  @deployments: []
+ */
+
 pragma solidity ^0.4.24;
 
 /**
  *  @title SortitionSumTreeFactory
  *  @author Enrique Piqueras - <epiquerass@gmail.com>
  *  @dev A factory of trees that keep track of staked values for sortition.
- *  @reviewers: [@clesaege, @unknownunknown1]
- *  @auditors: []
- *  @bounties: []
- *  @deployments: []
  */
- 
 library SortitionSumTreeFactory {
     /* Structs */
 
@@ -19,7 +21,7 @@ library SortitionSumTreeFactory {
         uint[] stack;
         uint[] nodes;
         // Two-way mapping of IDs to node indexes. Note that node index 0 is reserved for the root node, and means the ID does not have a node.
-        mapping(bytes32 => uint) IDsToTreeIndexes;
+        mapping(bytes32 => uint) IDsToNodeIndexes;
         mapping(uint => bytes32) nodeIndexesToIDs;
     }
 
@@ -57,7 +59,7 @@ library SortitionSumTreeFactory {
      */
     function set(SortitionSumTrees storage self, bytes32 _key, uint _value, bytes32 _ID) public {
         SortitionSumTree storage tree = self.sortitionSumTrees[_key];
-        uint treeIndex = tree.IDsToTreeIndexes[_ID];
+        uint treeIndex = tree.IDsToNodeIndexes[_ID];
 
         if (treeIndex == 0) { // No existing node.
             if (_value != 0) { // Non zero value.
@@ -75,7 +77,7 @@ library SortitionSumTreeFactory {
                         uint newIndex = treeIndex + 1;
                         tree.nodes.push(tree.nodes[parentIndex]);
                         delete tree.nodeIndexesToIDs[parentIndex];
-                        tree.IDsToTreeIndexes[parentID] = newIndex;
+                        tree.IDsToNodeIndexes[parentID] = newIndex;
                         tree.nodeIndexesToIDs[newIndex] = parentID;
                     }
                 } else { // Some vacant spot.
@@ -86,7 +88,7 @@ library SortitionSumTreeFactory {
                 }
 
                 // Add label.
-                tree.IDsToTreeIndexes[_ID] = treeIndex;
+                tree.IDsToNodeIndexes[_ID] = treeIndex;
                 tree.nodeIndexesToIDs[treeIndex] = _ID;
 
                 updateParents(self, _key, treeIndex, true, _value);
@@ -102,7 +104,7 @@ library SortitionSumTreeFactory {
                 tree.stack.push(treeIndex);
 
                 // Clear label.
-                delete tree.IDsToTreeIndexes[_ID];
+                delete tree.IDsToNodeIndexes[_ID];
                 delete tree.nodeIndexesToIDs[treeIndex];
 
                 updateParents(self, _key, treeIndex, false, value);
@@ -195,7 +197,7 @@ library SortitionSumTreeFactory {
      */
     function stakeOf(SortitionSumTrees storage self, bytes32 _key, bytes32 _ID) public view returns(uint value) {
         SortitionSumTree storage tree = self.sortitionSumTrees[_key];
-        uint treeIndex = tree.IDsToTreeIndexes[_ID];
+        uint treeIndex = tree.IDsToNodeIndexes[_ID];
 
         if (treeIndex == 0) value = 0;
         else value = tree.nodes[treeIndex];
