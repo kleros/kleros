@@ -1,3 +1,11 @@
+/**
+ *  https://contributing.kleros.io/smart-contract-workflow
+ *  @reviewers: []
+ *  @auditors: []
+ *  @bounties: []
+ *  @deployments: []
+ */
+
 /* solium-disable security/no-block-members */
 pragma solidity ^0.4.24;
 
@@ -19,7 +27,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
     // General
     enum Phase {
       staking, // Stake sum trees can be updated. Pass after `minStakingTime` passes and there is at least one dispute without jurors.
-      generating, // Waiting on random number. Pass as soon as it is ready.
+      generating, // Waiting for a random number. Pass as soon as it is ready.
       drawing // Jurors can be drawn. Pass after all disputes have jurors or `maxDrawingTime` passes.
     }
 
