@@ -49,7 +49,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         bool hiddenVotes; // Whether to use commit and reveal or not.
         uint minStake; // Minimum tokens needed to stake in the court.
         uint alpha; // Basis point of tokens that are lost when incoherent.
-        uint jurorFee; // Arbitration fee paid per juror.
+        uint feeForJuror; // Arbitration fee paid per juror.
         // The appeal after the one that reaches this number of jurors will go to the parent court if any, otherwise, no more appeals are possible.
         uint jurorsForCourtJump;
         uint[4] timesPerPeriod; // The time allotted to each dispute period in the form `timesPerPeriod[period]`.
@@ -204,7 +204,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _hiddenVotes The `hiddenVotes` property value of the general court.
      *  @param _minStake The `minStake` property value of the general court.
      *  @param _alpha The `alpha` property value of the general court.
-     *  @param _jurorFee The `jurorFee` property value of the general court.
+     *  @param _feeForJuror The `feeForJuror` property value of the general court.
      *  @param _jurorsForCourtJump The `jurorsForCourtJump` property value of the general court.
      *  @param _timesPerPeriod The `timesPerPeriod` property value of the general court.
      *  @param _sortitionSumTreeK The number of children per node of the general court's sortition sum tree.
@@ -218,7 +218,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         bool _hiddenVotes,
         uint _minStake,
         uint _alpha,
-        uint _jurorFee,
+        uint _feeForJuror,
         uint _jurorsForCourtJump,
         uint[4] _timesPerPeriod,
         uint _sortitionSumTreeK
@@ -238,7 +238,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
             hiddenVotes: _hiddenVotes,
             minStake: _minStake,
             alpha: _alpha,
-            jurorFee: _jurorFee,
+            feeForJuror: _feeForJuror,
             jurorsForCourtJump: _jurorsForCourtJump,
             timesPerPeriod: _timesPerPeriod
         }));
@@ -300,7 +300,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _hiddenVotes The `hiddenVotes` property value of the subcourt.
      *  @param _minStake The `minStake` property value of the subcourt.
      *  @param _alpha The `alpha` property value of the subcourt.
-     *  @param _jurorFee The `jurorFee` property value of the subcourt.
+     *  @param _feeForJuror The `feeForJuror` property value of the subcourt.
      *  @param _jurorsForCourtJump The `jurorsForCourtJump` property value of the subcourt.
      *  @param _timesPerPeriod The `timesPerPeriod` property value of the subcourt.
      *  @param _sortitionSumTreeK The number of children per node of the subcourt's sortition sum tree.
@@ -310,7 +310,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         bool _hiddenVotes,
         uint _minStake,
         uint _alpha,
-        uint _jurorFee,
+        uint _feeForJuror,
         uint _jurorsForCourtJump,
         uint[4] _timesPerPeriod,
         uint _sortitionSumTreeK
@@ -325,7 +325,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
                 hiddenVotes: _hiddenVotes,
                 minStake: _minStake,
                 alpha: _alpha,
-                jurorFee: _jurorFee,
+                feeForJuror: _feeForJuror,
                 jurorsForCourtJump: _jurorsForCourtJump,
                 timesPerPeriod: _timesPerPeriod
             })) - 1
@@ -356,12 +356,12 @@ contract KlerosLiquid is TokenController, Arbitrator {
         courts[_subcourtID].alpha = _alpha;
     }
 
-    /** @dev Changes the `jurorFee` property value of a specified subcourt.
+    /** @dev Changes the `feeForJuror` property value of a specified subcourt.
      *  @param _subcourtID The ID of the subcourt.
-     *  @param _jurorFee The new value for the `jurorFee` property value.
+     *  @param _feeForJuror The new value for the `feeForJuror` property value.
      */
-    function changeSubcourtJurorFee(uint96 _subcourtID, uint _jurorFee) external onlyByGovernor {
-        courts[_subcourtID].jurorFee = _jurorFee;
+    function changeSubcourtJurorFee(uint96 _subcourtID, uint _feeForJuror) external onlyByGovernor {
+        courts[_subcourtID].feeForJuror = _feeForJuror;
     }
 
     /** @dev Changes the `jurorsForCourtJump` property value of a specified subcourt.
@@ -794,7 +794,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         dispute.period = Period.evidence;
         dispute.lastPeriodChange = now;
         // As many votes that can be afforded by the provided funds.
-        dispute.votes[dispute.votes.length++].length = msg.value / courts[dispute.subcourtID].jurorFee;
+        dispute.votes[dispute.votes.length++].length = msg.value / courts[dispute.subcourtID].feeForJuror;
         // Add one for choice "0", "refuse to arbitrate"/"no ruling".
         dispute.voteCounters[dispute.voteCounters.length++].counts.length = dispute.numberOfChoices + 1;
         dispute.voteCounters[dispute.voteCounters.length - 1].tied = true;
@@ -826,7 +826,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         dispute.period = Period.evidence;
         dispute.lastPeriodChange = now;
         // As many votes that can be afforded by the provided funds.
-        dispute.votes[dispute.votes.length++].length = msg.value / courts[dispute.subcourtID].jurorFee;
+        dispute.votes[dispute.votes.length++].length = msg.value / courts[dispute.subcourtID].feeForJuror;
         // Add one for choice "0", "refuse to arbitrate"/"no ruling".
         dispute.voteCounters[dispute.voteCounters.length++].counts.length = dispute.numberOfChoices + 1;
         dispute.voteCounters[dispute.voteCounters.length - 1].tied = true;
@@ -878,7 +878,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      */
     function arbitrationCost(bytes _extraData) public view returns(uint cost) {
         (uint96 subcourtID, uint minJurors) = extraDataToSubcourtIDAndMinJurors(_extraData);
-        cost = courts[subcourtID].jurorFee * minJurors;
+        cost = courts[subcourtID].feeForJuror * minJurors;
     }
 
     /** @dev Gets the cost of appealing a specified dispute.
@@ -893,9 +893,9 @@ contract KlerosLiquid is TokenController, Arbitrator {
             if (dispute.subcourtID == 0) // Already in the general court.
                 cost = NON_PAYABLE_AMOUNT;
             else // Get the cost of the parent subcourt.
-                cost = courts[courts[dispute.subcourtID].parent].jurorFee * ((lastNumberOfJurors * 2) + 1);
+                cost = courts[courts[dispute.subcourtID].parent].feeForJuror * ((lastNumberOfJurors * 2) + 1);
         } else // Stay in current subcourt.
-            cost = courts[dispute.subcourtID].jurorFee * ((lastNumberOfJurors * 2) + 1);
+            cost = courts[dispute.subcourtID].feeForJuror * ((lastNumberOfJurors * 2) + 1);
     }
 
     /** @dev Gets the start and end of a specified dispute's current appeal period.
