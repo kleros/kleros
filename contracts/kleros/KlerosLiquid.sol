@@ -526,7 +526,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
     function vote(uint _disputeID, uint[] _voteIDs, uint _choice, uint _salt) external onlyDuringPeriod(_disputeID, Period.vote) {
         Dispute storage dispute = disputes[_disputeID];
         require(_voteIDs.length > 0); // solium-disable-line error-reason
-        require(dispute.numberOfChoices >= _choice, "The choice has to be less than or equal to the number of choices for the dispute.");
+        require(_choice <= dispute.numberOfChoices, "The choice has to be less than or equal to the number of choices for the dispute.");
 
         // Save the votes.
         for (uint i = 0; i < _voteIDs.length; i++) {
