@@ -51,7 +51,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         uint alpha; // Basis point of tokens that are lost when incoherent.
         uint jurorFee; // Arbitration fee paid per juror.
         // The appeal after the one that reaches this number of jurors will go to the parent court if any, otherwise, no more appeals are possible.
-        uint jurorsForJump;
+        uint jurorsForCourtJump;
         uint[4] timesPerPeriod; // The time allotted to each dispute period in the form `timesPerPeriod[period]`.
     }
     struct DelayedSetStake {
@@ -83,7 +83,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         // The votes in the form `votes[appeal][voteID]`. On each round, a new list is pushed and packed with as many empty votes as there are draws. We use `dispute.votes.length` to get the number of appeals plus 1 for the first round.
         Vote[][] votes;
         VoteCounter[] voteCounters; // The vote counters in the form `voteCounters[appeal]`.
-        uint[] jurorAtStake; // The amount of tokens at stake for each juror in the form `jurorAtStake[appeal]`.
+        uint[] tokensAtStakePerJuror; // The amount of tokens at stake for each juror in the form `tokensAtStakePerJuror[appeal]`.
         uint[] totalJurorFees; // The total juror fees paid in the form `totalJurorFees[appeal]`.
         uint drawsInRound; // A counter of draws made in the current round.
         uint commitsInRound; // A counter of commits made in the current round.
@@ -205,7 +205,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _minStake The `minStake` property value of the general court.
      *  @param _alpha The `alpha` property value of the general court.
      *  @param _jurorFee The `jurorFee` property value of the general court.
-     *  @param _jurorsForJump The `jurorsForJump` property value of the general court.
+     *  @param _jurorsForCourtJump The `jurorsForCourtJump` property value of the general court.
      *  @param _timesPerPeriod The `timesPerPeriod` property value of the general court.
      *  @param _sortitionSumTreeK The number of children per node of the general court's sortition sum tree.
      */
@@ -219,7 +219,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         uint _minStake,
         uint _alpha,
         uint _jurorFee,
-        uint _jurorsForJump,
+        uint _jurorsForCourtJump,
         uint[4] _timesPerPeriod,
         uint _sortitionSumTreeK
     ) public {
@@ -239,7 +239,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
             minStake: _minStake,
             alpha: _alpha,
             jurorFee: _jurorFee,
-            jurorsForJump: _jurorsForJump,
+            jurorsForCourtJump: _jurorsForCourtJump,
             timesPerPeriod: _timesPerPeriod
         }));
         sortitionSumTrees.createTree(bytes32(0), _sortitionSumTreeK);
@@ -301,7 +301,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _minStake The `minStake` property value of the subcourt.
      *  @param _alpha The `alpha` property value of the subcourt.
      *  @param _jurorFee The `jurorFee` property value of the subcourt.
-     *  @param _jurorsForJump The `jurorsForJump` property value of the subcourt.
+     *  @param _jurorsForCourtJump The `jurorsForCourtJump` property value of the subcourt.
      *  @param _timesPerPeriod The `timesPerPeriod` property value of the subcourt.
      *  @param _sortitionSumTreeK The number of children per node of the subcourt's sortition sum tree.
      */
@@ -311,7 +311,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         uint _minStake,
         uint _alpha,
         uint _jurorFee,
-        uint _jurorsForJump,
+        uint _jurorsForCourtJump,
         uint[4] _timesPerPeriod,
         uint _sortitionSumTreeK
     ) external onlyByGovernor {
@@ -326,7 +326,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
                 minStake: _minStake,
                 alpha: _alpha,
                 jurorFee: _jurorFee,
-                jurorsForJump: _jurorsForJump,
+                jurorsForCourtJump: _jurorsForCourtJump,
                 timesPerPeriod: _timesPerPeriod
             })) - 1
         );
@@ -364,12 +364,12 @@ contract KlerosLiquid is TokenController, Arbitrator {
         courts[_subcourtID].jurorFee = _jurorFee;
     }
 
-    /** @dev Changes the `jurorsForJump` property value of a specified subcourt.
+    /** @dev Changes the `jurorsForCourtJump` property value of a specified subcourt.
      *  @param _subcourtID The ID of the subcourt.
-     *  @param _jurorsForJump The new value for the `jurorsForJump` property value.
+     *  @param _jurorsForCourtJump The new value for the `jurorsForCourtJump` property value.
      */
-    function changeSubcourtJurorsForJump(uint96 _subcourtID, uint _jurorsForJump) external onlyByGovernor {
-        courts[_subcourtID].jurorsForJump = _jurorsForJump;
+    function changeSubcourtJurorsForJump(uint96 _subcourtID, uint _jurorsForCourtJump) external onlyByGovernor {
+        courts[_subcourtID].jurorsForCourtJump = _jurorsForCourtJump;
     }
 
     /** @dev Changes the `timesPerPeriod` property value of a specified subcourt.
@@ -489,7 +489,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
 
             // Save the vote.
             dispute.votes[dispute.votes.length - 1][i].account = drawnAddress;
-            jurors[msg.sender].lockedTokens += dispute.jurorAtStake[dispute.jurorAtStake.length - 1];
+            jurors[msg.sender].lockedTokens += dispute.tokensAtStakePerJuror[dispute.tokensAtStakePerJuror.length - 1];
             emit Draw(drawnAddress, _disputeID, dispute.votes.length - 1, i);
 
             // If dispute is fully drawn.
@@ -629,17 +629,17 @@ contract KlerosLiquid is TokenController, Arbitrator {
                     // Intentional use to avoid blocking.
                     vote.account.send(ETHReward); // solium-disable-line security/no-send
                     emit TokenAndETHShift(vote.account, _disputeID, int(tokenReward), int(ETHReward));
-                    jurors[vote.account].lockedTokens -= dispute.jurorAtStake[_appeal];
+                    jurors[vote.account].lockedTokens -= dispute.tokensAtStakePerJuror[_appeal];
                 }
             } else { // Juror was inactive, or voted incoherently and it was not a tie.
                 if (i < dispute.votes[_appeal].length) { // Only execute in the first half of the iterations.
 
                     // Penalize.
-                    uint penalty = dispute.jurorAtStake[_appeal] > pinakion.balanceOf(vote.account) ? pinakion.balanceOf(vote.account) : dispute.jurorAtStake[_appeal];
+                    uint penalty = dispute.tokensAtStakePerJuror[_appeal] > pinakion.balanceOf(vote.account) ? pinakion.balanceOf(vote.account) : dispute.tokensAtStakePerJuror[_appeal];
                     pinakion.transferFrom(vote.account, this, penalty);
                     emit TokenAndETHShift(vote.account, _disputeID, -int(penalty), 0);
                     penaltiesInRoundCache += penalty;
-                    jurors[vote.account].lockedTokens -= dispute.jurorAtStake[_appeal];
+                    jurors[vote.account].lockedTokens -= dispute.tokensAtStakePerJuror[_appeal];
 
                     // Unstake juror if his penalty made balance less than his total stake or if he lost due to inactivity.
                     if (pinakion.balanceOf(vote.account) < jurors[vote.account].stakedTokens || !vote.voted)
@@ -738,7 +738,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      */
     function getDispute(uint _disputeID) external view returns(
         uint[] votesLengths,
-        uint[] jurorAtStake,
+        uint[] tokensAtStakePerJuror,
         uint[] totalJurorFees,
         uint[] votesInEachRound,
         uint[] repartitionsInEachRound,
@@ -747,7 +747,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         Dispute storage dispute = disputes[_disputeID];
         votesLengths = new uint[](dispute.votes.length);
         for (uint i = 0; i < dispute.votes.length; i++) votesLengths[i] = dispute.votes[i].length;
-        jurorAtStake = dispute.jurorAtStake;
+        tokensAtStakePerJuror = dispute.tokensAtStakePerJuror;
         totalJurorFees = dispute.totalJurorFees;
         votesInEachRound = dispute.votesInEachRound;
         repartitionsInEachRound = dispute.repartitionsInEachRound;
@@ -798,7 +798,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         // Add one for choice "0", "refuse to arbitrate"/"no ruling".
         dispute.voteCounters[dispute.voteCounters.length++].counts.length = dispute.numberOfChoices + 1;
         dispute.voteCounters[dispute.voteCounters.length - 1].tied = true;
-        dispute.jurorAtStake.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
+        dispute.tokensAtStakePerJuror.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalJurorFees.push(msg.value);
         dispute.votesInEachRound.push(0);
         dispute.repartitionsInEachRound.push(0);
@@ -821,7 +821,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
             msg.sender == address(dispute.arbitrated),
             "Can only be called by the governor or the arbitrable contract."
         );
-        if (dispute.votes[dispute.votes.length - 1].length >= courts[dispute.subcourtID].jurorsForJump) // Jump to parent subcourt.
+        if (dispute.votes[dispute.votes.length - 1].length >= courts[dispute.subcourtID].jurorsForCourtJump) // Jump to parent subcourt.
             dispute.subcourtID = courts[dispute.subcourtID].parent;
         dispute.period = Period.evidence;
         dispute.lastPeriodChange = now;
@@ -830,7 +830,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         // Add one for choice "0", "refuse to arbitrate"/"no ruling".
         dispute.voteCounters[dispute.voteCounters.length++].counts.length = dispute.numberOfChoices + 1;
         dispute.voteCounters[dispute.voteCounters.length - 1].tied = true;
-        dispute.jurorAtStake.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
+        dispute.tokensAtStakePerJuror.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalJurorFees.push(msg.value);
         dispute.drawsInRound = 0;
         dispute.commitsInRound = 0;
@@ -889,7 +889,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
     function appealCost(uint _disputeID, bytes _extraData) public view returns(uint cost) {
         Dispute storage dispute = disputes[_disputeID];
         uint lastNumberOfJurors = dispute.votes[dispute.votes.length - 1].length;
-        if (lastNumberOfJurors >= courts[dispute.subcourtID].jurorsForJump) { // Jump to parent subcourt.
+        if (lastNumberOfJurors >= courts[dispute.subcourtID].jurorsForCourtJump) { // Jump to parent subcourt.
             if (dispute.subcourtID == 0) // Already in the general court.
                 cost = NON_PAYABLE_AMOUNT;
             else // Get the cost of the parent subcourt.
