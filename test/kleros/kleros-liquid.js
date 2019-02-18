@@ -289,6 +289,7 @@ contract('KlerosLiquid', accounts =>
         await klerosLiquid.passPhase()
 
         // Draw
+        const stakedTokensBefore = (await klerosLiquid.jurors(governor))[1]
         const drawBlockNumber = (await klerosLiquid.drawJurors(dispute.ID, -1))
           .receipt.blockNumber
         numberOfDraws.push(
@@ -299,6 +300,15 @@ contract('KlerosLiquid', accounts =>
           )).length
         )
         totalJurorFees.push(subcourt.jurorFee * numberOfDraws[i])
+        expect((await klerosLiquid.jurors(governor))[1]).to.deep.equal(
+          stakedTokensBefore.plus(
+            web3
+              .toBigNumber(subcourt.minStake)
+              .times(subcourt.alpha)
+              .divToInt(10000)
+              .times(numberOfDraws[i])
+          )
+        )
         await increaseTime(subcourt.timesPerPeriod[0])
         await klerosLiquid.passPeriod(dispute.ID)
 
@@ -392,6 +402,9 @@ contract('KlerosLiquid', accounts =>
               numberOfDraws[i]
             )
           }
+          expect((await klerosLiquid.jurors(governor))[1]).to.deep.equal(
+            web3.toBigNumber(0)
+          )
         }
 
         // Continue
