@@ -489,7 +489,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
 
             // Save the vote.
             dispute.votes[dispute.votes.length - 1][i].account = drawnAddress;
-            jurors[msg.sender].lockedTokens += dispute.tokensAtStakePerJuror[dispute.tokensAtStakePerJuror.length - 1];
+            jurors[drawnAddress].lockedTokens += dispute.tokensAtStakePerJuror[dispute.tokensAtStakePerJuror.length - 1];
             emit Draw(drawnAddress, _disputeID, dispute.votes.length - 1, i);
 
             // If dispute is fully drawn.
@@ -652,7 +652,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
             }
             if (i == dispute.votes[_appeal].length - 1) {
                 // Send fees and tokens to the governor if it is not a tie and no one in this round is coherent with the final outcome.
-                if (!dispute.voteCounters[dispute.voteCounters.length - 1].tied && dispute.voteCounters[_appeal].counts[dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice] == 0) {
+                if (dispute.votesInEachRound[_appeal] == 0 || !dispute.voteCounters[dispute.voteCounters.length - 1].tied && dispute.voteCounters[_appeal].counts[dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice] == 0) {
                     // Intentional use to avoid blocking.
                     governor.send(dispute.totalJurorFees[_appeal]); // solium-disable-line security/no-send
                     pinakion.transfer(governor, penaltiesInRoundCache);
@@ -819,7 +819,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         Dispute storage dispute = disputes[_disputeID];
         require(
             msg.sender == address(dispute.arbitrated),
-            "Can only be called by the governor or the arbitrable contract."
+            "Can only be called by the arbitrable contract."
         );
         if (dispute.votes[dispute.votes.length - 1].length >= courts[dispute.subcourtID].jurorsForCourtJump) // Jump to parent subcourt.
             dispute.subcourtID = courts[dispute.subcourtID].parent;
