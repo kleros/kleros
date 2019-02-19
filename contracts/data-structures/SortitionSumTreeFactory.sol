@@ -1,7 +1,7 @@
 /**
  *  @reviewers: [@clesaege, @unknownunknown1, @ferittuncer]
  *  @auditors: []
- *  @bounties: []
+ *  @bounties: [<14 days 10 ETH max payout>]
  *  @deployments: []
  */
 
