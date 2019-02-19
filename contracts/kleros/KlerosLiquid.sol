@@ -651,7 +651,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
                 }
             }
             if (i == dispute.votes[_appeal].length - 1) {
-                // Send fees and tokens to the governor if it is not a tie and no one in this round is coherent with the final outcome.
+                // Send fees and tokens to the governor if no one was coherent.
                 if (dispute.votesInEachRound[_appeal] == 0 || !dispute.voteCounters[dispute.voteCounters.length - 1].tied && dispute.voteCounters[_appeal].counts[dispute.voteCounters[dispute.voteCounters.length - 1].winningChoice] == 0) {
                     // Intentional use to avoid blocking.
                     governor.send(dispute.totalJurorFees[_appeal]); // solium-disable-line security/no-send
