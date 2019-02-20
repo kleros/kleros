@@ -3,6 +3,10 @@
 # Dependencies
 /node_modules/
 
+# Testing
+/coverage.json
+/coverage/
+
 # Production
 /build/
 

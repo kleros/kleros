@@ -8,6 +8,7 @@
   <a href="https://david-dm.org/kleros/kleros"><img src="https://david-dm.org/kleros/kleros.svg" alt="Dependencies"></a>
   <a href="https://david-dm.org/kleros/kleros?type=dev"><img src="https://david-dm.org/kleros/kleros/dev-status.svg" alt="Dev Dependencies"></a>
   <a href="https://github.com/trufflesuite/truffle"><img src="https://img.shields.io/badge/tested%20with-truffle-red.svg" alt="Tested with Truffle"></a>
+  <a href="https://coveralls.io/github/kleros/kleros?branch=master"><img src="https://coveralls.io/repos/github/kleros/kleros/badge.svg?branch=master" alt="Coverage Status"></a>
   <a href="https://conventionalcommits.org"><img src="https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg" alt="Conventional Commits"></a>
   <a href="http://commitizen.github.io/cz-cli/"><img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commitizen Friendly"></a>
   <a href="https://github.com/prettier/prettier"><img src="https://img.shields.io/badge/styled_with-prettier-ff69b4.svg" alt="Styled with Prettier"></a>
