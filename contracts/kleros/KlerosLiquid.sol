@@ -345,6 +345,10 @@ contract KlerosLiquid is TokenController, Arbitrator {
             _subcourtID == 0 || courts[courts[_subcourtID].parent].minStake <= _minStake,
             "A subcourt cannot be a child of a subcourt with a higher minimum stake."
         );
+        for(uint i = 0; i < courts[_subcourtID].children.length; i++){
+          require(courts[courts[_subcourtID].children[i]].minStake > _minStake, "A subcourt cannot be the parent of a subcourt with a lower minimum stake.");
+        }
+        
         courts[_subcourtID].minStake = _minStake;
     }
 
@@ -1026,7 +1030,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
             stakePathID := mload(ptr)
         }
     }
-    
+
     /** @dev Unpacks a stake path ID into an account and a subcourt ID.
      *  @param _stakePathID The stake path ID to unpack.
      *  @return The account and subcourt ID.
