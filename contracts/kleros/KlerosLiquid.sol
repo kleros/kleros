@@ -346,7 +346,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
             "A subcourt cannot be a child of a subcourt with a higher minimum stake."
         );
         for(uint i = 0; i < courts[_subcourtID].children.length; i++){
-          require(courts[courts[_subcourtID].children[i]].minStake > _minStake, "A subcourt cannot be the parent of a subcourt with a lower minimum stake.");
+          require(courts[courts[_subcourtID].children[i]].minStake >= _minStake, "A subcourt cannot be the parent of a subcourt with a lower minimum stake.");
         }
         
         courts[_subcourtID].minStake = _minStake;
