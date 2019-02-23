@@ -5,7 +5,7 @@
  *  @bounties: []
  *  @deployments: []
  */
-
+/* solium-disable error-reason */
 /* solium-disable security/no-block-members */
 pragma solidity ^0.4.24;
 
@@ -182,16 +182,16 @@ contract KlerosLiquid is TokenController, Arbitrator {
     /** @dev Requires a specific phase.
      *  @param _phase The required phase.
      */
-    modifier onlyDuringPhase(Phase _phase) {require(phase == _phase, "Incorrect phase."); _;}
+    modifier onlyDuringPhase(Phase _phase) {require(phase == _phase); _;}
 
     /** @dev Requires a specific period in a dispute.
      *  @param _disputeID The ID of the dispute.
      *  @param _period The required period.
      */
-    modifier onlyDuringPeriod(uint _disputeID, Period _period) {require(disputes[_disputeID].period == _period, "Incorrect period."); _;}
+    modifier onlyDuringPeriod(uint _disputeID, Period _period) {require(disputes[_disputeID].period == _period); _;}
 
     /** @dev Requires that the sender is the governor. Note that the governor is expected to not be malicious. */
-    modifier onlyByGovernor() {require(governor == msg.sender, "Can only be called by the governor."); _;}
+    modifier onlyByGovernor() {require(governor == msg.sender); _;}
 
     /* Constructor */
 
@@ -341,10 +341,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _minStake The new value for the `minStake` property value.
      */
     function changeSubcourtMinStake(uint96 _subcourtID, uint _minStake) external onlyByGovernor {
-        require(
-            _subcourtID == 0 || courts[courts[_subcourtID].parent].minStake <= _minStake,
-            "A subcourt cannot be a child of a subcourt with a higher minimum stake."
-        );
+        require(_subcourtID == 0 || courts[courts[_subcourtID].parent].minStake <= _minStake);
         for(uint i = 0; i < courts[_subcourtID].children.length; i++){
           require(courts[courts[_subcourtID].children[i]].minStake >= _minStake, "A subcourt cannot be the parent of a subcourt with a lower minimum stake.");
         }
