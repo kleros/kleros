@@ -342,10 +342,13 @@ contract KlerosLiquid is TokenController, Arbitrator {
      */
     function changeSubcourtMinStake(uint96 _subcourtID, uint _minStake) external onlyByGovernor {
         require(_subcourtID == 0 || courts[courts[_subcourtID].parent].minStake <= _minStake);
-        for(uint i = 0; i < courts[_subcourtID].children.length; i++){
-          require(courts[courts[_subcourtID].children[i]].minStake >= _minStake, "A subcourt cannot be the parent of a subcourt with a lower minimum stake.");
+        for (uint i = 0; i < courts[_subcourtID].children.length; i++) {
+            require(
+                courts[courts[_subcourtID].children[i]].minStake >= _minStake,
+                "A subcourt cannot be the parent of a subcourt with a lower minimum stake."
+            );
         }
-        
+
         courts[_subcourtID].minStake = _minStake;
     }
 
@@ -452,7 +455,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         uint actualIterations = (nextDelayedSetStake + _iterations) - 1 > lastDelayedSetStake ?
             (lastDelayedSetStake - nextDelayedSetStake) + 1 : _iterations;
         uint newNextDelayedSetStake = nextDelayedSetStake + actualIterations;
-        require(newNextDelayedSetStake >= nextDelayedSetStake); // solium-disable-line error-reason
+        require(newNextDelayedSetStake >= nextDelayedSetStake);
         for (uint i = nextDelayedSetStake; i < newNextDelayedSetStake; i++) {
             DelayedSetStake storage delayedSetStake = delayedSetStakes[i];
             this.call( // solium-disable-line security/no-low-level-calls
@@ -477,7 +480,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
     ) external onlyDuringPhase(Phase.drawing) onlyDuringPeriod(_disputeID, Period.evidence) {
         Dispute storage dispute = disputes[_disputeID];
         uint endIndex = dispute.drawsInRound + _iterations;
-        require(endIndex >= dispute.drawsInRound); // solium-disable-line error-reason
+        require(endIndex >= dispute.drawsInRound);
 
         // Avoid going out of range.
         if (endIndex > dispute.votes[dispute.votes.length - 1].length) endIndex = dispute.votes[dispute.votes.length - 1].length;
@@ -508,7 +511,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      */
     function commit(uint _disputeID, uint[] _voteIDs, bytes32 _commit) external onlyDuringPeriod(_disputeID, Period.commit) {
         Dispute storage dispute = disputes[_disputeID];
-        require(_commit != bytes32(0)); // solium-disable-line error-reason
+        require(_commit != bytes32(0));
         for (uint i = 0; i < _voteIDs.length; i++) {
             require(dispute.votes[dispute.votes.length - 1][_voteIDs[i]].account == msg.sender, "The caller has to own the vote.");
             require(dispute.votes[dispute.votes.length - 1][_voteIDs[i]].commit == bytes32(0), "Already committed this vote.");
@@ -527,7 +530,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      */
     function vote(uint _disputeID, uint[] _voteIDs, uint _choice, uint _salt) external onlyDuringPeriod(_disputeID, Period.vote) {
         Dispute storage dispute = disputes[_disputeID];
-        require(_voteIDs.length > 0); // solium-disable-line error-reason
+        require(_voteIDs.length > 0);
         require(_choice <= dispute.numberOfChoices, "The choice has to be less than or equal to the number of choices for the dispute.");
 
         // Save the votes.
@@ -602,7 +605,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         lockInsolventTransfers = false;
         Dispute storage dispute = disputes[_disputeID];
         uint end = dispute.repartitionsInEachRound[_appeal] + _iterations;
-        require(end >= dispute.repartitionsInEachRound[_appeal]); // solium-disable-line error-reason
+        require(end >= dispute.repartitionsInEachRound[_appeal]);
         uint penaltiesInRoundCache = dispute.penaltiesInEachRound[_appeal]; // For saving gas.
         (uint tokenReward, uint ETHReward) = (0, 0);
 
