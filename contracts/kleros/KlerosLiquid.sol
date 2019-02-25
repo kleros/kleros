@@ -445,7 +445,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _stake The new stake.
      */
     function setStake(uint96 _subcourtID, uint128 _stake) external {
-        _setStake(msg.sender, _subcourtID, _stake);
+        require(_setStake(msg.sender, _subcourtID, _stake));
     }
 
     /** @dev Executes the next delayed set stakes.
@@ -458,9 +458,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         require(newNextDelayedSetStake >= nextDelayedSetStake);
         for (uint i = nextDelayedSetStake; i < newNextDelayedSetStake; i++) {
             DelayedSetStake storage delayedSetStake = delayedSetStakes[i];
-            this.call( // solium-disable-line security/no-low-level-calls
-                abi.encodeWithSignature("_setStake(address,uint96,uint128)", delayedSetStake.account, delayedSetStake.subcourtID, delayedSetStake.stake)
-            ); // Intentional use to avoid blocking.
+            _setStake(delayedSetStake.account, delayedSetStake.subcourtID, delayedSetStake.stake);
             delete delayedSetStakes[i];
         }
         nextDelayedSetStake = newNextDelayedSetStake;
@@ -649,9 +647,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
                     // Unstake juror if his penalty made balance less than his total stake or if he lost due to inactivity.
                     if (pinakion.balanceOf(vote.account) < jurors[vote.account].stakedTokens || !vote.voted)
                         for (uint j = 0; j < jurors[vote.account].subcourtIDs.length; j++)
-                            this.call( // solium-disable-line security/no-low-level-calls
-                                abi.encodeWithSignature("_setStake(address,uint96,uint128)", vote.account, jurors[vote.account].subcourtIDs[j], 0)
-                            ); // Intentional use to avoid blocking.
+                            _setStake(vote.account, jurors[vote.account].subcourtIDs[j], 0);
 
                 }
             }
@@ -950,28 +946,27 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _account The address of the juror.
      *  @param _subcourtID The ID of the subcourt.
      *  @param _stake The new stake.
+     *  @return True if the call succeeded, false otherwise.
      */
-    function _setStake(address _account, uint96 _subcourtID, uint128 _stake) public {
-        require(msg.sender == _account || msg.sender == address(this), "Can only be called by a juror setting his own stake or internally.");
+    function _setStake(address _account, uint96 _subcourtID, uint128 _stake) public returns(bool succeeded) {
+        if (!(msg.sender == _account || msg.sender == address(this)))
+            return false; // Can only be called by a juror setting his own stake or internally.
         // Delayed action logic.
         if (phase != Phase.staking) {
             delayedSetStakes[++lastDelayedSetStake] = DelayedSetStake({ account: _account, subcourtID: _subcourtID, stake: _stake });
-            return;
+            return true;
         }
 
-        require(
-            _stake == 0 || courts[_subcourtID].minStake <= _stake,
-            "The juror's stake cannot be lower than the minimum stake for the subcourt."
-        );
+        if (!(_stake == 0 || courts[_subcourtID].minStake <= _stake))
+            return false; // The juror's stake cannot be lower than the minimum stake for the subcourt.
         Juror storage juror = jurors[_account];
         bytes32 stakePathID = accountAndSubcourtIDToStakePathID(_account, _subcourtID);
         uint currentStake = sortitionSumTrees.stakeOf(bytes32(_subcourtID), stakePathID);
-        require(_stake == 0 || currentStake > 0 || juror.subcourtIDs.length < MAX_STAKE_PATHS, "Maximum stake paths reached.");
+        if (!(_stake == 0 || currentStake > 0 || juror.subcourtIDs.length < MAX_STAKE_PATHS))
+            return false; // Maximum stake paths reached.
         uint newTotalStake = juror.stakedTokens - currentStake + _stake; // Can't overflow because _stake is a uint128.
-        require(
-            _stake == 0 || pinakion.balanceOf(_account) >= newTotalStake,
-            "The juror's total amount of staked tokens cannot be higher than the juror's balance."
-        );
+        if (!(_stake == 0 || pinakion.balanceOf(_account) >= newTotalStake))
+            return false; // The juror's total amount of staked tokens cannot be higher than the juror's balance.
 
         // Update juror's records.
         juror.stakedTokens = newTotalStake;
@@ -993,6 +988,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
             else currentSubcourtID = courts[currentSubcourtID].parent;
         }
         emit StakeSet(_account, _subcourtID, _stake, newTotalStake);
+        return true;
     }
 
     /** @dev Gets a subcourt ID and the minimum number of jurors required from a specified extra data bytes array.
