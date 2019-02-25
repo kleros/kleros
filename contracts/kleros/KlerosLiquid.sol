@@ -70,7 +70,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
     struct VoteCounter {
         // The choice with the most votes. Note that in the case of a tie, it is the choice that reached the tied number of votes first.
         uint winningChoice;
-        uint[] counts; // The sum of votes for each choice in the form `counts[choice]`.
+        mapping(uint => uint) counts; // The sum of votes for each choice in the form `counts[choice]`.
         bool tied; // True if there is a tie, false otherwise.
     }
     struct Dispute { // Note that appeal `0` is equivalent to the first round of the dispute.
@@ -719,15 +719,19 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _disputeID The ID of the dispute.
      *  @param _appeal The appeal.
      *  @return The vote counter.
+     *  `O(n)` where
+     *  `n` is the number of choices of the dispute.
      */
     function getVoteCounter(uint _disputeID, uint _appeal) external view returns(
         uint winningChoice,
         uint[] counts,
         bool tied
     ) {
-        VoteCounter storage voteCounter = disputes[_disputeID].voteCounters[_appeal];
+        Dispute storage dispute = disputes[_disputeID];
+        VoteCounter storage voteCounter = dispute.voteCounters[_appeal];
         winningChoice = voteCounter.winningChoice;
-        counts = voteCounter.counts;
+        counts = new uint[](dispute.numberOfChoices + 1);
+        for (uint i = 0; i <= dispute.numberOfChoices; i++) counts[i] = voteCounter.counts[i];
         tied = voteCounter.tied;
     }
 
@@ -796,9 +800,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         dispute.lastPeriodChange = now;
         // As many votes that can be afforded by the provided funds.
         dispute.votes[dispute.votes.length++].length = msg.value / courts[dispute.subcourtID].feeForJuror;
-        // Add one for choice "0", "refuse to arbitrate"/"no ruling".
-        dispute.voteCounters[dispute.voteCounters.length++].counts.length = dispute.numberOfChoices + 1;
-        dispute.voteCounters[dispute.voteCounters.length - 1].tied = true;
+        dispute.voteCounters[dispute.voteCounters.length++].tied = true;
         dispute.tokensAtStakePerJuror.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalFeesForJurors.push(msg.value);
         dispute.votesInEachRound.push(0);
@@ -828,9 +830,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         dispute.lastPeriodChange = now;
         // As many votes that can be afforded by the provided funds.
         dispute.votes[dispute.votes.length++].length = msg.value / courts[dispute.subcourtID].feeForJuror;
-        // Add one for choice "0", "refuse to arbitrate"/"no ruling".
-        dispute.voteCounters[dispute.voteCounters.length++].counts.length = dispute.numberOfChoices + 1;
-        dispute.voteCounters[dispute.voteCounters.length - 1].tied = true;
+        dispute.voteCounters[dispute.voteCounters.length++].tied = true;
         dispute.tokensAtStakePerJuror.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalFeesForJurors.push(msg.value);
         dispute.drawsInRound = 0;
