@@ -245,9 +245,8 @@ contract Governance is TokenController{
         Proposal storage proposal = proposals[_id];
 
         require(proposal.approved, "Proposal must be approved.");
-
-        require(proposal.destination.call.value(proposal.amount)(proposal.data), "Proposal execution failed!"); // solium-disable-line security/no-call-value
         proposal.state = ProposalState.Executed;
+        require(proposal.destination.call.value(proposal.amount)(proposal.data), "Proposal execution failed!"); // solium-disable-line security/no-call-value
         emit ProposalExecuted(_id);
     }
 
