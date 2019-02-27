@@ -1,8 +1,10 @@
 /* eslint-disable no-undef */ // Avoid the linter considering truffle elements as undef.
 const {
-  expectThrow,
+  expectThrow
+} = require('openzeppelin-solidity/test/helpers/expectThrow')
+const {
   increaseTime
-} = require('kleros-interaction/helpers/utils')
+} = require('openzeppelin-solidity/test/helpers/increaseTime')
 
 const KlerosPOC = artifacts.require('./POC/KlerosPOC.sol')
 
@@ -225,30 +227,30 @@ contract('KlerosPOC', function(accounts) {
 
     assert.equal(await klerosPOC.period(), 0)
 
-    increaseTime(10)
+    await increaseTime(10)
     await expectThrow(klerosPOC.passPeriod({ from: other }))
-    increaseTime(11)
+    await increaseTime(11)
     await klerosPOC.passPeriod({ from: other })
     assert.equal(await klerosPOC.period(), 1)
 
     await klerosPOC.passPeriod({ from: other })
     assert.equal(await klerosPOC.period(), 2)
 
-    increaseTime(10)
+    await increaseTime(10)
     await expectThrow(klerosPOC.passPeriod({ from: other }))
-    increaseTime(71)
+    await increaseTime(71)
     await klerosPOC.passPeriod({ from: other })
     assert.equal(await klerosPOC.period(), 3)
 
-    increaseTime(10)
+    await increaseTime(10)
     await expectThrow(klerosPOC.passPeriod({ from: other }))
-    increaseTime(11)
+    await increaseTime(11)
     await klerosPOC.passPeriod({ from: other })
     assert.equal(await klerosPOC.period(), 4)
 
-    increaseTime(10)
+    await increaseTime(10)
     await expectThrow(klerosPOC.passPeriod({ from: other }))
-    increaseTime(41)
+    await increaseTime(41)
     await klerosPOC.passPeriod({ from: other })
     assert.equal(await klerosPOC.period(), 0)
     assert.equal(await klerosPOC.session(), 2)

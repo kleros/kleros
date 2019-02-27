@@ -80,10 +80,19 @@ const asyncForEach = async (method, iterable) => {
   for (const item of array) await method(item)
 }
 
-contract('KlerosLiquid', accounts =>
-  it('Should implement the spec, https://docs.google.com/document/d/17aqJ0LTLJrQNSk07Cwop4JVRmicaCLi1I4UfYeSw96Y.', async () => {
+contract('KlerosLiquid', accounts => {
+  let pinakion
+  let randomNumber
+  let RNG
+  let governor
+  let minStakingTime
+  let maxDrawingTime
+  let subcourtTree
+  let subcourtMap
+  let klerosLiquid
+  beforeEach(async () => {
     // Deploy contracts and generate subcourts
-    const pinakion = await Pinakion.new(
+    pinakion = await Pinakion.new(
       0x0, // _tokenFactory
       0x0, // _parentToken
       0, // _parentSnapShotBlock
@@ -92,13 +101,18 @@ contract('KlerosLiquid', accounts =>
       'PNK', // _tokenSymbol
       true // _transfersEnabled
     )
-    const randomNumber = 10
-    const RNG = await ConstantNG.new(randomNumber)
-    const governor = accounts[0]
-    const minStakingTime = 1
-    const maxDrawingTime = 1
-    const { subcourtTree, subcourtMap } = generateSubcourts(randomInt(4, 2), 3)
-    const klerosLiquid = await KlerosLiquid.new(
+    randomNumber = 10
+    RNG = await ConstantNG.new(randomNumber)
+    governor = accounts[0]
+    minStakingTime = 1
+    maxDrawingTime = 1
+    const {
+      subcourtTree: _subcourtTree,
+      subcourtMap: _subcourtMap
+    } = generateSubcourts(randomInt(4, 2), 3)
+    subcourtTree = _subcourtTree
+    subcourtMap = _subcourtMap
+    klerosLiquid = await KlerosLiquid.new(
       governor,
       pinakion.address,
       RNG.address,
@@ -112,7 +126,9 @@ contract('KlerosLiquid', accounts =>
       subcourtTree.timesPerPeriod,
       subcourtTree.sortitionSumTreeK
     )
+  })
 
+  it('Should implement the spec, https://docs.google.com/document/d/17aqJ0LTLJrQNSk07Cwop4JVRmicaCLi1I4UfYeSw96Y.', async () => {
     // Test general governance
     await checkOnlyByGovernor(
       klerosLiquid.governor,
@@ -293,6 +309,7 @@ contract('KlerosLiquid', accounts =>
         const drawBlockNumber = (await klerosLiquid.drawJurors(dispute.ID, -1))
           .receipt.blockNumber
         numberOfDraws.push(
+          // eslint-disable-next-line no-loop-func
           (await new Promise((resolve, reject) =>
             klerosLiquid
               .Draw({ _disputeID: dispute.ID }, { fromBlock: drawBlockNumber })
@@ -384,6 +401,7 @@ contract('KlerosLiquid', accounts =>
             )).receipt.blockNumber
             expect(PNKBefore).to.deep.equal(await pinakion.balanceOf(governor))
             expect(
+              // eslint-disable-next-line no-loop-func
               (await new Promise((resolve, reject) =>
                 klerosLiquid
                   .TokenAndETHShift(
@@ -412,4 +430,25 @@ contract('KlerosLiquid', accounts =>
       }
     }
   })
-)
+
+  it('Should execute governor proposals.', async () => {
+    const transferAmount = 100
+    const PNKBefore = await pinakion.balanceOf(klerosLiquid.address)
+    await pinakion.generateTokens(klerosLiquid.address, transferAmount)
+    await expectThrow(
+      klerosLiquid.executeGovernorProposal(
+        pinakion.address,
+        transferAmount,
+        pinakion.contract.transfer.getData(governor, transferAmount)
+      )
+    )
+    await klerosLiquid.executeGovernorProposal(
+      pinakion.address,
+      0,
+      pinakion.contract.transfer.getData(governor, transferAmount)
+    )
+    expect(PNKBefore).to.deep.equal(
+      await pinakion.balanceOf(klerosLiquid.address)
+    )
+  })
+})
