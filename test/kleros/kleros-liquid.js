@@ -492,4 +492,20 @@ contract('KlerosLiquid', accounts => {
         subcourtTree.sortitionSumTreeK
       )
     ))
+
+  it("Should not allow changing a subcourt's minimum stake to a value lower than its parent's or higher than any of its children's.", async () => {
+    const subcourt = subcourtTree.children[0]
+    await expectThrow(
+      klerosLiquid.changeSubcourtMinStake(
+        subcourt.ID,
+        subcourtTree.minStake - 1
+      )
+    )
+    await expectThrow(
+      klerosLiquid.changeSubcourtMinStake(
+        subcourt.ID,
+        subcourt.children[0].minStake + 1
+      )
+    )
+  })
 })
