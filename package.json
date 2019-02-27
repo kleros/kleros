@@ -45,7 +45,7 @@
     "web3-utils": "^1.0.0-beta.36"
   },
   "dependencies": {
-    "kleros-interaction": "^0.0.25",
+    "kleros-interaction": "^0.1.1",
     "minimetoken": "^0.2.0"
   }
 }

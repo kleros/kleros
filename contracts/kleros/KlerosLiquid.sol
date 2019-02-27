@@ -429,6 +429,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
                 "The vote period time has not passed yet and not every juror has voted yet."
             );
             dispute.period = Period.appeal;
+            emit AppealPossible(_disputeID, dispute.arbitrated);
         } else if (dispute.period == Period.appeal) {
             require(now - dispute.lastPeriodChange >= courts[dispute.subcourtID].timesPerPeriod[uint(dispute.period)], "The appeal period time has not passed yet.");
             dispute.period = Period.execution;

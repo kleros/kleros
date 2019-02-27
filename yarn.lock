@@ -3992,13 +3992,13 @@ klaw@^1.0.0:
   optionalDependencies:
     graceful-fs "^4.1.9"
 
-kleros-interaction@^0.0.25:
-  version "0.0.25"
-  resolved "https://registry.yarnpkg.com/kleros-interaction/-/kleros-interaction-0.0.25.tgz#27fb8f9ab34a8648806f960569994c6319878ed4"
-  integrity sha512-U6XszQsCkQwcxokkSwSoe70BO6EO9ewWFZLTA6fD3nei6T8nJVnmPiIqifxiZtmpeqrJDL5RchW9ckhgFClYPQ==
+kleros-interaction@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/kleros-interaction/-/kleros-interaction-0.1.1.tgz#a2c0a25a2f7c861c9b8bfabc792a19dd7353e8a2"
+  integrity sha512-i2mYXpa4BD8YgN4/F9PBvHa27P5WRKxWtILslDRIy77bZFYKRvieNhMZAlQepdnqOS4tPrrdNZv/yjCz1Ke5ag==
   dependencies:
     minimetoken "^0.2.0"
-    zeppelin-solidity "^1.7.0"
+    openzeppelin-solidity "^1.12.0"
 
 kleros-scripts@^0.12.0:
   version "0.12.0"
@@ -7602,8 +7602,3 @@ yargs@^8.0.1:
     which-module "^2.0.0"
     y18n "^3.2.1"
     yargs-parser "^7.0.0"
-
-zeppelin-solidity@^1.7.0:
-  version "1.12.0"
-  resolved "https://registry.yarnpkg.com/zeppelin-solidity/-/zeppelin-solidity-1.12.0.tgz#427edf8e0041ec8600875d3cb8fc9395f33ccfff"
-  integrity sha512-dgjPPnTmx14hAbTeOpTKemDeDCDdwglS0nquOAJG8h5o9zlb43FZafQSrMlIUUSp1EisDZfehrp5loGEYXHZBA==
