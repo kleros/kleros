@@ -253,7 +253,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _data The data sent with the call.
      */
     function executeGovernorProposal(address _destination, uint _amount, bytes _data) external onlyByGovernor {
-        _destination.call.value(_amount)(_data); // solium-disable-line security/no-call-value
+        require(_destination.call.value(_amount)(_data)); // solium-disable-line security/no-call-value
     }
 
     /** @dev Changes the `governor` storage variable.
