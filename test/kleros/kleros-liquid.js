@@ -451,4 +451,31 @@ contract('KlerosLiquid', accounts => {
       await pinakion.balanceOf(klerosLiquid.address)
     )
   })
+
+  it('Should bump `RNBlock` when changing the `RNGenerator` during the generating phase.', async () => {
+    const extraData = `0x${(0).toString(16).padStart(64, '0')}${(1)
+      .toString(16)
+      .padStart(64, '0')}`
+    await klerosLiquid.createDispute(2, extraData, {
+      value: await klerosLiquid.arbitrationCost(extraData)
+    })
+    let phase = Number(await klerosLiquid.phase())
+    while (phase !== 1) {
+      switch (phase) {
+        case 0:
+          await increaseTime(minStakingTime)
+          break
+        case 2:
+          await increaseTime(maxDrawingTime)
+          break
+        default:
+          break
+      }
+      await klerosLiquid.passPhase()
+      phase = (phase + 1) % 3
+    }
+    const RNBlock = await klerosLiquid.RNBlock()
+    await klerosLiquid.changeRNGenerator(RNG.address)
+    expect(RNBlock.plus(1)).to.deep.equal(await klerosLiquid.RNBlock())
+  })
 })
