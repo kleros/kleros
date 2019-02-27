@@ -478,4 +478,18 @@ contract('KlerosLiquid', accounts => {
     await klerosLiquid.changeRNGenerator(RNG.address)
     expect(RNBlock.plus(1)).to.deep.equal(await klerosLiquid.RNBlock())
   })
+
+  it('Should not allow creating subcourts with parents that have a higher minimum stake.', () =>
+    expectThrow(
+      klerosLiquid.createSubcourt(
+        subcourtTree.parent,
+        subcourtTree.hiddenVotes,
+        subcourtTree.minStake - 1,
+        subcourtTree.alpha,
+        subcourtTree.jurorFee,
+        subcourtTree.jurorsForJump,
+        subcourtTree.timesPerPeriod,
+        subcourtTree.sortitionSumTreeK
+      )
+    ))
 })
