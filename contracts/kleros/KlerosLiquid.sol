@@ -70,7 +70,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
     struct VoteCounter {
         // The choice with the most votes. Note that in the case of a tie, it is the choice that reached the tied number of votes first.
         uint winningChoice;
-        uint[] counts; // The sum of votes for each choice in the form `counts[choice]`.
+        mapping(uint => uint) counts; // The sum of votes for each choice in the form `counts[choice]`.
         bool tied; // True if there is a tie, false otherwise.
     }
     struct Dispute { // Note that appeal `0` is equivalent to the first round of the dispute.
@@ -445,7 +445,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _stake The new stake.
      */
     function setStake(uint96 _subcourtID, uint128 _stake) external {
-        _setStake(msg.sender, _subcourtID, _stake);
+        require(_setStake(msg.sender, _subcourtID, _stake));
     }
 
     /** @dev Executes the next delayed set stakes.
@@ -458,9 +458,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         require(newNextDelayedSetStake >= nextDelayedSetStake);
         for (uint i = nextDelayedSetStake; i < newNextDelayedSetStake; i++) {
             DelayedSetStake storage delayedSetStake = delayedSetStakes[i];
-            this.call( // solium-disable-line security/no-low-level-calls
-                abi.encodeWithSignature("_setStake(address,uint96,uint128)", delayedSetStake.account, delayedSetStake.subcourtID, delayedSetStake.stake)
-            ); // Intentional use to avoid blocking.
+            _setStake(delayedSetStake.account, delayedSetStake.subcourtID, delayedSetStake.stake);
             delete delayedSetStakes[i];
         }
         nextDelayedSetStake = newNextDelayedSetStake;
@@ -649,9 +647,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
                     // Unstake juror if his penalty made balance less than his total stake or if he lost due to inactivity.
                     if (pinakion.balanceOf(vote.account) < jurors[vote.account].stakedTokens || !vote.voted)
                         for (uint j = 0; j < jurors[vote.account].subcourtIDs.length; j++)
-                            this.call( // solium-disable-line security/no-low-level-calls
-                                abi.encodeWithSignature("_setStake(address,uint96,uint128)", vote.account, jurors[vote.account].subcourtIDs[j], 0)
-                            ); // Intentional use to avoid blocking.
+                            _setStake(vote.account, jurors[vote.account].subcourtIDs[j], 0);
 
                 }
             }
@@ -685,100 +681,6 @@ contract KlerosLiquid is TokenController, Arbitrator {
         dispute.arbitrated.rule(_disputeID, winningChoice);
     }
 
-    /* External Views */
-
-    /** @dev Gets a specified subcourt's non primitive properties.
-     *  @param _subcourtID The ID of the subcourt.
-     *  @return The subcourt's non primitive properties.
-     */
-    function getSubcourt(uint96 _subcourtID) external view returns(
-        uint[] children,
-        uint[4] timesPerPeriod
-    ) {
-        Court storage subcourt = courts[_subcourtID];
-        children = subcourt.children;
-        timesPerPeriod = subcourt.timesPerPeriod;
-    }
-
-    /** @dev Gets a specified vote for a specified appeal in a specified dispute.
-     *  @param _disputeID The ID of the dispute.
-     *  @param _appeal The appeal.
-     *  @param _voteID The ID of the vote.
-     *  @return The vote.
-     */
-    function getVote(uint _disputeID, uint _appeal, uint _voteID) external view returns(
-        address account,
-        bytes32 commit,
-        uint choice,
-        bool voted
-    ) {
-        Vote storage vote = disputes[_disputeID].votes[_appeal][_voteID];
-        account = vote.account;
-        commit = vote.commit;
-        choice = vote.choice;
-        voted = vote.voted;
-    }
-
-    /** @dev Gets the vote counter for a specified appeal in a specified dispute.
-     *  @param _disputeID The ID of the dispute.
-     *  @param _appeal The appeal.
-     *  @return The vote counter.
-     */
-    function getVoteCounter(uint _disputeID, uint _appeal) external view returns(
-        uint winningChoice,
-        uint[] counts,
-        bool tied
-    ) {
-        VoteCounter storage voteCounter = disputes[_disputeID].voteCounters[_appeal];
-        winningChoice = voteCounter.winningChoice;
-        counts = voteCounter.counts;
-        tied = voteCounter.tied;
-    }
-
-    /** @dev Gets a specified dispute's non primitive properties.
-     *  @param _disputeID The ID of the dispute.
-     *  @return The dispute's non primitive properties.
-     *  `O(a)` where
-     *  `a` is the number of appeals of the dispute.
-     */
-    function getDispute(uint _disputeID) external view returns(
-        uint[] votesLengths,
-        uint[] tokensAtStakePerJuror,
-        uint[] totalFeesForJurors,
-        uint[] votesInEachRound,
-        uint[] repartitionsInEachRound,
-        uint[] penaltiesInEachRound
-    ) {
-        Dispute storage dispute = disputes[_disputeID];
-        votesLengths = new uint[](dispute.votes.length);
-        for (uint i = 0; i < dispute.votes.length; i++) votesLengths[i] = dispute.votes[i].length;
-        tokensAtStakePerJuror = dispute.tokensAtStakePerJuror;
-        totalFeesForJurors = dispute.totalFeesForJurors;
-        votesInEachRound = dispute.votesInEachRound;
-        repartitionsInEachRound = dispute.repartitionsInEachRound;
-        penaltiesInEachRound = dispute.penaltiesInEachRound;
-    }
-
-    /** @dev Gets a specified juror's non primitive properties.
-     *  @param _account The address of the juror.
-     *  @return The juror's non primitive properties.
-     */
-    function getJuror(address _account) external view returns(
-        uint96[] subcourtIDs
-    ) {
-        Juror storage juror = jurors[_account];
-        subcourtIDs = juror.subcourtIDs;
-    }
-
-    /** @dev Gets the stake of a specified juror in a specified subcourt.
-     *  @param _account The address of the juror.
-     *  @param _subcourtID The ID of the subcourt.
-     *  @return The stake.
-     */
-    function stakeOf(address _account, uint96 _subcourtID) external view returns(uint stake) {
-        return sortitionSumTrees.stakeOf(bytes32(_subcourtID), accountAndSubcourtIDToStakePathID(_account, _subcourtID));
-    }
-
     /* Public */
 
     /** @dev Creates a dispute. Must be called by the arbitrable contract.
@@ -800,9 +702,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         dispute.lastPeriodChange = now;
         // As many votes that can be afforded by the provided funds.
         dispute.votes[dispute.votes.length++].length = msg.value / courts[dispute.subcourtID].feeForJuror;
-        // Add one for choice "0", "refuse to arbitrate"/"no ruling".
-        dispute.voteCounters[dispute.voteCounters.length++].counts.length = dispute.numberOfChoices + 1;
-        dispute.voteCounters[dispute.voteCounters.length - 1].tied = true;
+        dispute.voteCounters[dispute.voteCounters.length++].tied = true;
         dispute.tokensAtStakePerJuror.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalFeesForJurors.push(msg.value);
         dispute.votesInEachRound.push(0);
@@ -832,9 +732,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         dispute.lastPeriodChange = now;
         // As many votes that can be afforded by the provided funds.
         dispute.votes[dispute.votes.length++].length = msg.value / courts[dispute.subcourtID].feeForJuror;
-        // Add one for choice "0", "refuse to arbitrate"/"no ruling".
-        dispute.voteCounters[dispute.voteCounters.length++].counts.length = dispute.numberOfChoices + 1;
-        dispute.voteCounters[dispute.voteCounters.length - 1].tied = true;
+        dispute.voteCounters[dispute.voteCounters.length++].tied = true;
         dispute.tokensAtStakePerJuror.push((courts[dispute.subcourtID].minStake * courts[dispute.subcourtID].alpha) / ALPHA_DIVISOR);
         dispute.totalFeesForJurors.push(msg.value);
         dispute.drawsInRound = 0;
@@ -950,28 +848,25 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _account The address of the juror.
      *  @param _subcourtID The ID of the subcourt.
      *  @param _stake The new stake.
+     *  @return True if the call succeeded, false otherwise.
      */
-    function _setStake(address _account, uint96 _subcourtID, uint128 _stake) public {
-        require(msg.sender == _account || msg.sender == address(this), "Can only be called by a juror setting his own stake or internally.");
+    function _setStake(address _account, uint96 _subcourtID, uint128 _stake) internal returns(bool succeeded) {
         // Delayed action logic.
         if (phase != Phase.staking) {
             delayedSetStakes[++lastDelayedSetStake] = DelayedSetStake({ account: _account, subcourtID: _subcourtID, stake: _stake });
-            return;
+            return true;
         }
 
-        require(
-            _stake == 0 || courts[_subcourtID].minStake <= _stake,
-            "The juror's stake cannot be lower than the minimum stake for the subcourt."
-        );
+        if (!(_stake == 0 || courts[_subcourtID].minStake <= _stake))
+            return false; // The juror's stake cannot be lower than the minimum stake for the subcourt.
         Juror storage juror = jurors[_account];
         bytes32 stakePathID = accountAndSubcourtIDToStakePathID(_account, _subcourtID);
         uint currentStake = sortitionSumTrees.stakeOf(bytes32(_subcourtID), stakePathID);
-        require(_stake == 0 || currentStake > 0 || juror.subcourtIDs.length < MAX_STAKE_PATHS, "Maximum stake paths reached.");
+        if (!(_stake == 0 || currentStake > 0 || juror.subcourtIDs.length < MAX_STAKE_PATHS))
+            return false; // Maximum stake paths reached.
         uint newTotalStake = juror.stakedTokens - currentStake + _stake; // Can't overflow because _stake is a uint128.
-        require(
-            _stake == 0 || pinakion.balanceOf(_account) >= newTotalStake,
-            "The juror's total amount of staked tokens cannot be higher than the juror's balance."
-        );
+        if (!(_stake == 0 || pinakion.balanceOf(_account) >= newTotalStake))
+            return false; // The juror's total amount of staked tokens cannot be higher than the juror's balance.
 
         // Update juror's records.
         juror.stakedTokens = newTotalStake;
@@ -993,6 +888,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
             else currentSubcourtID = courts[currentSubcourtID].parent;
         }
         emit StakeSet(_account, _subcourtID, _stake, newTotalStake);
+        return true;
     }
 
     /** @dev Gets a subcourt ID and the minimum number of jurors required from a specified extra data bytes array.
@@ -1044,5 +940,104 @@ contract KlerosLiquid is TokenController, Arbitrator {
             account := mload(ptr)
             subcourtID := _stakePathID
         }
+    }
+    
+    /* Interface Views */
+
+    /** @dev Gets a specified subcourt's non primitive properties.
+     *  @param _subcourtID The ID of the subcourt.
+     *  @return The subcourt's non primitive properties.
+     */
+    function getSubcourt(uint96 _subcourtID) external view returns(
+        uint[] children,
+        uint[4] timesPerPeriod
+    ) {
+        Court storage subcourt = courts[_subcourtID];
+        children = subcourt.children;
+        timesPerPeriod = subcourt.timesPerPeriod;
+    }
+
+    /** @dev Gets a specified vote for a specified appeal in a specified dispute.
+     *  @param _disputeID The ID of the dispute.
+     *  @param _appeal The appeal.
+     *  @param _voteID The ID of the vote.
+     *  @return The vote.
+     */
+    function getVote(uint _disputeID, uint _appeal, uint _voteID) external view returns(
+        address account,
+        bytes32 commit,
+        uint choice,
+        bool voted
+    ) {
+        Vote storage vote = disputes[_disputeID].votes[_appeal][_voteID];
+        account = vote.account;
+        commit = vote.commit;
+        choice = vote.choice;
+        voted = vote.voted;
+    }
+
+    /** @dev Gets the vote counter for a specified appeal in a specified dispute.
+     *  Note: This function is only to be used by the interface and it won't work if the number of choices is too high.
+     *  @param _disputeID The ID of the dispute.
+     *  @param _appeal The appeal.
+     *  @return The vote counter.
+     *  `O(n)` where
+     *  `n` is the number of choices of the dispute.
+     */
+    function getVoteCounter(uint _disputeID, uint _appeal) external view returns(
+        uint winningChoice,
+        uint[] counts,
+        bool tied
+    ) {
+        Dispute storage dispute = disputes[_disputeID];
+        VoteCounter storage voteCounter = dispute.voteCounters[_appeal];
+        winningChoice = voteCounter.winningChoice;
+        counts = new uint[](dispute.numberOfChoices + 1);
+        for (uint i = 0; i <= dispute.numberOfChoices; i++) counts[i] = voteCounter.counts[i];
+        tied = voteCounter.tied;
+    }
+
+    /** @dev Gets a specified dispute's non primitive properties.
+     *  @param _disputeID The ID of the dispute.
+     *  @return The dispute's non primitive properties.
+     *  `O(a)` where
+     *  `a` is the number of appeals of the dispute.
+     */
+    function getDispute(uint _disputeID) external view returns(
+        uint[] votesLengths,
+        uint[] tokensAtStakePerJuror,
+        uint[] totalFeesForJurors,
+        uint[] votesInEachRound,
+        uint[] repartitionsInEachRound,
+        uint[] penaltiesInEachRound
+    ) {
+        Dispute storage dispute = disputes[_disputeID];
+        votesLengths = new uint[](dispute.votes.length);
+        for (uint i = 0; i < dispute.votes.length; i++) votesLengths[i] = dispute.votes[i].length;
+        tokensAtStakePerJuror = dispute.tokensAtStakePerJuror;
+        totalFeesForJurors = dispute.totalFeesForJurors;
+        votesInEachRound = dispute.votesInEachRound;
+        repartitionsInEachRound = dispute.repartitionsInEachRound;
+        penaltiesInEachRound = dispute.penaltiesInEachRound;
+    }
+
+    /** @dev Gets a specified juror's non primitive properties.
+     *  @param _account The address of the juror.
+     *  @return The juror's non primitive properties.
+     */
+    function getJuror(address _account) external view returns(
+        uint96[] subcourtIDs
+    ) {
+        Juror storage juror = jurors[_account];
+        subcourtIDs = juror.subcourtIDs;
+    }
+
+    /** @dev Gets the stake of a specified juror in a specified subcourt.
+     *  @param _account The address of the juror.
+     *  @param _subcourtID The ID of the subcourt.
+     *  @return The stake.
+     */
+    function stakeOf(address _account, uint96 _subcourtID) external view returns(uint stake) {
+        return sortitionSumTrees.stakeOf(bytes32(_subcourtID), accountAndSubcourtIDToStakePathID(_account, _subcourtID));
     }
 }
