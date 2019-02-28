@@ -529,7 +529,7 @@ contract('KlerosLiquid', accounts => {
       value: await klerosLiquid.arbitrationCost(extraData)
     })
     await pinakion.generateTokens(governor, -1)
-    await klerosLiquid.setStake(subcourtTree.ID, 100)
+    await klerosLiquid.setStake(subcourtTree.ID, subcourtTree.minStake)
     await increaseTime(minStakingTime)
     await klerosLiquid.passPhase()
     await klerosLiquid.passPhase()
@@ -630,5 +630,27 @@ contract('KlerosLiquid', accounts => {
     await klerosLiquid.passPhase()
     await klerosLiquid.executeDelayedSetStakes(1)
     await expectThrow(klerosLiquid.executeDelayedSetStakes(-1))
+  })
+
+  it('Should prevent underflows and going out of range when drawing jurors.', async () => {
+    const disputeID = 0
+    const numberOfJurors = 3
+    const numberOfChoices = 2
+    const extraData = `0x${subcourtTree.ID.toString(16).padStart(
+      64,
+      '0'
+    )}${numberOfJurors.toString(16).padStart(64, '0')}`
+    await klerosLiquid.createDispute(numberOfChoices, extraData, {
+      value: await klerosLiquid.arbitrationCost(extraData)
+    })
+    await pinakion.generateTokens(governor, -1)
+    await klerosLiquid.setStake(subcourtTree.ID, subcourtTree.minStake)
+    await increaseTime(minStakingTime)
+    await klerosLiquid.passPhase()
+    await klerosLiquid.passPhase()
+    await increaseTime(subcourtTree.timesPerPeriod[0])
+    await klerosLiquid.drawJurors(disputeID, 1)
+    await expectThrow(klerosLiquid.drawJurors(disputeID, -1))
+    await klerosLiquid.drawJurors(disputeID, numberOfJurors + 1)
   })
 })
