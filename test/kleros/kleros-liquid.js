@@ -614,7 +614,7 @@ contract('KlerosLiquid', accounts => {
     await klerosLiquid.setStake(subcourtTree.children[0].children[0].ID, 0)
   })
 
-  it('Should prevent underflows when executing delayed set stakes.', async () => {
+  it('Should prevent overflows when executing delayed set stakes.', async () => {
     const extraData = `0x${(0).toString(16).padStart(64, '0')}${(1)
       .toString(16)
       .padStart(64, '0')}`
@@ -632,7 +632,7 @@ contract('KlerosLiquid', accounts => {
     await expectThrow(klerosLiquid.executeDelayedSetStakes(-1))
   })
 
-  it('Should prevent underflows and going out of range when drawing jurors.', async () => {
+  it('Should prevent overflows and going out of range when drawing jurors.', async () => {
     const disputeID = 0
     const numberOfJurors = 3
     const numberOfChoices = 2
