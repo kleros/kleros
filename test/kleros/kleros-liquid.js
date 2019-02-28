@@ -541,4 +541,46 @@ contract('KlerosLiquid', accounts => {
     await increaseTime(maxDrawingTime)
     await klerosLiquid.passPhase()
   })
+
+  it('Should validate all preconditions for passing periods.', async () => {
+    const disputeID = 0
+    const numberOfJurors = 1
+    const numberOfChoices = 2
+    const extraData = `0x${subcourtTree.ID.toString(16).padStart(
+      64,
+      '0'
+    )}${numberOfJurors.toString(16).padStart(64, '0')}`
+    await klerosLiquid.createDispute(numberOfChoices, extraData, {
+      value: await klerosLiquid.arbitrationCost(extraData)
+    })
+    await pinakion.generateTokens(governor, -1)
+    await klerosLiquid.setStake(subcourtTree.ID, 100)
+    await increaseTime(minStakingTime)
+    await klerosLiquid.passPhase()
+    await klerosLiquid.passPhase()
+    await expectThrow(klerosLiquid.passPeriod(disputeID))
+    await increaseTime(subcourtTree.timesPerPeriod[0])
+    await expectThrow(klerosLiquid.passPeriod(disputeID))
+    await klerosLiquid.drawJurors(disputeID, -1)
+    await klerosLiquid.passPeriod(disputeID)
+    await expectThrow(klerosLiquid.passPeriod(disputeID))
+    await klerosLiquid.commit(
+      disputeID,
+      [numberOfJurors - 1],
+      soliditySha3(numberOfChoices, numberOfJurors - 1)
+    )
+    await klerosLiquid.passPeriod(disputeID)
+    await expectThrow(klerosLiquid.passPeriod(disputeID))
+    await klerosLiquid.vote(
+      disputeID,
+      [numberOfJurors - 1],
+      numberOfChoices,
+      numberOfJurors - 1
+    )
+    await klerosLiquid.passPeriod(disputeID)
+    await expectThrow(klerosLiquid.passPeriod(disputeID))
+    await increaseTime(subcourtTree.timesPerPeriod[3])
+    await klerosLiquid.passPeriod(disputeID)
+    await expectThrow(klerosLiquid.passPeriod(disputeID))
+  })
 })
