@@ -648,7 +648,6 @@ contract('KlerosLiquid', accounts => {
     await increaseTime(minStakingTime)
     await klerosLiquid.passPhase()
     await klerosLiquid.passPhase()
-    await increaseTime(subcourtTree.timesPerPeriod[0])
     await klerosLiquid.drawJurors(disputeID, 1)
     await expectThrow(klerosLiquid.drawJurors(disputeID, -1))
     await klerosLiquid.drawJurors(disputeID, numberOfJurors + 1)
