@@ -508,4 +508,37 @@ contract('KlerosLiquid', accounts => {
       )
     )
   })
+
+  it('Should validate all preconditions for passing phases.', async () => {
+    let phase = Number(await klerosLiquid.phase())
+    while (phase !== 0) {
+      switch (phase) {
+        case 2:
+          await increaseTime(maxDrawingTime)
+          break
+        default:
+          break
+      }
+      await klerosLiquid.passPhase()
+      phase = (phase + 1) % 3
+    }
+    await expectThrow(klerosLiquid.passPhase())
+    await increaseTime(minStakingTime)
+    await expectThrow(klerosLiquid.passPhase())
+    const extraData = `0x${(0).toString(16).padStart(64, '0')}${(1)
+      .toString(16)
+      .padStart(64, '0')}`
+    await klerosLiquid.createDispute(2, extraData, {
+      value: await klerosLiquid.arbitrationCost(extraData)
+    })
+    await klerosLiquid.passPhase()
+    const zeroRNG = await ConstantNG.new(0)
+    await klerosLiquid.changeRNGenerator(zeroRNG.address)
+    await expectThrow(klerosLiquid.passPhase())
+    await klerosLiquid.changeRNGenerator(RNG.address)
+    await klerosLiquid.passPhase()
+    await expectThrow(klerosLiquid.passPhase())
+    await increaseTime(maxDrawingTime)
+    await klerosLiquid.passPhase()
+  })
 })
