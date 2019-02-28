@@ -613,4 +613,22 @@ contract('KlerosLiquid', accounts => {
     )
     await klerosLiquid.setStake(subcourtTree.children[0].children[0].ID, 0)
   })
+
+  it('Should prevent underflows when executing delayed set stakes.', async () => {
+    const extraData = `0x${(0).toString(16).padStart(64, '0')}${(1)
+      .toString(16)
+      .padStart(64, '0')}`
+    await klerosLiquid.createDispute(2, extraData, {
+      value: await klerosLiquid.arbitrationCost(extraData)
+    })
+    await increaseTime(minStakingTime)
+    await klerosLiquid.passPhase()
+    await klerosLiquid.setStake(subcourtTree.ID, subcourtTree.minStake)
+    await klerosLiquid.setStake(subcourtTree.ID, subcourtTree.minStake)
+    await klerosLiquid.passPhase()
+    await increaseTime(maxDrawingTime)
+    await klerosLiquid.passPhase()
+    await klerosLiquid.executeDelayedSetStakes(1)
+    await expectThrow(klerosLiquid.executeDelayedSetStakes(-1))
+  })
 })
