@@ -459,21 +459,8 @@ contract('KlerosLiquid', accounts => {
     await klerosLiquid.createDispute(2, extraData, {
       value: await klerosLiquid.arbitrationCost(extraData)
     })
-    let phase = Number(await klerosLiquid.phase())
-    while (phase !== 1) {
-      switch (phase) {
-        case 0:
-          await increaseTime(minStakingTime)
-          break
-        case 2:
-          await increaseTime(maxDrawingTime)
-          break
-        default:
-          break
-      }
-      await klerosLiquid.passPhase()
-      phase = (phase + 1) % 3
-    }
+    await increaseTime(minStakingTime)
+    await klerosLiquid.passPhase()
     const RNBlock = await klerosLiquid.RNBlock()
     await klerosLiquid.changeRNGenerator(RNG.address)
     expect(RNBlock.plus(1)).to.deep.equal(await klerosLiquid.RNBlock())
@@ -510,18 +497,6 @@ contract('KlerosLiquid', accounts => {
   })
 
   it('Should validate all preconditions for passing phases.', async () => {
-    let phase = Number(await klerosLiquid.phase())
-    while (phase !== 0) {
-      switch (phase) {
-        case 2:
-          await increaseTime(maxDrawingTime)
-          break
-        default:
-          break
-      }
-      await klerosLiquid.passPhase()
-      phase = (phase + 1) % 3
-    }
     await expectThrow(klerosLiquid.passPhase())
     await increaseTime(minStakingTime)
     await expectThrow(klerosLiquid.passPhase())
@@ -582,5 +557,60 @@ contract('KlerosLiquid', accounts => {
     await increaseTime(subcourtTree.timesPerPeriod[3])
     await klerosLiquid.passPeriod(disputeID)
     await expectThrow(klerosLiquid.passPeriod(disputeID))
+  })
+
+  it('Should validate all preconditions for setting stake.', async () => {
+    await asyncForEach(
+      subcourt =>
+        klerosLiquid.createSubcourt(
+          subcourt.parent,
+          subcourt.hiddenVotes,
+          subcourt.minStake,
+          subcourt.alpha,
+          subcourt.jurorFee,
+          subcourt.jurorsForJump,
+          subcourt.timesPerPeriod,
+          subcourt.sortitionSumTreeK
+        ),
+      subcourtMap
+    )
+    const PNK =
+      subcourtTree.minStake +
+      subcourtTree.children[0].minStake +
+      subcourtTree.children[1].minStake +
+      subcourtTree.children[0].children[0].minStake +
+      subcourtTree.children[0].children[1].minStake
+    await pinakion.generateTokens(governor, PNK)
+    await expectThrow(
+      klerosLiquid.setStake(subcourtTree.ID, subcourtTree.minStake - 1)
+    )
+    await klerosLiquid.setStake(subcourtTree.ID, subcourtTree.minStake)
+    await klerosLiquid.setStake(
+      subcourtTree.children[0].ID,
+      subcourtTree.children[0].minStake
+    )
+    await klerosLiquid.setStake(
+      subcourtTree.children[1].ID,
+      subcourtTree.children[1].minStake
+    )
+    await klerosLiquid.setStake(
+      subcourtTree.children[0].children[0].ID,
+      subcourtTree.children[0].children[0].minStake
+    )
+    await expectThrow(
+      klerosLiquid.setStake(
+        subcourtTree.children[0].children[1].ID,
+        subcourtTree.children[0].children[1].minStake
+      )
+    )
+    await expectThrow(
+      klerosLiquid.setStake(
+        subcourtTree.children[0].children[0].ID,
+        subcourtTree.children[0].children[0].minStake +
+          subcourtTree.children[0].children[1].minStake +
+          1
+      )
+    )
+    await klerosLiquid.setStake(subcourtTree.children[0].children[0].ID, 0)
   })
 })
