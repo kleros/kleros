@@ -652,4 +652,89 @@ contract('KlerosLiquid', accounts => {
     await expectThrow(klerosLiquid.drawJurors(disputeID, -1))
     await klerosLiquid.drawJurors(disputeID, numberOfJurors + 1)
   })
+
+  it('Should validate all preconditions for committing and revealing a vote.', async () => {
+    const disputeID = 0
+    const numberOfJurors = 1
+    const numberOfChoices = 2
+    const extraData = `0x${subcourtTree.ID.toString(16).padStart(
+      64,
+      '0'
+    )}${numberOfJurors.toString(16).padStart(64, '0')}`
+    await klerosLiquid.createDispute(numberOfChoices, extraData, {
+      value: await klerosLiquid.arbitrationCost(extraData)
+    })
+    await pinakion.generateTokens(governor, -1)
+    await klerosLiquid.setStake(subcourtTree.ID, subcourtTree.minStake)
+    await increaseTime(minStakingTime)
+    await klerosLiquid.passPhase()
+    await klerosLiquid.passPhase()
+    await increaseTime(subcourtTree.timesPerPeriod[0])
+    await klerosLiquid.drawJurors(disputeID, -1)
+    await klerosLiquid.passPeriod(disputeID)
+    await expectThrow(klerosLiquid.commit(disputeID, [numberOfJurors - 1], 0))
+    await expectThrow(
+      klerosLiquid.commit(
+        disputeID,
+        [numberOfJurors - 1],
+        soliditySha3(numberOfChoices, numberOfJurors - 1),
+        { from: accounts[1] }
+      )
+    )
+    await klerosLiquid.commit(
+      disputeID,
+      [numberOfJurors - 1],
+      soliditySha3(numberOfChoices, numberOfJurors - 1)
+    )
+    await expectThrow(
+      klerosLiquid.commit(
+        disputeID,
+        [numberOfJurors - 1],
+        soliditySha3(numberOfChoices, numberOfJurors - 1)
+      )
+    )
+    await klerosLiquid.passPeriod(disputeID)
+    await expectThrow(
+      klerosLiquid.vote(disputeID, [], numberOfChoices, numberOfJurors - 1)
+    )
+    await expectThrow(
+      klerosLiquid.vote(
+        disputeID,
+        [numberOfJurors - 1],
+        numberOfChoices + 1,
+        numberOfJurors - 1
+      )
+    )
+    await expectThrow(
+      klerosLiquid.vote(
+        disputeID,
+        [numberOfJurors - 1],
+        numberOfChoices,
+        numberOfJurors - 1,
+        { from: accounts[1] }
+      )
+    )
+    await expectThrow(
+      klerosLiquid.vote(
+        disputeID,
+        [numberOfJurors - 1],
+        numberOfChoices,
+        numberOfJurors
+      )
+    )
+    await klerosLiquid.vote(
+      disputeID,
+      [numberOfJurors - 1],
+      numberOfChoices,
+      numberOfJurors - 1
+    )
+    await expectThrow(
+      klerosLiquid.vote(
+        disputeID,
+        [numberOfJurors - 1],
+        numberOfChoices,
+        numberOfJurors - 1
+      )
+    )
+  })
 })
