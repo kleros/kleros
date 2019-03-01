@@ -14,6 +14,9 @@ const ConstantNG = artifacts.require(
   'kleros-interaction/contracts/standard/rng/ConstantNG.sol'
 )
 const KlerosLiquid = artifacts.require('./kleros/KlerosLiquid.sol')
+const TwoPartyArbitrable = artifacts.require(
+  'kleros-interaction/contracts/standard/arbitration/TwoPartyArbitrable.sol'
+)
 
 // Helpers
 const randomInt = (max, min = 1) =>
@@ -399,7 +402,7 @@ contract('KlerosLiquid', accounts => {
               i,
               -1
             )).receipt.blockNumber
-            expect(PNKBefore).to.deep.equal(await pinakion.balanceOf(governor))
+            expect(await pinakion.balanceOf(governor)).to.deep.equal(PNKBefore)
             expect(
               // eslint-disable-next-line no-loop-func
               (await new Promise((resolve, reject) =>
@@ -447,8 +450,8 @@ contract('KlerosLiquid', accounts => {
       0,
       pinakion.contract.transfer.getData(governor, transferAmount)
     )
-    expect(PNKBefore).to.deep.equal(
-      await pinakion.balanceOf(klerosLiquid.address)
+    expect(await pinakion.balanceOf(klerosLiquid.address)).to.deep.equal(
+      PNKBefore
     )
   })
 
@@ -773,5 +776,59 @@ contract('KlerosLiquid', accounts => {
     expect(await klerosLiquid.stakeOf(governor, subcourtTree.ID)).to.deep.equal(
       web3.toBigNumber(0)
     )
+  })
+
+  it('Should call `rule` once on the arbitrated contract with the winning choice.', async () => {
+    const partyB = accounts[1]
+    const disputeID = 0
+    const numberOfJurors = 1
+    const numberOfChoices = 2
+    const extraData = `0x${subcourtTree.ID.toString(16).padStart(
+      64,
+      '0'
+    )}${numberOfJurors.toString(16).padStart(64, '0')}`
+    const twoPartyArbitrable = await TwoPartyArbitrable.new(
+      klerosLiquid.address, // _arbitrator
+      0, // _timeout
+      partyB, // _partyB
+      numberOfChoices, // _amountOfChoices
+      extraData, // _arbitratorExtraData
+      '' // _metaEvidence
+    )
+    const arbitrationCost = await klerosLiquid.arbitrationCost(extraData)
+    await twoPartyArbitrable.payArbitrationFeeByPartyA({
+      value: arbitrationCost
+    })
+    await twoPartyArbitrable.payArbitrationFeeByPartyB({
+      from: partyB,
+      value: arbitrationCost
+    })
+    await pinakion.generateTokens(governor, -1)
+    await klerosLiquid.setStake(subcourtTree.ID, subcourtTree.minStake)
+    await increaseTime(minStakingTime)
+    await klerosLiquid.passPhase()
+    await klerosLiquid.passPhase()
+    await increaseTime(subcourtTree.timesPerPeriod[0])
+    await klerosLiquid.drawJurors(disputeID, -1)
+    await klerosLiquid.passPeriod(disputeID)
+    await klerosLiquid.commit(
+      disputeID,
+      [numberOfJurors - 1],
+      soliditySha3(numberOfChoices, numberOfJurors - 1)
+    )
+    await klerosLiquid.passPeriod(disputeID)
+    await klerosLiquid.vote(
+      disputeID,
+      [numberOfJurors - 1],
+      numberOfChoices,
+      numberOfJurors - 1
+    )
+    await klerosLiquid.passPeriod(disputeID)
+    await increaseTime(subcourtTree.timesPerPeriod[3])
+    await klerosLiquid.passPeriod(disputeID)
+    const ETHBefore = await web3.eth.getBalance(partyB)
+    await klerosLiquid.executeRuling(disputeID)
+    await expectThrow(klerosLiquid.executeRuling(disputeID))
+    expect((await web3.eth.getBalance(partyB)).gt(ETHBefore)).to.equal(true)
   })
 })
