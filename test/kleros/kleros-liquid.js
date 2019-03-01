@@ -737,4 +737,41 @@ contract('KlerosLiquid', accounts => {
       )
     )
   })
+
+  it('Should prevent overflows and going out of range when executing a dispute and it should unstake inactive jurors.', async () => {
+    const disputeID = 0
+    const numberOfJurors = 1
+    const numberOfChoices = 2
+    const extraData = `0x${subcourtTree.ID.toString(16).padStart(
+      64,
+      '0'
+    )}${numberOfJurors.toString(16).padStart(64, '0')}`
+    await klerosLiquid.createDispute(numberOfChoices, extraData, {
+      value: await klerosLiquid.arbitrationCost(extraData)
+    })
+    await pinakion.generateTokens(governor, -1)
+    await klerosLiquid.setStake(subcourtTree.ID, subcourtTree.minStake)
+    await increaseTime(minStakingTime)
+    await klerosLiquid.passPhase()
+    await klerosLiquid.passPhase()
+    await increaseTime(subcourtTree.timesPerPeriod[0])
+    await klerosLiquid.drawJurors(disputeID, -1)
+    await klerosLiquid.passPeriod(disputeID)
+    await increaseTime(subcourtTree.timesPerPeriod[1])
+    await klerosLiquid.passPeriod(disputeID)
+    await increaseTime(subcourtTree.timesPerPeriod[2])
+    await klerosLiquid.passPeriod(disputeID)
+    await increaseTime(subcourtTree.timesPerPeriod[3])
+    await klerosLiquid.passPeriod(disputeID)
+    await klerosLiquid.passPhase()
+    await klerosLiquid.execute(disputeID, 0, 1)
+    await expectThrow(klerosLiquid.execute(disputeID, 0, -1))
+    await klerosLiquid.execute(disputeID, 0, numberOfJurors * 2 + 1)
+    expect((await klerosLiquid.jurors(governor))[0]).to.deep.equal(
+      web3.toBigNumber(0)
+    )
+    expect(await klerosLiquid.stakeOf(governor, subcourtTree.ID)).to.deep.equal(
+      web3.toBigNumber(0)
+    )
+  })
 })
