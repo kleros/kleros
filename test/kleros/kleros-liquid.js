@@ -242,25 +242,29 @@ contract('KlerosLiquid', accounts => {
         ID: 0,
         subcourtID: subcourtTree.children[0].children[0].ID,
         voteRatios: [0, 1, 2],
-        appeals: 0
+        appeals: 0,
+        numberOfJurors: subcourtTree.children[0].children[0].jurorsForJump
       },
       {
         ID: 1,
         subcourtID: subcourtTree.children[0].children[1].ID,
         voteRatios: [0, 2, 1],
-        appeals: 1
+        appeals: 1,
+        numberOfJurors: subcourtTree.children[0].children[1].jurorsForJump
       },
       {
         ID: 2,
         subcourtID: subcourtTree.children[1].children[0].ID,
         voteRatios: [1, 1, 2],
-        appeals: 2
+        appeals: 2,
+        numberOfJurors: subcourtTree.children[1].children[0].jurorsForJump
       },
       {
         ID: 3,
         subcourtID: subcourtTree.children[1].children[1].ID,
         voteRatios: [1, 2, 1],
-        appeals: 2
+        appeals: 4,
+        numberOfJurors: subcourtTree.jurorsForJump
       }
     ]
 
@@ -269,7 +273,9 @@ contract('KlerosLiquid', accounts => {
     for (const dispute of disputes) {
       const extraData = `0x${dispute.subcourtID
         .toString(16)
-        .padStart(64, '0')}${(1).toString(16).padStart(64, '0')}`
+        .padStart(64, '0')}${dispute.numberOfJurors
+        .toString(16)
+        .padStart(64, '0')}`
       await klerosLiquid.createDispute(2, extraData, {
         value: await klerosLiquid.arbitrationCost(extraData)
       })
@@ -300,6 +306,14 @@ contract('KlerosLiquid', accounts => {
       const votes = []
       const voteRatioDivisor = dispute.voteRatios.reduce((acc, v) => acc + v, 0)
       for (let i = 0; i <= dispute.appeals; i++) {
+        if (
+          dispute.subcourtID === 0 &&
+          numberOfDraws[numberOfDraws.length - 1] >= subcourtTree.jurorsForJump
+        )
+          continue
+        dispute.subcourtID = (await klerosLiquid.disputes(
+          dispute.ID
+        ))[0].toNumber()
         const subcourt = subcourtMap[dispute.subcourtID] || subcourtTree
 
         // Generate random number
@@ -362,30 +376,88 @@ contract('KlerosLiquid', accounts => {
           await klerosLiquid.passPeriod(dispute.ID)
         }
 
+        // Test `appealPeriod` and `disputeStatus`
+        const appealPeriod = await klerosLiquid.appealPeriod(dispute.ID)
+        expect(appealPeriod[0]).to.deep.equal(web3.toBigNumber(0))
+        expect(appealPeriod[1]).to.deep.equal(web3.toBigNumber(0))
+        expect(await klerosLiquid.disputeStatus(dispute.ID)).to.deep.equal(
+          web3.toBigNumber(0)
+        )
+
         // Vote
         for (let j = 0; j < votes[i].length; j++)
           await klerosLiquid.vote(dispute.ID, [j], votes[i][j], j)
         await increaseTime(subcourt.timesPerPeriod[2])
-        await klerosLiquid.passPeriod(dispute.ID)
+        const appealPeriodStart = (await web3.eth.getBlock(
+          (await klerosLiquid.passPeriod(dispute.ID)).receipt.blockNumber
+        )).timestamp
+
+        // Test `appealPeriod` and `disputeStatus`
+        const appealPeriod2 = await klerosLiquid.appealPeriod(dispute.ID)
+        expect(appealPeriod2[0]).to.deep.equal(
+          web3.toBigNumber(appealPeriodStart)
+        )
+        expect(appealPeriod2[1]).to.deep.equal(
+          web3.toBigNumber(appealPeriodStart).plus(subcourt.timesPerPeriod[3])
+        )
+        expect(await klerosLiquid.disputeStatus(dispute.ID)).to.deep.equal(
+          web3.toBigNumber(1)
+        )
 
         // Appeal or execute
         if (i < dispute.appeals) {
-          await klerosLiquid.appeal(
-            dispute.ID,
-            '0x0000000000000000000000000000000000000000',
-            {
-              value: await klerosLiquid.appealCost(
-                dispute.ID,
-                '0x0000000000000000000000000000000000000000'
-              )
-            }
+          await expectThrow(
+            klerosLiquid.appeal(
+              dispute.ID,
+              '0x0000000000000000000000000000000000000000',
+              {
+                value: await klerosLiquid.appealCost(
+                  dispute.ID,
+                  '0x0000000000000000000000000000000000000000'
+                )
+              },
+              { from: accounts[1] }
+            )
           )
-          dispute.subcourtID = (await klerosLiquid.disputes(
-            dispute.ID
-          ))[0].toNumber()
+          if (
+            dispute.subcourtID === 0 &&
+            numberOfDraws[numberOfDraws.length - 1] >=
+              subcourtTree.jurorsForJump
+          ) {
+            let error = null
+            try {
+              await klerosLiquid.appeal(
+                dispute.ID,
+                '0x0000000000000000000000000000000000000000',
+                {
+                  value: await klerosLiquid.appealCost(
+                    dispute.ID,
+                    '0x0000000000000000000000000000000000000000'
+                  )
+                }
+              )
+            } catch (err) {
+              error = err
+            }
+            expect(error).to.not.equal(null)
+          } else
+            await klerosLiquid.appeal(
+              dispute.ID,
+              '0x0000000000000000000000000000000000000000',
+              {
+                value: await klerosLiquid.appealCost(
+                  dispute.ID,
+                  '0x0000000000000000000000000000000000000000'
+                )
+              }
+            )
         } else {
           await increaseTime(subcourt.timesPerPeriod[3])
           await klerosLiquid.passPeriod(dispute.ID)
+          // Test `disputeStatus`
+          expect(await klerosLiquid.disputeStatus(dispute.ID)).to.deep.equal(
+            web3.toBigNumber(2)
+          )
           for (let i = 0; i <= dispute.appeals; i++) {
             const voteCounters = Object.entries(
               votes[votes.length - 1].reduce((acc, v) => {
@@ -396,6 +468,8 @@ contract('KlerosLiquid', accounts => {
             const notTieAndNoCoherent =
               !(voteCounters[1] && voteCounters[1][1] === voteCounters[0][1]) &&
               !votes[i].includes(Number(voteCounters[0][0]))
+            // Test `currentRuling`
+            await klerosLiquid.currentRuling(dispute.ID)
             const PNKBefore = await pinakion.balanceOf(governor)
             const executeBlockNumber = (await klerosLiquid.execute(
               dispute.ID,
@@ -432,6 +506,12 @@ contract('KlerosLiquid', accounts => {
         await klerosLiquid.passPhase()
       }
     }
+
+    // Test untested getters
+    await klerosLiquid.getSubcourt(subcourtTree.ID)
+    await klerosLiquid.getVote(disputes[0].ID, 0, 0)
+    await klerosLiquid.getVoteCounter(disputes[0].ID, 0)
+    await klerosLiquid.getJuror(governor)
   })
 
   it('Should execute governor proposals.', async () => {
@@ -741,7 +821,7 @@ contract('KlerosLiquid', accounts => {
     )
   })
 
-  it('Should prevent overflows and going out of range when executing a dispute and it should unstake inactive jurors.', async () => {
+  it('Should prevent overflows and going out of range when executing a dispute, unstake inactive jurors, and block insolvent transfers.', async () => {
     const disputeID = 0
     const numberOfJurors = 1
     const numberOfChoices = 2
@@ -752,8 +832,10 @@ contract('KlerosLiquid', accounts => {
     await klerosLiquid.createDispute(numberOfChoices, extraData, {
       value: await klerosLiquid.arbitrationCost(extraData)
     })
-    await pinakion.generateTokens(governor, -1)
+    await pinakion.generateTokens(governor, subcourtTree.minStake * 2)
+    await pinakion.changeController(klerosLiquid.address)
     await klerosLiquid.setStake(subcourtTree.ID, subcourtTree.minStake)
+    await expectThrow(pinakion.transfer(accounts[1], subcourtTree.minStake * 2))
     await increaseTime(minStakingTime)
     await klerosLiquid.passPhase()
     await klerosLiquid.passPhase()
@@ -830,5 +912,34 @@ contract('KlerosLiquid', accounts => {
     await klerosLiquid.executeRuling(disputeID)
     await expectThrow(klerosLiquid.executeRuling(disputeID))
     expect((await web3.eth.getBalance(partyB)).gt(ETHBefore)).to.equal(true)
+  })
+
+  it('Should handle invalid extra data.', async () => {
+    const disputeID = 0
+    const extraData = `0x${(1000).toString(16).padStart(64, '0')}${(0)
+      .toString(16)
+      .padStart(64, '0')}ffffffffffffffff`
+    await klerosLiquid.createDispute(2, extraData, {
+      value: await klerosLiquid.arbitrationCost(extraData)
+    })
+    expect((await klerosLiquid.disputes(disputeID))[0]).to.deep.equal(
+      web3.toBigNumber(0)
+    )
+    expect((await klerosLiquid.getDispute(disputeID))[0][0]).to.deep.equal(
+      web3.toBigNumber(3)
+    )
+  })
+
+  it('Should handle empty extra data.', async () => {
+    const disputeID = 0
+    await klerosLiquid.createDispute(2, 0, {
+      value: await klerosLiquid.arbitrationCost(0)
+    })
+    expect((await klerosLiquid.disputes(disputeID))[0]).to.deep.equal(
+      web3.toBigNumber(0)
+    )
+    expect((await klerosLiquid.getDispute(disputeID))[0][0]).to.deep.equal(
+      web3.toBigNumber(3)
+    )
   })
 })
