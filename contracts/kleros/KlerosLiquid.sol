@@ -852,6 +852,9 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @return True if the call succeeded, false otherwise.
      */
     function _setStake(address _account, uint96 _subcourtID, uint128 _stake) internal returns(bool succeeded) {
+        if (!(_subcourtID < courts.length))
+            return false;
+
         // Delayed action logic.
         if (phase != Phase.staking) {
             delayedSetStakes[++lastDelayedSetStake] = DelayedSetStake({ account: _account, subcourtID: _subcourtID, stake: _stake });
