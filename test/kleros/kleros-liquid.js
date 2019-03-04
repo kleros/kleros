@@ -367,7 +367,7 @@ contract('KlerosLiquid', accounts => {
         // Commit
         if (subcourt.hiddenVotes) {
           for (let j = 0; j < votes[i].length; j++)
-            await klerosLiquid.commit(
+            await klerosLiquid.castCommit(
               dispute.ID,
               [j],
               soliditySha3(votes[i][j], j)
@@ -386,7 +386,7 @@ contract('KlerosLiquid', accounts => {
 
         // Vote
         for (let j = 0; j < votes[i].length; j++)
-          await klerosLiquid.vote(dispute.ID, [j], votes[i][j], j)
+          await klerosLiquid.castVote(dispute.ID, [j], votes[i][j], j)
         await increaseTime(subcourt.timesPerPeriod[2])
         const appealPeriodStart = (await web3.eth.getBlock(
           (await klerosLiquid.passPeriod(dispute.ID)).receipt.blockNumber
@@ -622,14 +622,14 @@ contract('KlerosLiquid', accounts => {
     await klerosLiquid.drawJurors(disputeID, -1)
     await klerosLiquid.passPeriod(disputeID)
     await expectThrow(klerosLiquid.passPeriod(disputeID))
-    await klerosLiquid.commit(
+    await klerosLiquid.castCommit(
       disputeID,
       [numberOfJurors - 1],
       soliditySha3(numberOfChoices, numberOfJurors - 1)
     )
     await klerosLiquid.passPeriod(disputeID)
     await expectThrow(klerosLiquid.passPeriod(disputeID))
-    await klerosLiquid.vote(
+    await klerosLiquid.castVote(
       disputeID,
       [numberOfJurors - 1],
       numberOfChoices,
@@ -755,22 +755,24 @@ contract('KlerosLiquid', accounts => {
     await increaseTime(subcourtTree.timesPerPeriod[0])
     await klerosLiquid.drawJurors(disputeID, -1)
     await klerosLiquid.passPeriod(disputeID)
-    await expectThrow(klerosLiquid.commit(disputeID, [numberOfJurors - 1], 0))
     await expectThrow(
-      klerosLiquid.commit(
+      klerosLiquid.castCommit(disputeID, [numberOfJurors - 1], 0)
+    )
+    await expectThrow(
+      klerosLiquid.castCommit(
         disputeID,
         [numberOfJurors - 1],
         soliditySha3(numberOfChoices, numberOfJurors - 1),
         { from: accounts[1] }
       )
     )
-    await klerosLiquid.commit(
+    await klerosLiquid.castCommit(
       disputeID,
       [numberOfJurors - 1],
       soliditySha3(numberOfChoices, numberOfJurors - 1)
     )
     await expectThrow(
-      klerosLiquid.commit(
+      klerosLiquid.castCommit(
         disputeID,
         [numberOfJurors - 1],
         soliditySha3(numberOfChoices, numberOfJurors - 1)
@@ -778,10 +780,10 @@ contract('KlerosLiquid', accounts => {
     )
     await klerosLiquid.passPeriod(disputeID)
     await expectThrow(
-      klerosLiquid.vote(disputeID, [], numberOfChoices, numberOfJurors - 1)
+      klerosLiquid.castVote(disputeID, [], numberOfChoices, numberOfJurors - 1)
     )
     await expectThrow(
-      klerosLiquid.vote(
+      klerosLiquid.castVote(
         disputeID,
         [numberOfJurors - 1],
         numberOfChoices + 1,
@@ -789,7 +791,7 @@ contract('KlerosLiquid', accounts => {
       )
     )
     await expectThrow(
-      klerosLiquid.vote(
+      klerosLiquid.castVote(
         disputeID,
         [numberOfJurors - 1],
         numberOfChoices,
@@ -798,21 +800,21 @@ contract('KlerosLiquid', accounts => {
       )
     )
     await expectThrow(
-      klerosLiquid.vote(
+      klerosLiquid.castVote(
         disputeID,
         [numberOfJurors - 1],
         numberOfChoices,
         numberOfJurors
       )
     )
-    await klerosLiquid.vote(
+    await klerosLiquid.castVote(
       disputeID,
       [numberOfJurors - 1],
       numberOfChoices,
       numberOfJurors - 1
     )
     await expectThrow(
-      klerosLiquid.vote(
+      klerosLiquid.castVote(
         disputeID,
         [numberOfJurors - 1],
         numberOfChoices,
@@ -893,13 +895,13 @@ contract('KlerosLiquid', accounts => {
     await increaseTime(subcourtTree.timesPerPeriod[0])
     await klerosLiquid.drawJurors(disputeID, -1)
     await klerosLiquid.passPeriod(disputeID)
-    await klerosLiquid.commit(
+    await klerosLiquid.castCommit(
       disputeID,
       [numberOfJurors - 1],
       soliditySha3(numberOfChoices, numberOfJurors - 1)
     )
     await klerosLiquid.passPeriod(disputeID)
-    await klerosLiquid.vote(
+    await klerosLiquid.castVote(
       disputeID,
       [numberOfJurors - 1],
       numberOfChoices,

@@ -508,7 +508,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _voteIDs The IDs of the votes.
      *  @param _commit The commit.
      */
-    function commit(uint _disputeID, uint[] _voteIDs, bytes32 _commit) external onlyDuringPeriod(_disputeID, Period.commit) {
+    function castCommit(uint _disputeID, uint[] _voteIDs, bytes32 _commit) external onlyDuringPeriod(_disputeID, Period.commit) {
         Dispute storage dispute = disputes[_disputeID];
         require(_commit != bytes32(0));
         for (uint i = 0; i < _voteIDs.length; i++) {
@@ -527,7 +527,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _choice The choice.
      *  @param _salt The salt for the commit if the votes were hidden.
      */
-    function vote(uint _disputeID, uint[] _voteIDs, uint _choice, uint _salt) external onlyDuringPeriod(_disputeID, Period.vote) {
+    function castVote(uint _disputeID, uint[] _voteIDs, uint _choice, uint _salt) external onlyDuringPeriod(_disputeID, Period.vote) {
         Dispute storage dispute = disputes[_disputeID];
         require(_voteIDs.length > 0);
         require(_choice <= dispute.numberOfChoices, "The choice has to be less than or equal to the number of choices for the dispute.");
