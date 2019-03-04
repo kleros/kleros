@@ -1,8 +1,8 @@
 /**
  *  https://contributing.kleros.io/smart-contract-workflow
- *  @reviewers: []
+ *  @reviewers: [@clesaege]
  *  @auditors: []
- *  @bounties: []
+ *  @bounties: [{duration: 14days, link: https://github.com/kleros/kleros/issues/117, max_payout: 50ETH}]
  *  @deployments: []
  */
 /* solium-disable error-reason */
