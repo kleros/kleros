@@ -20,6 +20,7 @@ import { SortitionSumTreeFactory } from "../data-structures/SortitionSumTreeFact
  *  @title KlerosLiquid
  *  @author Enrique Piqueras - <epiquerass@gmail.com>
  *  @dev The main Kleros contract with dispute resolution logic for the Athena release.
+ *  This is the contract currently used on mainnet.
  */
 contract KlerosLiquid is TokenController, Arbitrator {
     /* Enums */
