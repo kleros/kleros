@@ -2,6 +2,8 @@
  *  @title Kleros
  *  @author Clément Lesaege - <clement@lesaege.com>
  *  This code implements a simple version of Kleros.
+ *  Note that this was the contract used in the first version of Kleros.
+ *  Current one is KlerosLiquid.
  *  Bug Bounties: This code hasn't undertaken a bug bounty program yet.
  */
 
