@@ -10,9 +10,9 @@
 pragma solidity ^0.4.24;
 
 import { TokenController } from "minimetoken/contracts/TokenController.sol";
-import { Arbitrator, Arbitrable } from "kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
-import { MiniMeTokenERC20 as Pinakion } from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
-import { RNG } from "kleros-interaction/contracts/standard/rng/RNG.sol";
+import { Arbitrator, Arbitrable } from "@kleros/kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
+import { MiniMeTokenERC20 as Pinakion } from "@kleros/kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
+import { RNG } from "@kleros/kleros-interaction/contracts/standard/rng/RNG.sol";
 
 import { SortitionSumTreeFactory } from "../data-structures/SortitionSumTreeFactory.sol";
 

@@ -1,7 +1,7 @@
 pragma solidity ^0.4.4;
 
 // Test Imports
-import "kleros-interaction/contracts/standard/rng/ConstantNG.sol";
+import "@kleros/kleros-interaction/contracts/standard/rng/ConstantNG.sol";
 
 contract Migrations {
     address public owner;

@@ -1,6 +1,6 @@
 pragma solidity ^0.4.15;
 
-import "kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
+import "@kleros/kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
 
 /**
  *  @title ArbitratorCourt

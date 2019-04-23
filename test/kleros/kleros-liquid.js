@@ -8,14 +8,14 @@ const {
 } = require('openzeppelin-solidity/test/helpers/increaseTime')
 
 const Pinakion = artifacts.require(
-  'kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol'
+  '@kleros/kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol'
 )
 const ConstantNG = artifacts.require(
-  'kleros-interaction/contracts/standard/rng/ConstantNG.sol'
+  '@kleros/kleros-interaction/contracts/standard/rng/ConstantNG.sol'
 )
 const KlerosLiquid = artifacts.require('./kleros/KlerosLiquid.sol')
 const TwoPartyArbitrable = artifacts.require(
-  'kleros-interaction/contracts/standard/arbitration/TwoPartyArbitrable.sol'
+  '@kleros/kleros-interaction/contracts/standard/arbitration/TwoPartyArbitrable.sol'
 )
 
 // Helpers

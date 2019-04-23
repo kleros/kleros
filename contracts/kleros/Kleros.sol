@@ -7,9 +7,9 @@
 
 pragma solidity ^0.4.24;
 
-import "kleros-interaction/contracts/standard/rng/RNG.sol";
-import "kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
-import { MiniMeTokenERC20 as Pinakion } from "kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
+import "@kleros/kleros-interaction/contracts/standard/rng/RNG.sol";
+import "@kleros/kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
+import { MiniMeTokenERC20 as Pinakion } from "@kleros/kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
 import { ApproveAndCallFallBack } from "minimetoken/contracts/MiniMeToken.sol";
 
 contract Kleros is Arbitrator, ApproveAndCallFallBack {

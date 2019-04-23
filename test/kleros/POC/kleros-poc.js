@@ -11,11 +11,11 @@ const KlerosPOC = artifacts.require('./POC/KlerosPOC.sol')
 const Pinakion = artifacts.require('MiniMeTokenERC20')
 
 const ArbitrableTransaction = artifacts.require(
-  'kleros-interaction/contracts/standard/arbitration/ArbitrableTransaction.sol'
+  '@kleros/kleros-interaction/contracts/standard/arbitration/ArbitrableTransaction.sol'
 )
 
 const ConstantRandom = artifacts.require(
-  'kleros-interaction/contracts/standard/rng/ConstantNG.sol'
+  '@kleros/kleros-interaction/contracts/standard/rng/ConstantNG.sol'
 )
 
 contract('KlerosPOC', function(accounts) {
