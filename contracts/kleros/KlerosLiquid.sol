@@ -745,6 +745,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         disputesWithoutJurors++;
 
         emit AppealDecision(_disputeID, Arbitrable(msg.sender));
+        emit NewPeriod(_disputeID, Period.evidence);
     }
 
     /** @dev Called when `_owner` sends ether to the MiniMe Token contract.
@@ -946,7 +947,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
             subcourtID := _stakePathID
         }
     }
-    
+
     /* Interface Views */
 
     /** @dev Gets a specified subcourt's non primitive properties.
