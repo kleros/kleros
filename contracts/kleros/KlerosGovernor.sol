@@ -7,334 +7,314 @@
  */
 
 /* solium-disable security/no-block-members */
+/* solium-disable max-len*/
+
 pragma solidity ^0.4.24;
 
-import "./KlerosLiquid.sol";
+import "@kleros/kleros-interaction/contracts/standard/arbitration/Arbitrable.sol";
 import "@kleros/kleros-interaction/contracts/libraries/CappedMath.sol";
 
 contract KlerosGovernor is Arbitrable{
     using CappedMath for uint;
     
     /* *** Contract variables *** */
-    uint public constant MULTIPLIER_DIVISOR = 10000; // Divisor parameter for multipliers.
-    
     enum Status {NoDispute, DisputeCreated}
-
+ 
     struct Transaction{
-        uint ID; // Hash of the transaction converted into uint. Is needed for sorting transactions in a list.
-        address target; // The address that will execute the transaction.
-        uint value; // Value paid by submitter that will be used as msg.value in the execution.
+        address target; // The address to call.
+        uint value; // Value paid by governor contract that will be used as msg.value in the execution.
         bytes data; // Calldata of the transaction.
-        bool executed; // Whether the transaction was already executed or not. Is needed to prevent re-entrancy.
+        bool executed; // Whether the transaction was already executed or not.
     }
     struct TransactionList{
-        address sender; // Submitter's address.
+        address sender; // Submitter.
         uint deposit; // Value of a deposit paid upon submission of the list.
-        mapping(uint => Transaction) transactions; // Transactions stored in the list.
+        Transaction[] txs; // Transactions stored in the list. txs[_transactionIndex].
         bytes32 listHash; // A hash chain of all transactions stored in the list. Is needed to catch duplicates.
         uint submissionTime; // Time the list was submitted.
-        mapping(uint => bool) appealFeePaid; // Whether the appeal fee for the list has been paid in certain round.
-        uint txCounter; // Number of stored transactions.
+        bool approved; // Whether the list was approved for execution or not.
     }
 
     Status public status; // Status showing whether the contract has an ongoing dispute or not.
+    address public governor; // The address that can make governance changes to the parameters.
+    
     uint public submissionDeposit; // Value in wei that needs to be paid in order to submit the list.
-    uint public submissionTimeout; // Time in seconds allowed for submitting the lists. Once it's passed the contract enters the execution period which will end when the transaction list is executed.
+    uint public submissionTimeout; // Time in seconds allowed for submitting the lists. Once it's passed the contract enters the approval period.
     uint public withdrawTimeout; // Time in seconds allowed to withdraw a submitted list.
+    uint public sharedMultiplier; // Multiplier for calculating the appeal fee that must be paid by submitter in the case where there is no winner/loser (e.g. when the arbitrator ruled "refuse to arbitrate").
+    uint public winnerMultiplier; // Multiplier for calculating the appeal fee of the party that won the previous round.
+    uint public loserMultiplier; // Multiplier for calculating the appeal fee of the party that lost the previous round.
+    uint public constant MULTIPLIER_DIVISOR = 10000; // Divisor parameter for multipliers.
     
-    uint public sumDeposit; // Sum of all submission deposits in a session. Is needed for calculating a reward.
-    uint public lastAction; // The time of the last execution of a transaction list.
-
-    uint public disputeID; // The ID of the dispute created in Kleros court.
-
-    uint public round; // Current round of the dispute. 0 - dispute round, 1 and more - appeal rounds.
-    mapping (uint => uint) public submissions; // Gives an index to a submitted list and maps it with respective index in array of transactions. Is needed to separate all created lists from the ones submitted in the current session.
-    mapping(uint => uint) public submissionCounter; // Maps the round to the number of submissions made in it. For the appeal rounds submission is counted as payment for appeal fees.
+    uint public sumDeposit; // Sum of all submission deposits in a current submission period (minus arbitration fees). Is needed for calculating a reward.
+    uint public lastAction; // The time of the last approval of a transaction list.
+    uint public disputeID; // The ID of the dispute created in arbitrator contract.
+    uint public shadowWinner = uint(-1); // Submission index of the first list that paid appeal fees. If it stays the only list that paid appeal fees it will win regardless of the final ruling.
     
-    uint public sharedStakeMultiplier; // Multiplier for calculating the appeal fee that must be paid by submitter in the case where there isn't a winner and loser (e.g. when the arbitrator ruled "refused to rule"/"could not rule").
-    uint public winnerStakeMultiplier; // Multiplier for calculating the appeal fee of the party that won the previous round.
-    uint public loserStakeMultiplier; // Multiplier for calculating the appeal fee of the party that lost the previous round.
-    
-    TransactionList[] public txLists; // Stores all created transaction lists.
+    TransactionList[] public txLists; // Stores all created transaction lists. txLists[_listID].
+    uint[] public submittedLists; // Stores all lists submitted in a current submission period. Is cleared after each submitting session. submittedLists[_submissionID].
     
     /* *** Modifiers *** */
-    modifier depositRequired() {require(msg.value >= submissionDeposit, "Submission deposit must be paid"); _;}
-    modifier duringSubmissionPeriod() {require(now <= lastAction + submissionTimeout, "Submission time has ended"); _;}
-    modifier duringExecutionPeriod() {require(now > lastAction + submissionTimeout, "Execution time has not started yet"); _;}
-
+    modifier duringSubmissionPeriod() {require(now - lastAction <= submissionTimeout, "Submission time has ended"); _;}
+    modifier duringApprovalPeriod() {require(now - lastAction > submissionTimeout, "Approval time has not started yet"); _;}
+    modifier onlyByGovernor() {require(governor == msg.sender, "Only the governor can execute this"); _;}
+    
     /** @dev Constructor.
-     *  @param _kleros The arbitrator of the contract.
+     *  @param _arbitrator The arbitrator of the contract.
      *  @param _extraData Extra data for the arbitrator.
-     *  @param _submissionDeposit The deposit required for list submission.
+     *  @param _submissionDeposit The deposit required for submission.
      *  @param _submissionTimeout Time in seconds allocated for submitting transaction list.
      *  @param _withdrawTimeout Time in seconds after submission that allows to withdraw submitted list.
-     *  @param _sharedStakeMultiplier Multiplier of the appeal cost that submitter must pay for a round when there isn't a winner/loser in the previous round. In basis points.
-     *  @param _winnerStakeMultiplier Multiplier of the appeal cost that the winner has to pay for a round. In basis points.
-     *  @param _loserStakeMultiplier Multiplier of the appeal cost that the loser has to pay for a round. In basis points.
+     *  @param _sharedMultiplier Multiplier of the appeal cost that submitter has to pay for a round when there is no winner/loser in the previous round. In basis points.
+     *  @param _winnerMultiplier Multiplier of the appeal cost that the winner has to pay for a round. In basis points.
+     *  @param _loserMultiplier Multiplier of the appeal cost that the loser has to pay for a round. In basis points.
      */
     constructor(
-        KlerosLiquid _kleros,
+        Arbitrator _arbitrator,
         bytes _extraData,
         uint _submissionDeposit,
         uint _submissionTimeout,
         uint _withdrawTimeout,
-        uint _winnerStakeMultiplier,
-        uint _loserStakeMultiplier,
-        uint _sharedStakeMultiplier
-    )public Arbitrable(_kleros, _extraData){
+        uint _sharedMultiplier,
+        uint _winnerMultiplier,
+        uint _loserMultiplier
+    ) public Arbitrable(_arbitrator, _extraData){
         lastAction = now;
         submissionDeposit = _submissionDeposit;
         submissionTimeout = _submissionTimeout;
         withdrawTimeout = _withdrawTimeout;
-        winnerStakeMultiplier = _winnerStakeMultiplier;
-        loserStakeMultiplier = _loserStakeMultiplier;
-        sharedStakeMultiplier = _sharedStakeMultiplier;
+        sharedMultiplier = _sharedMultiplier;
+        winnerMultiplier = _winnerMultiplier;
+        loserMultiplier = _loserMultiplier;
+        governor = address(this);
     }
     
-    /** @dev Creates an empty transaction list.
-     *  @return listID The array index of the created list.
+    /** @dev Changes the value of the deposit required for submitting a list.
+     *  @param _submissionDeposit The new value of a required deposit. In wei.
      */
-    function createTransactionList() public duringSubmissionPeriod returns(uint listID){
+    function changeSubmissionDeposit(uint _submissionDeposit) public onlyByGovernor {
+        submissionDeposit = _submissionDeposit;
+    }
+    
+    /** @dev Changes the time allocated for submission.
+     *  @param _submissionTimeout The new duration of submission time. In seconds.
+     */
+    function changeSubmissionTimeout(uint _submissionTimeout) public onlyByGovernor {
+        submissionTimeout = _submissionTimeout;
+    }
+    
+    /** @dev Changes the time allowed for list withdrawal.
+     *  @param _withdrawTimeout The new duration of withdraw timeout. In seconds.
+     */
+    function changeWithdrawTimeout(uint _withdrawTimeout) public onlyByGovernor {
+        withdrawTimeout = _withdrawTimeout;
+    }
+    
+    /** @dev Changes the percentage of appeal fees that must be added to appeal cost when there is no winner or loser.
+     *  @param _sharedMultiplier The new shared mulitplier value.
+     */
+    function changeSharedMultiplier(uint _sharedMultiplier) public onlyByGovernor {
+        sharedMultiplier = _sharedMultiplier;
+    }
+
+    /** @dev Changes the percentage of appeal fees that must be added to appeal cost for the winning party.
+     *  @param _winnerMultiplier The new winner mulitplier value.
+     */
+    function changeWinnerMultiplier(uint _winnerMultiplier) public onlyByGovernor {
+        winnerMultiplier = _winnerMultiplier;
+    }
+    
+    /** @dev Changes the percentage of appeal fees that must be added to appeal cost for the losing party.
+     *  @param _loserMultiplier The new loser mulitplier value.
+     */
+    function changeLoserMultiplier(uint _loserMultiplier) public onlyByGovernor {
+        loserMultiplier = _loserMultiplier; 
+    }
+    
+    /** @dev Creates transaction list based on input parameters and submits it for potential approval and execution.
+     *  @param _target List of addresses to call.
+     *  @param _value List of values required for respective addresses.
+     *  @param _data Concatenated calldata of all transactions of this list.
+     *  @param _dataSize List of lengths in bytes required to split calldata for its respective targets.
+     *  @return submissionID The ID that was given to the list upon submission. Starts with 0.
+     */ 
+    function submitList(address[] _target, uint[] _value, bytes _data, uint[] _dataSize) public payable duringSubmissionPeriod returns(uint submissionID){
+        require(_target.length == _value.length, "Incorrect input. Target and value arrays must be of the same length");
+        require(_target.length == _dataSize.length, "Incorrect input. Target and datasize arrays must be of the same length");
+        require(msg.value >= submissionDeposit, "Submission deposit must be paid");
         txLists.length++;
-        listID = txLists.length - 1;
+        uint listID = txLists.length - 1;
         TransactionList storage txList = txLists[listID];
         txList.sender = msg.sender;
-    }
-    
-    /** @dev Adds a transaction to created list. Sorts added transactions by ID in the process.
-     *  @param _listID The index of the transaction list in the array of lists.
-     *  @param _target The target of the transaction.
-     *  @param _data The calldata of the transaction.
-     */
-    function addTransactions(uint _listID, address _target, bytes _data) public payable duringSubmissionPeriod {
-        TransactionList storage txList = txLists[_listID];
-        require(txList.sender == msg.sender, "Can't add transactions to the list created by someone else");
-        require(txList.submissionTime == 0, "List is already submitted");
-        txList.txCounter++;
-        uint ID = uint(keccak256(abi.encodePacked(_target, msg.value, _data)));
-        uint index;
-        bool found;
-        // Transactions are sorted to catch lists with the same transactions that were added in different order.
-        if (txList.txCounter > 1) {
-            for (uint i = txList.txCounter - 2; i >= 0; i--){
-                if (ID < txList.transactions[i].ID){
-                    Transaction storage currentTx = txList.transactions[i];
-                    txList.transactions[i + 1] = currentTx;
-                    delete txList.transactions[i];
-                    index = i;
-                    found = true;
-                } else {
-                    break;
-                }
-            }
-        }
-        if (!found) index = txList.txCounter - 1;
-        Transaction storage transaction = txList.transactions[index];
-        transaction.ID = ID;
-        transaction.target = _target;
-        transaction.value = msg.value;
-        transaction.data = _data;
-    }
-    
-    /** @dev Submits created transaction list so it can be executed in the execution period.
-     *  @param _listID The index of the transaction list in the array of lists.
-     */
-    function submitTransactionList(uint _listID) public payable depositRequired duringSubmissionPeriod{
-        TransactionList storage txList = txLists[_listID];
-        require(txList.sender == msg.sender, "Can't submit the list created by someone else");
-        require(txList.submissionTime == 0, "List is already submitted");
-        txList.submissionTime = now;
         txList.deposit = submissionDeposit;
-        // Stores the hash of the list to catch duplicates.
-        if (txList.txCounter > 0){
-            bytes32 listHash = bytes32(txList.transactions[0].ID);
-            for (uint i = 1; i < txList.txCounter; i++){
-                listHash = keccak256(abi.encodePacked(bytes32(txList.transactions[i].ID), listHash));
+        bytes32 listHash;
+        uint pointer;
+        for (uint i = 0; i < _target.length; i++){
+            bytes memory tempData = new bytes(_dataSize[i]);
+            Transaction storage transaction = txList.txs[txList.txs.length++];
+            transaction.target = _target[i];
+            transaction.value = _value[i];
+            for (uint j = 0; j < _dataSize[i]; j++){
+                tempData[j] = _data[j + pointer];
             }
-            txList.listHash = listHash;
+            transaction.data = tempData;
+            pointer += _dataSize[i];
+            if (i == 0) {
+                listHash = keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data));
+            } else {
+                listHash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data)), listHash));
+            }
         }
+        txList.listHash = listHash;
+        txList.submissionTime = now;
         sumDeposit += submissionDeposit;
-        submissionCounter[round]++;
-        submissions[submissionCounter[round]] = _listID;
-
-        uint surplus = msg.value - submissionDeposit;
-        if (surplus > 0) msg.sender.send(surplus);
+        submissionID = submittedLists.push(listID);
+        
+        uint remainder = msg.value - submissionDeposit;
+        if (remainder > 0) msg.sender.send(remainder);
     }
     
     /** @dev Withdraws submitted transaction list. Reimburses submission deposit.
-     *  @param _submissionID The ID that was given to the list upon submission. For a newly submitted list its submission ID is equal to the total submission count.
+     *  @param _submissionID The ID that was given to the list upon submission.
      */
     function withdrawTransactionList(uint _submissionID) public duringSubmissionPeriod{
-        require(_submissionID > 0 && _submissionID <= submissionCounter[0], "ID is out of range");
-        TransactionList storage txList = txLists[submissions[_submissionID]];
+        TransactionList storage txList = txLists[submittedLists[_submissionID]];
         require(txList.sender == msg.sender, "Can't withdraw the list created by someone else");
         require(now - txList.submissionTime <= withdrawTimeout, "Withdrawing time has passed");
-        uint deposit = txList.deposit;
-        // Replace the ID of the withdrawn list with the last submitted list to close the gap.
-        submissions[_submissionID] = submissions[submissionCounter[0]];
-        delete submissions[submissionCounter[0]];
-        submissionCounter[0]--;
-        sumDeposit -= deposit;
-        require(msg.sender.send(deposit), "Was unable to return deposit");
+        submittedLists[_submissionID] = submittedLists[submittedLists.length - 1];
+        submittedLists.length--;
+        sumDeposit = sumDeposit.subCap(txList.deposit);
+        msg.sender.transfer(txList.deposit);
     }
     
-    /** @dev Executes a transaction list or creates a dispute if more than one list was submitted. If nothing was submitted resets the period of the contract to the submission period.
-     *  Note that the choices of created dispute mirror submission IDs of submitted lists.
+    /** @dev Approves a transaction list or creates a dispute if more than one list was submitted. 
+     *  If nothing was submitted resets the period of the contract to the submission period.
      */
-    function executeTransactionList() public duringExecutionPeriod{
+    function approveTransactionList() public duringApprovalPeriod{
         require(status == Status.NoDispute, "Can't execute transaction list while dispute is active");
-
-        if (submissionCounter[round] == 0){
+        if (submittedLists.length == 0){
             lastAction = now;
-            return;
-        }
-
-        if (submissionCounter[round] == 1) {
-            TransactionList storage txList = txLists[submissions[1]];
-            for (uint i = 0; i < txList.txCounter; i++){
-                Transaction storage transaction = txList.transactions[i];
-                require(!transaction.executed); // solium-disable-line error-reason
-                transaction.executed = true;
-                transaction.target.call.value(transaction.value)(transaction.data); // solium-disable-line security/no-call-value
-            }
+        } else if (submittedLists.length == 1){
+            TransactionList storage txList = txLists[submittedLists[0]];
+            txList.approved = true;
+            txList.sender.send(sumDeposit);
+            submittedLists.length--;
             sumDeposit = 0;
             lastAction = now;
-            submissionCounter[round] = 0;
         } else {
             status = Status.DisputeCreated;
             uint arbitrationCost = arbitrator.arbitrationCost(arbitratorExtraData);
-            disputeID = arbitrator.createDispute.value(arbitrationCost)(txLists.length, arbitratorExtraData);
+            disputeID = arbitrator.createDispute.value(arbitrationCost)(submittedLists.length, arbitratorExtraData);
             sumDeposit = sumDeposit.subCap(arbitrationCost);
-            // Freeze lastAction time so there would be no submissions untill the dispute is resolved.
             lastAction = 0;
-            round++;
-        }
+        } 
     }
     
-    /** @dev Takes up to the total amount required to fund a side of an appeal. Reimburses the rest. Creates an appeal if all submitted lists are fully funded..
+    /** @dev Takes up to the total amount required to fund a side of an appeal. Reimburses the rest. Creates an appeal if at least two lists are funded.
      *  @param _submissionID The ID that was given to the list upon submission.
      */
     function fundAppeal(uint _submissionID) public payable{
-        require(_submissionID > 0 && _submissionID <= submissionCounter[0], "ID is out of range");
         require(status == Status.DisputeCreated, "No dispute to appeal");
         require(arbitrator.disputeStatus(disputeID) == Arbitrator.DisputeStatus.Appealable, "Dispute is not appealable.");
         (uint appealPeriodStart, uint appealPeriodEnd) = arbitrator.appealPeriod(disputeID);
-        // The last third of the appeal period is secured so it'd be possible to create an appeal manually if more than one but not all submitted lists have been funded.
         require(
-            now - appealPeriodStart < (appealPeriodEnd - appealPeriodStart) * 2/3,
-            "Appeal fees must be paid within the two thirds of appeal period."
+            now >= appealPeriodStart && now < appealPeriodEnd,
+            "Appeal fees must be paid within the appeal period."
         );
-        TransactionList storage txList = txLists[submissions[_submissionID]];
+        
+        TransactionList storage txList = txLists[submittedLists[_submissionID]];
         require(txList.sender == msg.sender, "Can't fund the list created by someone else");
-
-        if (round > 1){
-            require(txList.appealFeePaid[round - 1], "Can't participate if didn't pay appeal fee in previous round");
-        }
-
-        require(!txList.appealFeePaid[round], "Appeal fee has already been paid");
-
-        bool winner;
+        require(_submissionID != shadowWinner, "Appeal fee has already been paid");
+        
+        if(shadowWinner == uint(-1)) shadowWinner = _submissionID;
+        
+        uint winner = arbitrator.currentRuling(disputeID);
         uint multiplier;
-
-        if (arbitrator.currentRuling(disputeID) == _submissionID){
-            winner = true;
-            multiplier = winnerStakeMultiplier;
-        } else if (arbitrator.currentRuling(disputeID) == 0){
-            multiplier = sharedStakeMultiplier;
+        // Unlike in submittedLists, in arbitrator "0" is reserved for "refuse to arbitrate" option. So we need to add 1 to map submission IDs with choices correctly.
+        if (winner == _submissionID + 1){
+            multiplier = winnerMultiplier;
+        } else if (winner == 0){
+            multiplier = sharedMultiplier;
         } else {
-            multiplier = loserStakeMultiplier;
+            require(now - appealPeriodStart < (appealPeriodEnd - appealPeriodStart)/2, "The loser must pay during the first half of the appeal period.");
+            multiplier = loserMultiplier;
         }
-
-        require(winner || (now - appealPeriodStart < (appealPeriodEnd - appealPeriodStart)/3), "The loser must pay during the first third of the appeal period.");
-
+        
         uint appealCost = arbitrator.appealCost(disputeID, arbitratorExtraData);
         uint totalCost = appealCost.addCap((appealCost.mulCap(multiplier)) / MULTIPLIER_DIVISOR);
+        sumDeposit += totalCost;
 
         require(msg.value >= totalCost, "Not enough ETH to cover appeal cost");
-        txList.appealFeePaid[round] = true;
-        submissionCounter[round]++;
         uint remainder = msg.value - totalCost;
-        if (remainder > 0) require(txList.sender.send(remainder), "Couldn't sent leftover ETH");
-
-        // Create an appeal if every side is funded.
-        if(submissionCounter[round] == submissionCounter[round - 1]){
+        if (remainder > 0) txList.sender.send(remainder);
+        
+        if(shadowWinner != uint(-1) && shadowWinner != _submissionID){
+            shadowWinner = uint(-1);
             arbitrator.appeal.value(appealCost)(disputeID, arbitratorExtraData);
-            round++;
-        }
+            sumDeposit = sumDeposit.subCap(appealCost);
+        } 
     }
     
-    /** @dev Allows to manually create an appeal if more than one but not all submitted lists are funded.
-     *  Note that this function is only executable during the last third of the appeal period in order to know how many submitted lists have been funded.
-     */
-    function appeal()public {
-        require(status == Status.DisputeCreated, "No dispute to appeal");
-        require(arbitrator.disputeStatus(disputeID) == Arbitrator.DisputeStatus.Appealable, "Dispute is not appealable.");
-        (uint appealPeriodStart, uint appealPeriodEnd) = arbitrator.appealPeriod(disputeID);
-        require(
-            now - appealPeriodStart >= (appealPeriodEnd - appealPeriodStart) * 2/3 && now < appealPeriodEnd,
-            "Appeal must be raised in the last third of appeal period."
-        );
-
-        require(submissionCounter[round] > 1, "Not enough submissions to create an appeal");
-        uint appealCost = arbitrator.appealCost(disputeID, arbitratorExtraData);
-        round++;
-        arbitrator.appeal.value(appealCost)(disputeID, arbitratorExtraData);
-    }
-
-
-     /** @dev Gives a ruling for a dispute. Must be called by the arbitrator.
+    /** @dev Gives a ruling for a dispute. Must be called by the arbitrator.
      *  The purpose of this function is to ensure that the address calling it has the right to rule on the contract.
      *  @param _disputeID ID of the dispute in the Arbitrator contract.
-     *  @param _ruling Ruling given by the arbitrator. Note that 0 is reserved for "Not able/wanting to make a decision".
+     *  @param _ruling Ruling given by the arbitrator. Note that 0 is reserved for "Refuse to arbitrate".
      */
     function rule(uint _disputeID, uint _ruling) public {
         require(msg.sender == address(arbitrator), "Must be called by the arbitrator");
         require(status == Status.DisputeCreated, "The dispute has already been resolved");
-        // Override the decision if one of the submitted lists was a duplicate with lower submission time or if it was the only side that paid appeal fee.
+        require(_ruling <= submittedLists.length, "Ruling is out of bounds");
         uint ruling = _ruling;
-        for (uint i = 1; i <= submissionCounter[0]; i++){
-            if (i == ruling){
-                continue;
-            }
-            if (txLists[submissions[i]].listHash == txLists[submissions[ruling]].listHash && 
-                txLists[submissions[i]].submissionTime < txLists[submissions[ruling]].submissionTime || 
-                txLists[submissions[i]].appealFeePaid[round] && submissionCounter[round] == 1){
-                ruling = i;
+        if(shadowWinner != uint(-1)){ 
+            ruling = shadowWinner + 1;
+        } else if (ruling != 0){
+            // If winning list has a duplicate with lower submission time, the duplicate will win. Queries only through first 10 submitted lists to prevent going out of gas.
+            for (uint i = 0; (i < submittedLists.length) && i < 10; i++){
+                if (txLists[submittedLists[i]].listHash == txLists[submittedLists[ruling - 1]].listHash && 
+                    txLists[submittedLists[i]].submissionTime < txLists[submittedLists[ruling - 1]].submissionTime){
+                    ruling = i + 1;
+                }
             }
         }
         executeRuling(_disputeID, ruling);
     }
-
-
+    
     /** @dev Executes a ruling of a dispute.
      *  @param _disputeID ID of the dispute in the Arbitrator contract.
-     *  @param _ruling Ruling given by the arbitrator. Note that 0 is reserved for "Not able/wanting to make a decision".
+     *  @param _ruling Ruling given by the arbitrator. Note that 0 is reserved for "Refuse to arbitrate".
+     *  If the final ruling is "0" nothing is approved and deposits will stay locked in the contract.
      */
     function executeRuling(uint _disputeID, uint _ruling) internal{
-        // Nothing is executed if arbitrator refused to arbitrate.
         if(_ruling != 0){
-            TransactionList storage txList = txLists[submissions[_ruling]];
-            for (uint i = 0; i < txList.txCounter; i++){
-                Transaction storage transaction = txList.transactions[i];
-                require(!transaction.executed); // solium-disable-line error-reason
-                transaction.executed = true;
-
-                transaction.target.call.value(transaction.value)(transaction.data); // solium-disable-line security/no-call-value
-            }
-            // The reward is the submission deposit of losing parties minus arbitration fee.
+            TransactionList storage txList = txLists[submittedLists[_ruling - 1]];
+            txList.approved = true;
             uint reward = sumDeposit.subCap(txList.deposit);
-            require(txList.sender.send(reward), "Was unable to send reward");
+            txList.sender.send(reward);
         }
         sumDeposit = 0;
-        lastAction = now;
-        status = Status.NoDispute;
-        for (i = 0; i <= round; i++){
-            submissionCounter[i] = 0;
-        }
-        round = 0;
         disputeID = 0;
+        shadowWinner = uint(-1);
+        delete submittedLists;
+        lastAction = now;
+        status = Status.NoDispute; 
     }
-
+    
+    /** @dev Executes selected transactions of the list.
+     *  @param _listID The index of the transaction list in the array of lists.
+     *  @param _cursor Index of the transaction from which to start executing.
+     *  @param _count Number of transactions to execute. Executes until the end if set to "0" or number higher than number of transactions in the list.
+     */
+    function executeTransactionList(uint _listID, uint _cursor, uint _count) public {
+        TransactionList storage txList = txLists[_listID];
+        require(txList.approved, "Can't execute list that wasn't approved");
+        for (uint i = _cursor; i < txList.txs.length && (_count == 0 || i < _count) ; i++){
+            Transaction storage transaction = txList.txs[i];  
+            if (transaction.executed || transaction.value > address(this).balance) continue;
+            transaction.executed = true;
+            transaction.target.call.value(transaction.value)(transaction.data); // solium-disable-line security/no-call-value
+        }
+    }
+    
     /** @dev Gets the info of the specified transaction in the specified list.
      *  @param _listID The index of the transaction list in the array of lists.
      *  @param _transactionIndex The index of the transaction.
@@ -344,7 +324,6 @@ contract KlerosGovernor is Arbitrable{
         public
         view
         returns (
-            uint ID,
             address target,
             uint value,
             bytes data,
@@ -352,9 +331,8 @@ contract KlerosGovernor is Arbitrable{
         )
     {
         TransactionList storage txList = txLists[_listID];
-        Transaction storage transaction = txList.transactions[_transactionIndex];
+        Transaction storage transaction = txList.txs[_transactionIndex];
         return (
-            transaction.ID,
             transaction.target,
             transaction.value,
             transaction.data,
@@ -362,13 +340,12 @@ contract KlerosGovernor is Arbitrable{
         );
     }
     
-    /** @dev Returns true if the specified list in the specified round was funded.
-     *  Note that for a dispute round this function will return false but it's not an issue since disputes are automatically funded with submission deposits anyway.
+    /** @dev Gets the number of transactions in the list.
      *  @param _listID The index of the transaction list in the array of lists.
-     *  @param _round The round of the dispute.
-     *  @return Whether or not the appeal fee has been paid.
+     *  @return txCount The number of transactions in the list.
      */
-    function isAppealFeePaid(uint _listID, uint _round) public view returns(bool){
-        return txLists[_listID].appealFeePaid[_round];
+    function getNumberOfTransactions(uint _listID) public view returns (uint txCount){
+        TransactionList storage txList = txLists[_listID];
+        return txList.txs.length;
     }
 }
