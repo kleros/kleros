@@ -83,9 +83,9 @@ contract KlerosGovernor is Arbitrable{
         submissionDeposit = _submissionDeposit;
         submissionTimeout = _submissionTimeout;
         withdrawTimeout = _withdrawTimeout;
+        sharedMultiplier = _sharedMultiplier;
         winnerMultiplier = _winnerMultiplier;
         loserMultiplier = _loserMultiplier;
-        sharedMultiplier = _sharedMultiplier;
         governor = address(this);
     }
     
