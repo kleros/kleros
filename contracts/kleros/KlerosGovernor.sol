@@ -357,7 +357,7 @@ contract KlerosGovernor is Arbitrable{
     }
     
     /** @dev Gets the number of lists created in contract's lifetime.
-     *  @return The number of created lists lists.
+     *  @return The number of created lists.
      */
     function getNumberOfCreatedLists() public view returns (uint){
         return txLists.length;
