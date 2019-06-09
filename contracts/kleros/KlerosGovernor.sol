@@ -307,7 +307,7 @@ contract KlerosGovernor is Arbitrable{
     function executeTransactionList(uint _listID, uint _cursor, uint _count) public {
         TransactionList storage txList = txLists[_listID];
         require(txList.approved, "Can't execute list that wasn't approved");
-        for (uint i = _cursor; i < txList.txs.length && (_count == 0 || i < _count) ; i++){
+        for (uint i = _cursor; i < txList.txs.length && (_count == 0 || i < _cursor + _count) ; i++){
             Transaction storage transaction = txList.txs[i];  
             if (transaction.executed || transaction.value > address(this).balance) continue;
             transaction.executed = true;
@@ -347,5 +347,19 @@ contract KlerosGovernor is Arbitrable{
     function getNumberOfTransactions(uint _listID) public view returns (uint txCount){
         TransactionList storage txList = txLists[_listID];
         return txList.txs.length;
+    }
+
+    /** @dev Gets the number of lists submitted in this session.
+     *  @return The number of submitted lists.
+     */
+    function getNumberOfSubmittedLists() public view returns (uint){
+        return submittedLists.length;
+    }
+    
+    /** @dev Gets the number of lists created in contract's lifetime.
+     *  @return The number of created lists lists.
+     */
+    function getNumberOfCreatedLists() public view returns (uint){
+        return txLists.length;
     }
 }
