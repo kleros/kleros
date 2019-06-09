@@ -16,10 +16,10 @@ import "@kleros/kleros-interaction/contracts/libraries/CappedMath.sol";
 
 contract KlerosGovernor is Arbitrable{
     using CappedMath for uint;
-    
+
     /* *** Contract variables *** */
     enum Status {NoDispute, DisputeCreated}
- 
+
     struct Transaction{
         address target; // The address to call.
         uint value; // Value paid by governor contract that will be used as msg.value in the execution.
@@ -37,7 +37,7 @@ contract KlerosGovernor is Arbitrable{
 
     Status public status; // Status showing whether the contract has an ongoing dispute or not.
     address public governor; // The address that can make governance changes to the parameters.
-    
+
     uint public submissionDeposit; // Value in wei that needs to be paid in order to submit the list.
     uint public submissionTimeout; // Time in seconds allowed for submitting the lists. Once it's passed the contract enters the approval period.
     uint public withdrawTimeout; // Time in seconds allowed to withdraw a submitted list.
@@ -45,20 +45,20 @@ contract KlerosGovernor is Arbitrable{
     uint public winnerMultiplier; // Multiplier for calculating the appeal fee of the party that won the previous round.
     uint public loserMultiplier; // Multiplier for calculating the appeal fee of the party that lost the previous round.
     uint public constant MULTIPLIER_DIVISOR = 10000; // Divisor parameter for multipliers.
-    
+
     uint public sumDeposit; // Sum of all submission deposits in a current submission period (minus arbitration fees). Is needed for calculating a reward.
     uint public lastAction; // The time of the last approval of a transaction list.
     uint public disputeID; // The ID of the dispute created in arbitrator contract.
     uint public shadowWinner = uint(-1); // Submission index of the first list that paid appeal fees. If it stays the only list that paid appeal fees it will win regardless of the final ruling.
-    
+
     TransactionList[] public txLists; // Stores all created transaction lists. txLists[_listID].
     uint[] public submittedLists; // Stores all lists submitted in a current submission period. Is cleared after each submitting session. submittedLists[_submissionID].
-    
+
     /* *** Modifiers *** */
     modifier duringSubmissionPeriod() {require(now - lastAction <= submissionTimeout, "Submission time has ended"); _;}
     modifier duringApprovalPeriod() {require(now - lastAction > submissionTimeout, "Approval time has not started yet"); _;}
     modifier onlyByGovernor() {require(governor == msg.sender, "Only the governor can execute this"); _;}
-    
+
     /** @dev Constructor.
      *  @param _arbitrator The arbitrator of the contract.
      *  @param _extraData Extra data for the arbitrator.
@@ -88,28 +88,28 @@ contract KlerosGovernor is Arbitrable{
         loserMultiplier = _loserMultiplier;
         governor = address(this);
     }
-    
+
     /** @dev Changes the value of the deposit required for submitting a list.
      *  @param _submissionDeposit The new value of a required deposit. In wei.
      */
     function changeSubmissionDeposit(uint _submissionDeposit) public onlyByGovernor {
         submissionDeposit = _submissionDeposit;
     }
-    
+
     /** @dev Changes the time allocated for submission.
      *  @param _submissionTimeout The new duration of submission time. In seconds.
      */
     function changeSubmissionTimeout(uint _submissionTimeout) public onlyByGovernor {
         submissionTimeout = _submissionTimeout;
     }
-    
+
     /** @dev Changes the time allowed for list withdrawal.
      *  @param _withdrawTimeout The new duration of withdraw timeout. In seconds.
      */
     function changeWithdrawTimeout(uint _withdrawTimeout) public onlyByGovernor {
         withdrawTimeout = _withdrawTimeout;
     }
-    
+
     /** @dev Changes the percentage of appeal fees that must be added to appeal cost when there is no winner or loser.
      *  @param _sharedMultiplier The new shared mulitplier value.
      */
@@ -123,21 +123,21 @@ contract KlerosGovernor is Arbitrable{
     function changeWinnerMultiplier(uint _winnerMultiplier) public onlyByGovernor {
         winnerMultiplier = _winnerMultiplier;
     }
-    
+
     /** @dev Changes the percentage of appeal fees that must be added to appeal cost for the losing party.
      *  @param _loserMultiplier The new loser mulitplier value.
      */
     function changeLoserMultiplier(uint _loserMultiplier) public onlyByGovernor {
-        loserMultiplier = _loserMultiplier; 
+        loserMultiplier = _loserMultiplier;
     }
-    
+
     /** @dev Creates transaction list based on input parameters and submits it for potential approval and execution.
      *  @param _target List of addresses to call.
      *  @param _value List of values required for respective addresses.
      *  @param _data Concatenated calldata of all transactions of this list.
      *  @param _dataSize List of lengths in bytes required to split calldata for its respective targets.
      *  @return submissionID The ID that was given to the list upon submission. Starts with 0.
-     */ 
+     */
     function submitList(address[] _target, uint[] _value, bytes _data, uint[] _dataSize) public payable duringSubmissionPeriod returns(uint submissionID){
         require(_target.length == _value.length, "Incorrect input. Target and value arrays must be of the same length");
         require(_target.length == _dataSize.length, "Incorrect input. Target and datasize arrays must be of the same length");
@@ -169,11 +169,11 @@ contract KlerosGovernor is Arbitrable{
         txList.submissionTime = now;
         sumDeposit += submissionDeposit;
         submissionID = submittedLists.push(listID);
-        
+
         uint remainder = msg.value - submissionDeposit;
         if (remainder > 0) msg.sender.send(remainder);
     }
-    
+
     /** @dev Withdraws submitted transaction list. Reimburses submission deposit.
      *  @param _submissionID The ID that was given to the list upon submission.
      */
@@ -186,8 +186,8 @@ contract KlerosGovernor is Arbitrable{
         sumDeposit = sumDeposit.subCap(txList.deposit);
         msg.sender.transfer(txList.deposit);
     }
-    
-    /** @dev Approves a transaction list or creates a dispute if more than one list was submitted. 
+
+    /** @dev Approves a transaction list or creates a dispute if more than one list was submitted.
      *  If nothing was submitted resets the period of the contract to the submission period.
      */
     function approveTransactionList() public duringApprovalPeriod{
@@ -207,9 +207,9 @@ contract KlerosGovernor is Arbitrable{
             disputeID = arbitrator.createDispute.value(arbitrationCost)(submittedLists.length, arbitratorExtraData);
             sumDeposit = sumDeposit.subCap(arbitrationCost);
             lastAction = 0;
-        } 
+        }
     }
-    
+
     /** @dev Takes up to the total amount required to fund a side of an appeal. Reimburses the rest. Creates an appeal if at least two lists are funded.
      *  @param _submissionID The ID that was given to the list upon submission.
      */
@@ -221,13 +221,13 @@ contract KlerosGovernor is Arbitrable{
             now >= appealPeriodStart && now < appealPeriodEnd,
             "Appeal fees must be paid within the appeal period."
         );
-        
+
         TransactionList storage txList = txLists[submittedLists[_submissionID]];
         require(txList.sender == msg.sender, "Can't fund the list created by someone else");
         require(_submissionID != shadowWinner, "Appeal fee has already been paid");
-        
+
         if(shadowWinner == uint(-1)) shadowWinner = _submissionID;
-        
+
         uint winner = arbitrator.currentRuling(disputeID);
         uint multiplier;
         // Unlike in submittedLists, in arbitrator "0" is reserved for "refuse to arbitrate" option. So we need to add 1 to map submission IDs with choices correctly.
@@ -239,7 +239,7 @@ contract KlerosGovernor is Arbitrable{
             require(now - appealPeriodStart < (appealPeriodEnd - appealPeriodStart)/2, "The loser must pay during the first half of the appeal period.");
             multiplier = loserMultiplier;
         }
-        
+
         uint appealCost = arbitrator.appealCost(disputeID, arbitratorExtraData);
         uint totalCost = appealCost.addCap((appealCost.mulCap(multiplier)) / MULTIPLIER_DIVISOR);
         sumDeposit += totalCost;
@@ -247,14 +247,14 @@ contract KlerosGovernor is Arbitrable{
         require(msg.value >= totalCost, "Not enough ETH to cover appeal cost");
         uint remainder = msg.value - totalCost;
         if (remainder > 0) txList.sender.send(remainder);
-        
+
         if(shadowWinner != uint(-1) && shadowWinner != _submissionID){
             shadowWinner = uint(-1);
             arbitrator.appeal.value(appealCost)(disputeID, arbitratorExtraData);
             sumDeposit = sumDeposit.subCap(appealCost);
-        } 
+        }
     }
-    
+
     /** @dev Gives a ruling for a dispute. Must be called by the arbitrator.
      *  The purpose of this function is to ensure that the address calling it has the right to rule on the contract.
      *  @param _disputeID ID of the dispute in the Arbitrator contract.
@@ -265,12 +265,12 @@ contract KlerosGovernor is Arbitrable{
         require(status == Status.DisputeCreated, "The dispute has already been resolved");
         require(_ruling <= submittedLists.length, "Ruling is out of bounds");
         uint ruling = _ruling;
-        if(shadowWinner != uint(-1)){ 
+        if(shadowWinner != uint(-1)){
             ruling = shadowWinner + 1;
         } else if (ruling != 0){
             // If winning list has a duplicate with lower submission time, the duplicate will win. Queries only through first 10 submitted lists to prevent going out of gas.
             for (uint i = 0; (i < submittedLists.length) && i < 10; i++){
-                if (txLists[submittedLists[i]].listHash == txLists[submittedLists[ruling - 1]].listHash && 
+                if (txLists[submittedLists[i]].listHash == txLists[submittedLists[ruling - 1]].listHash &&
                     txLists[submittedLists[i]].submissionTime < txLists[submittedLists[ruling - 1]].submissionTime){
                     ruling = i + 1;
                 }
@@ -278,7 +278,7 @@ contract KlerosGovernor is Arbitrable{
         }
         executeRuling(_disputeID, ruling);
     }
-    
+
     /** @dev Executes a ruling of a dispute.
      *  @param _disputeID ID of the dispute in the Arbitrator contract.
      *  @param _ruling Ruling given by the arbitrator. Note that 0 is reserved for "Refuse to arbitrate".
@@ -296,9 +296,9 @@ contract KlerosGovernor is Arbitrable{
         shadowWinner = uint(-1);
         delete submittedLists;
         lastAction = now;
-        status = Status.NoDispute; 
+        status = Status.NoDispute;
     }
-    
+
     /** @dev Executes selected transactions of the list.
      *  @param _listID The index of the transaction list in the array of lists.
      *  @param _cursor Index of the transaction from which to start executing.
@@ -307,14 +307,14 @@ contract KlerosGovernor is Arbitrable{
     function executeTransactionList(uint _listID, uint _cursor, uint _count) public {
         TransactionList storage txList = txLists[_listID];
         require(txList.approved, "Can't execute list that wasn't approved");
-        for (uint i = _cursor; i < txList.txs.length && (_count == 0 || i < _count) ; i++){
-            Transaction storage transaction = txList.txs[i];  
+        for (uint i = _cursor; i < txList.txs.length && (_count == 0 || i < _cursor + _count) ; i++){
+            Transaction storage transaction = txList.txs[i];
             if (transaction.executed || transaction.value > address(this).balance) continue;
             transaction.executed = true;
             transaction.target.call.value(transaction.value)(transaction.data); // solium-disable-line security/no-call-value
         }
     }
-    
+
     /** @dev Gets the info of the specified transaction in the specified list.
      *  @param _listID The index of the transaction list in the array of lists.
      *  @param _transactionIndex The index of the transaction.
@@ -339,7 +339,7 @@ contract KlerosGovernor is Arbitrable{
             transaction.executed
         );
     }
-    
+
     /** @dev Gets the number of transactions in the list.
      *  @param _listID The index of the transaction list in the array of lists.
      *  @return txCount The number of transactions in the list.
@@ -347,5 +347,19 @@ contract KlerosGovernor is Arbitrable{
     function getNumberOfTransactions(uint _listID) public view returns (uint txCount){
         TransactionList storage txList = txLists[_listID];
         return txList.txs.length;
+    }
+
+    /** @dev Gets the number of lists submitted in this session.
+     *  @return The number of submitted lists.
+     */
+    function getNumberOfSubmittedLists() public view returns (uint){
+        return submittedLists.length;
+    }
+
+    /** @dev Gets the number of lists created in contract's lifetime.
+     *  @return The number of created lists.
+     */
+    function getNumberOfCreatedLists() public view returns (uint){
+        return txLists.length;
     }
 }
