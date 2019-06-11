@@ -14,17 +14,17 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "prettify": "kleros-scripts prettify",
-    "lint:sol": "kleros-scripts lint:sol",
-    "lint:js": "kleros-scripts lint:js",
+    "prettify": "kathari prettify",
+    "lint:sol": "kathari lint:sol",
+    "lint:js": "kathari lint:js",
     "lint": "yarn run lint:sol && yarn run lint:js",
     "test:ganache": "ganache-cli --gasLimit 8000000 --quiet &",
     "test:truffle": "truffle test",
     "test": "solidity-coverage",
     "test:coveralls": "coveralls < ./coverage/lcov.info",
-    "precommit": "kleros-scripts precommit",
-    "commitmsg": "kleros-scripts commitmsg",
-    "cz": "kleros-scripts cz",
+    "precommit": "kathari precommit",
+    "commitmsg": "kathari commitmsg",
+    "cz": "kathari cz",
     "build": "truffle compile"
   },
   "commitlint": {
@@ -33,10 +33,10 @@
     ]
   },
   "devDependencies": {
+    "@kleros/kathari": "^0.23.0",
     "coveralls": "^3.0.2",
     "ganache-cli": "^6.3.0",
     "husky": "^0.14.3",
-    "kleros-scripts": "^0.12.0",
     "npm-run-all": "^4.1.5",
     "openzeppelin-solidity": "^1.12.0",
     "solidity-coverage": "^0.5.11",
