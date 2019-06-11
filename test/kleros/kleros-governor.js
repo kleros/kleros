@@ -727,7 +727,7 @@ contract('KlerosGovernor', function(accounts) {
 
     // The transaction should not be executed if list is not approved
     await expectThrow(
-      klerosgovernor.executeTransactionList(0, 1, { from: general })
+      klerosgovernor.executeTransactionList(0, 0, 1, { from: general })
     )
 
     await increaseTime(submissionTimeout + 1)
@@ -741,7 +741,7 @@ contract('KlerosGovernor', function(accounts) {
     })
 
     // Execute the first and the second transactions separately to check atomic execution.
-    await klerosgovernor.executeTransactionList(0, 1, { from: general })
+    await klerosgovernor.executeTransactionList(0, 0, 1, { from: general })
 
     const dispute = await arbitrator.disputes(0)
     assert.equal(
@@ -775,7 +775,7 @@ contract('KlerosGovernor', function(accounts) {
       'WithdrawTimeout before execution is incorrect'
     )
 
-    await klerosgovernor.executeTransactionList(0, 2, { from: general })
+    await klerosgovernor.executeTransactionList(0, 1, 1, { from: general })
 
     withdrawTime = await klerosgovernor.withdrawTimeout()
     assert.equal(
@@ -813,7 +813,7 @@ contract('KlerosGovernor', function(accounts) {
       value: submissionDeposit
     })
 
-    await klerosgovernor.executeTransactionList(0, 0, { from: general })
+    await klerosgovernor.executeTransactionList(0, 0, 0, { from: general })
 
     const dispute = await arbitrator.disputes(0)
     assert.equal(

@@ -301,22 +301,18 @@ contract KlerosGovernor is Arbitrable{
 
     /** @dev Executes selected transactions of the list.
      *  @param _listID The index of the transaction list in the array of lists.
-     *  @param _executeUpTo Threshold to stop execution. For example _executeUpTo=2 would make the function execute transactions [0, 1, 2]. The function executes all the transactions if this parameter is set to "0" or a number that is equal or greater than number of transactions in the list.
-     *  @return noOfExecutedTxs Returns number of executed transactions in the given list.
+     *  @param _cursor Index of the transaction from which to start executing.
+     *  @param _count Number of transactions to execute. Executes until the end if set to "0" or number higher than number of transactions in the list.
      */
-    function executeTransactionList(uint _listID, uint _executeUpTo) public returns (uint noOfExecutedTxs){
+    function executeTransactionList(uint _listID, uint _cursor, uint _count) public {
         TransactionList storage txList = txLists[_listID];
         require(txList.approved, "Can't execute list that wasn't approved");
-        for (uint i = 0; i < txList.txs.length && (_executeUpTo == 0 || i < _executeUpTo) ; i++){
+        for (uint i = _cursor; i < txList.txs.length && (_count == 0 || i < _cursor + _count) ; i++){
             Transaction storage transaction = txList.txs[i];
-            if (transaction.executed) continue;
-            else if (transaction.value > address(this).balance) return i;
-            else transaction.executed = transaction.target.call.value(transaction.value)(transaction.data); // solium-disable-line security/no-call-value
-
-            if (!transaction.executed) return i;
+            if (transaction.executed || transaction.value > address(this).balance) continue;
+            transaction.executed = true;
+            transaction.target.call.value(transaction.value)(transaction.data); // solium-disable-line security/no-call-value
         }
-
-        return txList.txs.length;
     }
 
     /** @dev Gets the info of the specified transaction in the specified list.
