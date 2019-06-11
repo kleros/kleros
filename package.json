@@ -22,7 +22,7 @@
     "test:truffle": "truffle test",
     "test": "solidity-coverage",
     "test:coveralls": "coveralls < ./coverage/lcov.info",
-    "precommit": "kathari precommit",
+    "precommit": "yarn run lint && yarn run test:ganache && yarn run test:truffle",
     "commitmsg": "kathari commitmsg",
     "cz": "kathari cz",
     "build": "truffle compile"
