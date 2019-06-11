@@ -21,7 +21,7 @@
     "test:ganache": "ganache-cli --gasLimit 8000000 --quiet &",
     "test:truffle": "truffle test",
     "test": "solidity-coverage",
-    "test:coveralls": "coveralls < ./coverage/lcov.info",
+    "test:coveralls": "coveralls --verbose < ./coverage/lcov.info",
     "precommit": "yarn run lint && yarn run test:ganache && yarn run test:truffle",
     "commitmsg": "kathari commitmsg",
     "cz": "kathari cz",
