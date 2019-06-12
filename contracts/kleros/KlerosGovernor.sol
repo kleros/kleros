@@ -47,7 +47,7 @@ contract KlerosGovernor is Arbitrable{
     uint public constant MULTIPLIER_DIVISOR = 10000; // Divisor parameter for multipliers.
 
     uint public sumDeposit; // Sum of all submission deposits in a current submission period (minus arbitration fees). Is needed for calculating a reward.
-    uint public lastAction; // The time of the last approval of a transaction list.
+    uint public lastApprovalTime; // The time of the last approval of a transaction list.
     uint public disputeID; // The ID of the dispute created in arbitrator contract.
     uint public shadowWinner = uint(-1); // Submission index of the first list that paid appeal fees. If it stays the only list that paid appeal fees it will win regardless of the final ruling.
 
@@ -55,8 +55,8 @@ contract KlerosGovernor is Arbitrable{
     uint[] public submittedLists; // Stores all lists submitted in a current submission period. Is cleared after each submitting session. submittedLists[_submissionID].
 
     /* *** Modifiers *** */
-    modifier duringSubmissionPeriod() {require(now - lastAction <= submissionTimeout, "Submission time has ended"); _;}
-    modifier duringApprovalPeriod() {require(now - lastAction > submissionTimeout, "Approval time has not started yet"); _;}
+    modifier duringSubmissionPeriod() {require(now - lastApprovalTime <= submissionTimeout, "Submission time has ended"); _;}
+    modifier duringApprovalPeriod() {require(now - lastApprovalTime > submissionTimeout, "Approval time has not started yet"); _;}
     modifier onlyByGovernor() {require(governor == msg.sender, "Only the governor can execute this"); _;}
 
     /** @dev Constructor.
@@ -79,7 +79,7 @@ contract KlerosGovernor is Arbitrable{
         uint _winnerMultiplier,
         uint _loserMultiplier
     ) public Arbitrable(_arbitrator, _extraData){
-        lastAction = now;
+        lastApprovalTime = now;
         submissionDeposit = _submissionDeposit;
         submissionTimeout = _submissionTimeout;
         withdrawTimeout = _withdrawTimeout;
@@ -165,6 +165,9 @@ contract KlerosGovernor is Arbitrable{
                 listHash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data)), listHash));
             }
         }
+        for (i = 0; i < submittedLists.length; i++){
+            require(listHash != txLists[submittedLists[i]].listHash, "The same list was already submitted earlier");
+        }
         txList.listHash = listHash;
         txList.submissionTime = now;
         sumDeposit += submissionDeposit;
@@ -193,20 +196,19 @@ contract KlerosGovernor is Arbitrable{
     function approveTransactionList() public duringApprovalPeriod{
         require(status == Status.NoDispute, "Can't execute transaction list while dispute is active");
         if (submittedLists.length == 0){
-            lastAction = now;
+            lastApprovalTime = now;
         } else if (submittedLists.length == 1){
             TransactionList storage txList = txLists[submittedLists[0]];
             txList.approved = true;
             txList.sender.send(sumDeposit);
             submittedLists.length--;
             sumDeposit = 0;
-            lastAction = now;
+            lastApprovalTime = now;
         } else {
             status = Status.DisputeCreated;
             uint arbitrationCost = arbitrator.arbitrationCost(arbitratorExtraData);
             disputeID = arbitrator.createDispute.value(arbitrationCost)(submittedLists.length, arbitratorExtraData);
             sumDeposit = sumDeposit.subCap(arbitrationCost);
-            lastAction = 0;
         }
     }
 
@@ -223,7 +225,6 @@ contract KlerosGovernor is Arbitrable{
         );
 
         TransactionList storage txList = txLists[submittedLists[_submissionID]];
-        require(txList.sender == msg.sender, "Can't fund the list created by someone else");
         require(_submissionID != shadowWinner, "Appeal fee has already been paid");
 
         if(shadowWinner == uint(-1)) shadowWinner = _submissionID;
@@ -265,17 +266,9 @@ contract KlerosGovernor is Arbitrable{
         require(status == Status.DisputeCreated, "The dispute has already been resolved");
         require(_ruling <= submittedLists.length, "Ruling is out of bounds");
         uint ruling = _ruling;
-        if(shadowWinner != uint(-1)){
+        if(shadowWinner != uint(-1))
             ruling = shadowWinner + 1;
-        } else if (ruling != 0){
-            // If winning list has a duplicate with lower submission time, the duplicate will win. Queries only through first 10 submitted lists to prevent going out of gas.
-            for (uint i = 0; (i < submittedLists.length) && i < 10; i++){
-                if (txLists[submittedLists[i]].listHash == txLists[submittedLists[ruling - 1]].listHash &&
-                    txLists[submittedLists[i]].submissionTime < txLists[submittedLists[ruling - 1]].submissionTime){
-                    ruling = i + 1;
-                }
-            }
-        }
+
         executeRuling(_disputeID, ruling);
     }
 
@@ -295,7 +288,7 @@ contract KlerosGovernor is Arbitrable{
         disputeID = 0;
         shadowWinner = uint(-1);
         delete submittedLists;
-        lastAction = now;
+        lastApprovalTime = now;
         status = Status.NoDispute;
     }
 
@@ -310,8 +303,7 @@ contract KlerosGovernor is Arbitrable{
         for (uint i = _cursor; i < txList.txs.length && (_count == 0 || i < _cursor + _count) ; i++){
             Transaction storage transaction = txList.txs[i];
             if (transaction.executed || transaction.value > address(this).balance) continue;
-            transaction.executed = true;
-            transaction.target.call.value(transaction.value)(transaction.data); // solium-disable-line security/no-call-value
+            transaction.executed = transaction.target.call.value(transaction.value)(transaction.data); // solium-disable-line security/no-call-value
         }
     }
 

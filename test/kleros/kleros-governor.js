@@ -203,6 +203,36 @@ contract('KlerosGovernor', function(accounts) {
     )
   })
 
+  it('Should not allow to submit a duplicate list', async () => {
+    await klerosgovernor.submitList(
+      [klerosgovernor.address],
+      [10],
+      '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
+      [36],
+      { from: submitter1, value: submissionDeposit }
+    )
+    // Check the case with the same and with different submitters.
+    await expectThrow(
+      klerosgovernor.submitList(
+        [klerosgovernor.address],
+        [10],
+        '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
+        [36],
+        { from: submitter1, value: submissionDeposit }
+      )
+    )
+
+    await expectThrow(
+      klerosgovernor.submitList(
+        [klerosgovernor.address],
+        [10],
+        '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
+        [36],
+        { from: submitter2, value: submissionDeposit }
+      )
+    )
+  })
+
   it('Should correctly withdraw submitted list', async () => {
     await klerosgovernor.submitList(
       [klerosgovernor.address, arbitrator.address],
@@ -394,13 +424,6 @@ contract('KlerosGovernor', function(accounts) {
       'The sum of the deposits after dispute creation is incorrect'
     )
 
-    const lastAction = await klerosgovernor.lastAction()
-    assert.equal(
-      lastAction.toNumber(),
-      0,
-      'Incorrect last action value after dispute creation'
-    )
-
     const status = await klerosgovernor.status()
     assert.equal(
       status.toNumber(),
@@ -550,13 +573,6 @@ contract('KlerosGovernor', function(accounts) {
         value: loserAppealFee - 1000
       })
     )
-    // Should fail in attempt to fund someone else's side
-    await expectThrow(
-      klerosgovernor.fundAppeal(2, {
-        from: submitter2,
-        value: loserAppealFee
-      })
-    )
     await klerosgovernor.fundAppeal(1, {
       from: submitter2,
       value: loserAppealFee
@@ -627,43 +643,6 @@ contract('KlerosGovernor', function(accounts) {
     )
     const txList = await klerosgovernor.txLists(1)
     assert.equal(txList[4], true, 'The winning list should be approved')
-  })
-
-  it('Should change the ruling if the winner had a duplicate with lesser submission time', async () => {
-    await klerosgovernor.submitList(
-      [klerosgovernor.address],
-      [10],
-      '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
-      [36],
-      { from: submitter1, value: submissionDeposit }
-    )
-
-    await increaseTime(5)
-
-    await klerosgovernor.submitList(
-      [klerosgovernor.address],
-      [10],
-      '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
-      [36],
-      { from: submitter2, value: submissionDeposit }
-    )
-
-    await increaseTime(submissionTimeout + 1)
-
-    await klerosgovernor.approveTransactionList({ from: general })
-    // The second list (submission index 1) was submitted later and should lose despite ruling being in its favor.
-    await arbitrator.giveRuling(0, 2)
-    await increaseTime(appealTimeout + 1)
-    await arbitrator.giveRuling(0, 2)
-
-    const winningList = await klerosgovernor.txLists(0)
-    assert.equal(winningList[4], true, 'The winning list should be approved')
-    const losingList = await klerosgovernor.txLists(1)
-    assert.equal(
-      losingList[4],
-      false,
-      'The second submitted list should not be approved'
-    )
   })
 
   it('Should change the ruling if loser paid appeal fees while the winner did not', async () => {
