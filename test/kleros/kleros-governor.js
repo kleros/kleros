@@ -17,11 +17,12 @@ contract('KlerosGovernor', function(accounts) {
   const submitter1 = accounts[1]
   const submitter2 = accounts[2]
   const submitter3 = accounts[3]
+  const other = accounts[4]
   const submissionDeposit = 1e18
   const submissionTimeout = 3600
   const withdrawTimeout = 100
   const sharedMultiplier = 5000
-  const winnerMultiplier = 3000
+  const winnerMultiplier = 2000
   const loserMultiplier = 7000
   const arbitrationFee = 1e17
   const arbitratorExtraData = 0x85
@@ -63,9 +64,10 @@ contract('KlerosGovernor', function(accounts) {
     assert.equal((await klerosgovernor.submissionTimeout()).toNumber(), 3600)
     assert.equal((await klerosgovernor.withdrawTimeout()).toNumber(), 100)
     assert.equal((await klerosgovernor.sharedMultiplier()).toNumber(), 5000)
-    assert.equal((await klerosgovernor.winnerMultiplier()).toNumber(), 3000)
+    assert.equal((await klerosgovernor.winnerMultiplier()).toNumber(), 2000)
     assert.equal((await klerosgovernor.loserMultiplier()).toNumber(), 7000)
     assert.equal(await klerosgovernor.governor(), klerosgovernor.address)
+    assert.equal((await klerosgovernor.getCurrentSessionNumber()).toNumber(), 0)
   })
 
   it('Only governor should be allowed to change contract parameters', async () => {
@@ -250,39 +252,43 @@ contract('KlerosGovernor', function(accounts) {
       { from: submitter2, value: submissionDeposit }
     )
 
-    let submissionCount = await klerosgovernor.getNumberOfSubmittedLists()
+    let submissionInfo = await klerosgovernor.getSubmittedLists(0)
+
     assert.equal(
-      submissionCount.toNumber(),
+      submissionInfo[1].toNumber(),
       2,
       'The submission count is incorrect'
     )
-    let sumDeposit = await klerosgovernor.sumDeposit()
+    let sessionInfo = await klerosgovernor.sessions(0)
     assert.equal(
-      sumDeposit.toNumber(),
+      sessionInfo[2].toNumber(),
       2e18,
       'The sum of submission deposits is incorrect'
     )
     const oldBalance = await web3.eth.getBalance(submitter2)
 
+    const list2Info = await klerosgovernor.txLists(1)
+    const list2Hash = await list2Info[2]
+
     // Shouldn't be possible to withdraw someone else's list
     await expectThrow(
-      klerosgovernor.withdrawTransactionList(1, { from: submitter1 })
+      klerosgovernor.withdrawTransactionList(1, list2Hash, { from: submitter1 })
     )
-    const tx = await klerosgovernor.withdrawTransactionList(1, {
+    const tx = await klerosgovernor.withdrawTransactionList(1, list2Hash, {
       from: submitter2,
       gasPrice: gasPrice
     })
     const txFee = tx.receipt.gasUsed * gasPrice
 
-    submissionCount = await klerosgovernor.getNumberOfSubmittedLists()
+    submissionInfo = await klerosgovernor.getSubmittedLists(0)
     assert.equal(
-      submissionCount.toNumber(),
+      submissionInfo[1].toNumber(),
       1,
       'The submission count after withdrawal is incorrect'
     )
-    sumDeposit = await klerosgovernor.sumDeposit()
+    sessionInfo = await klerosgovernor.sessions(0)
     assert.equal(
-      sumDeposit.toNumber(),
+      sessionInfo[2].toNumber(),
       1e18,
       'The sum of submission deposits after withdrawal is incorrect'
     )
@@ -297,9 +303,11 @@ contract('KlerosGovernor', function(accounts) {
     )
 
     await increaseTime(withdrawTimeout + 1)
+    const list1Info = await klerosgovernor.txLists(0)
+    const list1Hash = await list1Info[2]
     // Shouldn't be possible to withdraw after timeout
     await expectThrow(
-      klerosgovernor.withdrawTransactionList(0, { from: submitter1 })
+      klerosgovernor.withdrawTransactionList(0, list1Hash, { from: submitter1 })
     )
   })
 
@@ -310,6 +318,7 @@ contract('KlerosGovernor', function(accounts) {
     await increaseTime(submissionTimeout + 1)
     await klerosgovernor.approveTransactionList({ from: general })
 
+    assert.equal((await klerosgovernor.getCurrentSessionNumber()).toNumber(), 1)
     // Check that submissions are working in the new submitting session
     await klerosgovernor.submitList(
       [klerosgovernor.address, arbitrator.address],
@@ -319,11 +328,18 @@ contract('KlerosGovernor', function(accounts) {
       { from: submitter1, value: submissionDeposit }
     )
 
-    const submissionCount = await klerosgovernor.getNumberOfSubmittedLists()
+    const submissionInfo = await klerosgovernor.getSubmittedLists(1)
     assert.equal(
-      submissionCount.toNumber(),
+      submissionInfo[1].toNumber(),
       1,
       'The submission count in the new session is incorrect'
+    )
+
+    const sessionInfo = await klerosgovernor.sessions(0)
+    assert.equal(
+      sessionInfo[3].toNumber(),
+      2,
+      'Previous session should have status resolved'
     )
   })
 
@@ -350,16 +366,16 @@ contract('KlerosGovernor', function(accounts) {
       'Incorrect submitter balance after approval'
     )
 
-    let submissionCount = await klerosgovernor.getNumberOfSubmittedLists()
+    let submissionInfo = await klerosgovernor.getSubmittedLists(1)
     assert.equal(
-      submissionCount.toNumber(),
+      submissionInfo[1].toNumber(),
       0,
       'The submission count should be set to 0 right after approval'
     )
 
-    let sumDeposit = await klerosgovernor.sumDeposit()
+    let sessionInfo = await klerosgovernor.sessions(1)
     assert.equal(
-      sumDeposit.toNumber(),
+      sessionInfo[2].toNumber(),
       0,
       'The sum of the deposits should be set to 0 right after approval'
     )
@@ -370,16 +386,16 @@ contract('KlerosGovernor', function(accounts) {
       value: submissionDeposit
     })
 
-    submissionCount = await klerosgovernor.getNumberOfSubmittedLists()
+    submissionInfo = await klerosgovernor.getSubmittedLists(1)
     assert.equal(
-      submissionCount.toNumber(),
+      submissionInfo[1].toNumber(),
       1,
       'The submission count in the new session is incorrect'
     )
 
-    sumDeposit = await klerosgovernor.sumDeposit()
+    sessionInfo = await klerosgovernor.sessions(1)
     assert.equal(
-      sumDeposit.toNumber(),
+      sessionInfo[2].toNumber(),
       1e18,
       'The sum of the deposits in the new session is incorrect'
     )
@@ -389,6 +405,13 @@ contract('KlerosGovernor', function(accounts) {
       numberOfLists.toNumber(),
       2,
       'The number of created lists is incorrect'
+    )
+
+    sessionInfo = await klerosgovernor.sessions(0)
+    assert.equal(
+      sessionInfo[3].toNumber(),
+      2,
+      'Previous session should have status resolved'
     )
   })
 
@@ -412,11 +435,13 @@ contract('KlerosGovernor', function(accounts) {
     })
 
     await increaseTime(submissionTimeout + 1)
-    const oldSumDeposit = await klerosgovernor.sumDeposit()
+    let sessionInfo = await klerosgovernor.sessions(0)
+    const oldSumDeposit = await sessionInfo[2]
 
     await klerosgovernor.approveTransactionList({ from: general })
 
-    const newSumDeposit = await klerosgovernor.sumDeposit()
+    sessionInfo = await klerosgovernor.sessions(0)
+    const newSumDeposit = await sessionInfo[2]
 
     assert.equal(
       oldSumDeposit.toNumber() - 1e17,
@@ -424,9 +449,8 @@ contract('KlerosGovernor', function(accounts) {
       'The sum of the deposits after dispute creation is incorrect'
     )
 
-    const status = await klerosgovernor.status()
     assert.equal(
-      status.toNumber(),
+      sessionInfo[3].toNumber(),
       1,
       'Incorrect status after dispute creation'
     )
@@ -475,7 +499,7 @@ contract('KlerosGovernor', function(accounts) {
 
     await klerosgovernor.approveTransactionList({ from: general })
 
-    let sumDeposit = await klerosgovernor.sumDeposit()
+    let sessionInfo = await klerosgovernor.sessions(0)
 
     await arbitrator.giveRuling(0, 1)
     await increaseTime(appealTimeout + 1)
@@ -495,7 +519,7 @@ contract('KlerosGovernor', function(accounts) {
     assert.equal(
       newBalance1.toString(),
       oldBalance1
-        .plus(sumDeposit)
+        .plus(sessionInfo[2])
         .minus(submissionDeposit)
         .toString(),
       'Incorrect balance of the winning party after ruling'
@@ -516,25 +540,34 @@ contract('KlerosGovernor', function(accounts) {
 
     assert.equal(txList[4], true, 'The winning list should be approved')
 
-    const submissionCount = await klerosgovernor.getNumberOfSubmittedLists()
+    const submissionInfo = await klerosgovernor.getSubmittedLists(1)
     assert.equal(
-      submissionCount.toNumber(),
+      submissionInfo[1].toNumber(),
       0,
-      'The submission count should be set to 0 after ruling was given'
+      'The submission count be 0 in the new session'
     )
 
-    sumDeposit = await klerosgovernor.sumDeposit()
+    sessionInfo = await klerosgovernor.sessions(1)
     assert.equal(
-      sumDeposit.toNumber(),
+      sessionInfo[2].toNumber(),
       0,
-      'The sum of the deposits should be set to 0 right after ruling was given'
+      'The sum of the deposits should be 0 in the new session'
     )
 
-    const status = await klerosgovernor.status()
     assert.equal(
-      status.toNumber(),
+      sessionInfo[3].toNumber(),
       0,
-      'Incorrect status after dispute was resolved'
+      'Status should be 0 in the new session'
+    )
+
+    // Check that previous session stored correct values.
+    sessionInfo = await klerosgovernor.sessions(0)
+    assert.equal(sessionInfo[0].toNumber(), 1, 'The ruling was set incorrectly')
+
+    assert.equal(
+      sessionInfo[3].toNumber(),
+      2,
+      'Previous session should have status resolved'
     )
   })
 
@@ -561,27 +594,16 @@ contract('KlerosGovernor', function(accounts) {
 
     await klerosgovernor.approveTransactionList({ from: general })
 
-    // Ruling 1 is equal to 0 submission index (submitter1)/
+    // Ruling 1 is equal to 0 submission index (submitter1)
     await arbitrator.giveRuling(0, 1)
     // appeal fee is the same as arbitration fee for this arbitrator
     const loserAppealFee =
       arbitrationFee + (arbitrationFee * loserMultiplier) / MULTIPLIER_DIVISOR
-    // Should fail if paid less.
-    await expectThrow(
-      klerosgovernor.fundAppeal(1, {
-        from: submitter2,
-        value: loserAppealFee - 1000
-      })
-    )
+
     await klerosgovernor.fundAppeal(1, {
       from: submitter2,
       value: loserAppealFee
     })
-
-    // Check that it's not possible to fund appeal twice in the same round
-    await expectThrow(
-      klerosgovernor.fundAppeal(1, { from: submitter2, value: loserAppealFee })
-    )
 
     await increaseTime(appealTimeout / 2 + 1)
 
@@ -595,14 +617,6 @@ contract('KlerosGovernor', function(accounts) {
 
     const winnerAppealFee =
       arbitrationFee + (arbitrationFee * winnerMultiplier) / MULTIPLIER_DIVISOR
-
-    // Should fail if paid less.
-    await expectThrow(
-      klerosgovernor.fundAppeal(0, {
-        from: submitter1,
-        value: winnerAppealFee - 1000
-      })
-    )
 
     await klerosgovernor.fundAppeal(0, {
       from: submitter1,
@@ -622,27 +636,31 @@ contract('KlerosGovernor', function(accounts) {
     const newBalance2 = await web3.eth.getBalance(submitter2) // winner
     const newBalance3 = await web3.eth.getBalance(submitter3)
 
-    // Winner should be rewarded with submission deposits of 2 losing parties minus arbitration/appeal fees.
+    // Winner should be rewarded with submission deposits of 2 losing parties minus arbitration fees.
+    // Winner also gets rewarded with losing parties' appeal fees but he gets them through another function.
     assert.equal(
       newBalance1.toString(),
       oldBalance1.toString(),
-      'Incorrect balance of the first losing party afet appealed ruling'
+      'Incorrect balance of the first losing party after appealed ruling'
     )
     assert.equal(
       newBalance2.toString(),
       oldBalance2
-        .plus(2e18 + loserAppealFee + winnerAppealFee)
-        .minus(2e17)
+        .plus(2e18)
+        .minus(1e17)
         .toString(),
       'Incorrect balance of the winning party after appealed ruling'
     )
     assert.equal(
       newBalance3.toString(),
       oldBalance3.toString(),
-      'Incorrect balance of the second losing party afet appealed ruling'
+      'Incorrect balance of the second losing party after appealed ruling'
     )
     const txList = await klerosgovernor.txLists(1)
     assert.equal(txList[4], true, 'The winning list should be approved')
+
+    const sessionInfo = await klerosgovernor.sessions(0)
+    assert.equal(sessionInfo[0].toNumber(), 2, 'The ruling was set incorrectly')
   })
 
   it('Should change the ruling if loser paid appeal fees while the winner did not', async () => {
@@ -691,6 +709,9 @@ contract('KlerosGovernor', function(accounts) {
     )
     const winningList = await klerosgovernor.txLists(1)
     assert.equal(winningList[4], true, 'The second list should be approved')
+
+    const sessionInfo = await klerosgovernor.sessions(0)
+    assert.equal(sessionInfo[0].toNumber(), 2, 'The ruling was set incorrectly')
   })
 
   it('Should correctly execute transactions in the approved list (atomic execution)', async () => {
@@ -830,6 +851,280 @@ contract('KlerosGovernor', function(accounts) {
       tx2[3],
       true,
       'The second transaction should have status executed'
+    )
+  })
+
+  it('Should register payments correctly and withdraw correct fees if dispute had winner/loser', async () => {
+    await klerosgovernor.submitList(
+      [klerosgovernor.address],
+      [10],
+      '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
+      [36],
+      { from: submitter1, value: submissionDeposit }
+    )
+
+    await klerosgovernor.submitList([arbitrator.address], [10], '0x2462', [2], {
+      from: submitter2,
+      value: submissionDeposit
+    })
+
+    await klerosgovernor.submitList([], [], '0x24621111', [], {
+      from: submitter3,
+      value: submissionDeposit
+    })
+
+    await increaseTime(submissionTimeout + 1)
+
+    await klerosgovernor.approveTransactionList({ from: general })
+
+    await arbitrator.giveRuling(0, 3)
+
+    const loserAppealFee =
+      arbitrationFee + (arbitrationFee * loserMultiplier) / MULTIPLIER_DIVISOR
+
+    const winnerAppealFee =
+      arbitrationFee + (arbitrationFee * winnerMultiplier) / MULTIPLIER_DIVISOR
+
+    await klerosgovernor.fundAppeal(0, {
+      from: submitter1,
+      value: loserAppealFee
+    })
+
+    // Deliberately underpay with 2nd loser to check correct fee distribution.
+    await klerosgovernor.fundAppeal(1, {
+      from: submitter2,
+      value: arbitrationFee
+    })
+
+    // Winnder's fee is crowdfunded.
+    await klerosgovernor.fundAppeal(2, {
+      from: other,
+      value: winnerAppealFee * 0.75
+    })
+
+    await klerosgovernor.fundAppeal(2, {
+      from: submitter3,
+      value: 1e18
+    })
+
+    // Check that it's not possible to withdraw fees if dispute is unresolved.
+    await expectThrow(
+      klerosgovernor.withdrawFeesAndRewards(submitter1, 0, 0, 0, 0, {
+        from: general
+      })
+    )
+
+    // Check that contract registers paid fees correctly.
+    const roundInfo = await klerosgovernor.getRoundInfo(0, 0)
+    assert.equal(
+      roundInfo[0][0].toNumber(),
+      loserAppealFee,
+      'Registered fee of the first loser is incorrect'
+    )
+    assert.equal(
+      roundInfo[1][0],
+      true,
+      'Did not register that first loser successfully paid his fees'
+    )
+    assert.equal(
+      roundInfo[0][1].toNumber(),
+      arbitrationFee,
+      'Registered fee of the second loser is incorrect'
+    )
+    assert.equal(
+      roundInfo[1][1],
+      false,
+      'Should not register that second loser successfully paid his fees'
+    )
+    assert.equal(
+      roundInfo[0][2].toNumber(),
+      winnerAppealFee,
+      'Registered fee of the winner is incorrect'
+    )
+    assert.equal(
+      roundInfo[1][2],
+      true,
+      'Did not register that the winner successfully paid his fees'
+    )
+    assert.equal(
+      roundInfo[2].toNumber(),
+      winnerAppealFee + loserAppealFee - arbitrationFee,
+      'Incorrect fee rewards value'
+    )
+    assert.equal(
+      roundInfo[3].toNumber(),
+      winnerAppealFee + loserAppealFee,
+      'Incorrect successfully paid fees value'
+    )
+
+    await arbitrator.giveRuling(1, 3)
+
+    // 2nd loser underpays again in the last round.
+    await klerosgovernor.fundAppeal(1, {
+      from: submitter2,
+      value: loserAppealFee - 1000
+    })
+
+    await increaseTime(appealTimeout + 1)
+    await arbitrator.giveRuling(1, 3)
+
+    const oldBalance1 = await web3.eth.getBalance(submitter1)
+    await klerosgovernor.withdrawFeesAndRewards(submitter1, 0, 0, 0, 0, {
+      from: general
+    })
+    const newBalance1 = await web3.eth.getBalance(submitter1)
+    assert.equal(
+      newBalance1.toString(),
+      oldBalance1.toString(),
+      'Balance of the first loser should stay the same'
+    )
+    const oldBalance2 = await web3.eth.getBalance(submitter2)
+    await klerosgovernor.withdrawFeesAndRewards(submitter2, 0, 0, 0, 0, {
+      from: general
+    })
+    let newBalance2 = await web3.eth.getBalance(submitter2)
+    assert.equal(
+      newBalance2.toString(),
+      oldBalance2.toString(),
+      'Balance of the second loser should stay the same after withdrawing fees of the first round'
+    )
+    await klerosgovernor.withdrawFeesAndRewards(submitter2, 0, 1, 0, 0, {
+      from: general
+    })
+    newBalance2 = await web3.eth.getBalance(submitter2)
+    assert.equal(
+      newBalance2.toString(),
+      oldBalance2
+        .plus(loserAppealFee)
+        .minus(1000)
+        .toString(),
+      'Second loser should be reimbursed what he paid in the last round'
+    )
+
+    const oldBalance3 = await web3.eth.getBalance(submitter3)
+    await klerosgovernor.withdrawFeesAndRewards(submitter3, 0, 0, 0, 0, {
+      from: general
+    })
+    const newBalance3 = await web3.eth.getBalance(submitter3) // winner
+    assert.equal(
+      newBalance3.toString(),
+      oldBalance3.plus(0.25 * roundInfo[2]).toString(),
+      'Incorrect balance of the first crowdfunder after funding winning list'
+    )
+    const oldBalance4 = await web3.eth.getBalance(other)
+    await klerosgovernor.withdrawFeesAndRewards(other, 0, 0, 0, 0, {
+      from: general
+    })
+    const newBalance4 = await web3.eth.getBalance(other)
+    assert.equal(
+      newBalance4.toString(),
+      oldBalance4.plus(0.75 * roundInfo[2]).toString(),
+      'Incorrect balance of the second crowdfunder after funding winning list'
+    )
+  })
+
+  it('Should withdraw correct fees if arbitrator refused to arbitrate', async () => {
+    await klerosgovernor.submitList(
+      [klerosgovernor.address],
+      [10],
+      '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
+      [36],
+      { from: submitter1, value: submissionDeposit }
+    )
+
+    await klerosgovernor.submitList([arbitrator.address], [10], '0x2462', [2], {
+      from: submitter2,
+      value: submissionDeposit
+    })
+
+    await klerosgovernor.submitList([], [], '0x24621111', [], {
+      from: submitter3,
+      value: submissionDeposit
+    })
+
+    await increaseTime(submissionTimeout + 1)
+
+    await klerosgovernor.approveTransactionList({ from: general })
+
+    await arbitrator.giveRuling(0, 0)
+
+    const sharedAppealFee =
+      arbitrationFee + (arbitrationFee * sharedMultiplier) / MULTIPLIER_DIVISOR
+
+    await klerosgovernor.fundAppeal(0, {
+      from: other,
+      value: sharedAppealFee * 0.2
+    })
+
+    await klerosgovernor.fundAppeal(0, {
+      from: submitter1,
+      value: 5e18
+    })
+
+    // Deliberately underpay with 3rd submitter.
+    await klerosgovernor.fundAppeal(2, {
+      from: submitter3,
+      value: sharedAppealFee * 0.3
+    })
+
+    await klerosgovernor.fundAppeal(1, {
+      from: other,
+      value: sharedAppealFee * 0.4
+    })
+
+    await klerosgovernor.fundAppeal(1, {
+      from: submitter2,
+      value: 2e18
+    })
+
+    const roundInfo = await klerosgovernor.getRoundInfo(0, 0)
+
+    await arbitrator.giveRuling(1, 0)
+    await increaseTime(appealTimeout + 1)
+    await arbitrator.giveRuling(1, 0)
+
+    const oldBalance1 = await web3.eth.getBalance(submitter1)
+    await klerosgovernor.withdrawFeesAndRewards(submitter1, 0, 0, 0, 0, {
+      from: general
+    })
+    const newBalance1 = await web3.eth.getBalance(submitter1)
+    assert.equal(
+      newBalance1.toString(),
+      oldBalance1.plus(0.4 * roundInfo[2]).toString(),
+      'Incorrect balance of the first submitter'
+    )
+    const oldBalance2 = await web3.eth.getBalance(submitter2)
+    await klerosgovernor.withdrawFeesAndRewards(submitter2, 0, 0, 0, 0, {
+      from: general
+    })
+    const newBalance2 = await web3.eth.getBalance(submitter2)
+    assert.equal(
+      newBalance2.toString(),
+      oldBalance2.plus(0.3 * roundInfo[2]).toString(),
+      'Incorrect balance of the second submitter'
+    )
+
+    const oldBalance3 = await web3.eth.getBalance(submitter3)
+    await klerosgovernor.withdrawFeesAndRewards(submitter3, 0, 0, 0, 0, {
+      from: general
+    })
+    const newBalance3 = await web3.eth.getBalance(submitter3)
+    assert.equal(
+      newBalance3.toString(),
+      oldBalance3
+        .plus(0.2 * sharedAppealFee) // Third submitter is reimbursed the value of feeRewards/successfullyPaid * contribution: 2/3 * 0.3* sharedAppealFee
+        .toString(),
+      'Incorrect balance of the 3rd submitter'
+    )
+    const oldBalance4 = await web3.eth.getBalance(other)
+    await klerosgovernor.withdrawFeesAndRewards(other, 0, 0, 0, 0, {
+      from: general
+    })
+    const newBalance4 = await web3.eth.getBalance(other)
+    assert.equal(
+      newBalance4.toString(),
+      oldBalance4.plus(0.3 * roundInfo[2]).toString(),
+      'Incorrect balance of the crowdfunder'
     )
   })
 })
