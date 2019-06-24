@@ -211,7 +211,7 @@ contract KlerosGovernor is Arbitrable{
     }
 
     /** @dev Approves a transaction list or creates a dispute if more than one list was submitted.
-     *  If nothing was submitted resets the period of the contract to the submission period.
+     *  If nothing was submitted changes session.
      */
     function approveTransactionList() public duringApprovalPeriod{
         Session storage session = sessions[sessions.length - 1];
@@ -239,7 +239,7 @@ contract KlerosGovernor is Arbitrable{
     }
 
     /** @dev Takes up to the total amount required to fund a side of an appeal. Reimburses the rest. Creates an appeal if at least two lists are funded.
-     *  @param _submissionID The ID that was given to the list upon submission.
+     *  @param _submissionID The ID that was given to the list upon submission. Note that submissionID can be swapped with an ID of a withdrawn list in submission period.
      */
     function fundAppeal(uint _submissionID) public payable{
         Session storage session = sessions[sessions.length - 1];
@@ -264,15 +264,11 @@ contract KlerosGovernor is Arbitrable{
         }
 
         Round storage round = session.rounds[session.rounds.length - 1];
+        require(!round.hasPaid[_submissionID], "Appeal fee has already been paid");
         uint appealCost = arbitrator.appealCost(session.disputeID, arbitratorExtraData);
         uint totalCost = appealCost.addCap((appealCost.mulCap(multiplier)) / MULTIPLIER_DIVISOR);
 
         contribute(round, _submissionID, msg.sender, msg.value, totalCost);
-        if (round.paidFees[_submissionID] >= totalCost){
-            round.hasPaid[_submissionID] = true;
-            if(shadowWinner == uint(-1))
-                shadowWinner = _submissionID;
-        }
 
         if(shadowWinner != uint(-1) && shadowWinner != _submissionID && round.hasPaid[_submissionID]){
             shadowWinner = uint(-1);
@@ -316,6 +312,10 @@ contract KlerosGovernor is Arbitrable{
         _round.paidFees[_submissionID] += contribution;
         // Add contribution to reward when the fee funding is successful, otherwise it can be withdrawn later.
         if (_round.paidFees[_submissionID] >= _totalRequired){
+            _round.hasPaid[_submissionID] = true;
+            if(shadowWinner == uint(-1))
+                shadowWinner = _submissionID;
+
             _round.feeRewards += _round.paidFees[_submissionID];
             _round.successfullyPaid += _round.paidFees[_submissionID];
         }
@@ -350,12 +350,12 @@ contract KlerosGovernor is Arbitrable{
                     : 0;
                 reward += submissionReward;
                 round.contributions[_beneficiary][i] = 0;
-            } else {
+            } else if (session.ruling - 1 == i) {
                 // Reward the winner. Subtract 1 from ruling to sync submissionID with arbitrator's choice.
-                reward += round.paidFees[session.ruling - 1] > 0
-                ? (round.contributions[_beneficiary][session.ruling - 1] * round.feeRewards) / round.paidFees[session.ruling - 1]
+                reward += round.paidFees[i] > 0
+                ? (round.contributions[_beneficiary][i] * round.feeRewards) / round.paidFees[i]
                 : 0;
-                round.contributions[_beneficiary][session.ruling - 1] = 0;
+                round.contributions[_beneficiary][i] = 0;
             }
         }
 
