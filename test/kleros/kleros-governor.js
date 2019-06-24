@@ -596,7 +596,7 @@ contract('KlerosGovernor', function(accounts) {
 
     // Ruling 1 is equal to 0 submission index (submitter1)
     await arbitrator.giveRuling(0, 1)
-    // appeal fee is the same as arbitration fee for this arbitrator
+    // Appeal fee is the same as arbitration fee for this arbitrator
     const loserAppealFee =
       arbitrationFee + (arbitrationFee * loserMultiplier) / MULTIPLIER_DIVISOR
 
@@ -604,6 +604,14 @@ contract('KlerosGovernor', function(accounts) {
       from: submitter2,
       value: loserAppealFee
     })
+
+    // Check that it's not possible to pay appeal fee twice
+    await expectThrow(
+      klerosgovernor.fundAppeal(1, {
+        from: submitter2,
+        value: loserAppealFee
+      })
+    )
 
     await increaseTime(appealTimeout / 2 + 1)
 
