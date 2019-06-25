@@ -636,7 +636,7 @@ contract('KlerosLiquid', accounts => {
       numberOfJurors - 1
     )
     await klerosLiquid.passPeriod(disputeID)
-    await expectThrow(klerosLiquid.passPeriod(disputeID))
+    await expectThrow(klerosLiquid.passPeriod(disputeID, { from: accounts[5] }))
     await increaseTime(subcourtTree.timesPerPeriod[3])
     await klerosLiquid.passPeriod(disputeID)
     await expectThrow(klerosLiquid.passPeriod(disputeID))
