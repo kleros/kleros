@@ -267,8 +267,6 @@ contract KlerosGovernor is Arbitrable{
         uint appealCost = arbitrator.appealCost(session.disputeID, arbitratorExtraData);
         uint totalCost = appealCost.addCap((appealCost.mulCap(multiplier)) / MULTIPLIER_DIVISOR);
 
-        require(!round.hasPaid[_submissionID], "Appeal fee has already been paid");
-
         contribute(round, _submissionID, msg.sender, msg.value, totalCost);
 
         if(shadowWinner != uint(-1) && shadowWinner != _submissionID && round.hasPaid[_submissionID]){
@@ -305,6 +303,7 @@ contract KlerosGovernor is Arbitrable{
      *  @param _totalRequired The total amount required for this side.
      */
     function contribute(Round storage _round, uint _submissionID, address _contributor, uint _amount, uint _totalRequired) internal {
+        require(!_round.hasPaid[_submissionID], "Appeal fee has already been paid");
         // Take up to the amount necessary to fund the current round at the current costs.
         uint contribution; // Amount contributed.
         uint remainingETH; // Remaining ETH to send back.
