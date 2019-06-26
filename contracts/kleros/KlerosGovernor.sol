@@ -66,7 +66,7 @@ contract KlerosGovernor is Arbitrable{
     uint public shadowWinner = uint(-1); // Submission index of the first list that paid appeal fees. If it stays the only list that paid appeal fees it will win regardless of the final ruling.
 
     TransactionList[] public txLists; // Stores all created transaction lists. txLists[_listID].
-    Session[] public sessions; // Stores all submitting sessions.
+    Session[] public sessions; // Stores all submitting sessions. sessions[_session].
 
     /* *** Modifiers *** */
     modifier duringSubmissionPeriod() {require(now - lastApprovalTime <= submissionTimeout, "Submission time has ended"); _;}
@@ -197,7 +197,7 @@ contract KlerosGovernor is Arbitrable{
      *  @param _submissionID The ID that was given to the list upon submission.
      *  @param _lisHash Hash of a withdrawing list.
      */
-    function withdrawTransactionList(uint _submissionID, bytes32 _lisHash) public duringSubmissionPeriod{
+    function withdrawTransactionList(uint _submissionID, bytes32 _lisHash) public duringSubmissionPeriod {
         Session storage session = sessions[sessions.length - 1];
         TransactionList storage txList = txLists[session.submittedLists[_submissionID]];
         // This require statement is an extra check to prevent _submissionID linking to the wrong list because of index swap during withdrawal.
@@ -213,7 +213,7 @@ contract KlerosGovernor is Arbitrable{
     /** @dev Approves a transaction list or creates a dispute if more than one list was submitted.
      *  If nothing was submitted changes session.
      */
-    function approveTransactionList() public duringApprovalPeriod{
+    function approveTransactionList() public duringApprovalPeriod {
         Session storage session = sessions[sessions.length - 1];
         require(session.status == Status.NoDispute, "Can't approve transaction list while dispute is active");
         if (session.submittedLists.length == 0){
@@ -241,7 +241,7 @@ contract KlerosGovernor is Arbitrable{
     /** @dev Takes up to the total amount required to fund a side of an appeal. Reimburses the rest. Creates an appeal if at least two lists are funded.
      *  @param _submissionID The ID that was given to the list upon submission. Note that submissionID can be swapped with an ID of a withdrawn list in submission period.
      */
-    function fundAppeal(uint _submissionID) public payable{
+    function fundAppeal(uint _submissionID) public payable {
         Session storage session = sessions[sessions.length - 1];
         require(session.status == Status.DisputeCreated, "No dispute to appeal");
         require(arbitrator.disputeStatus(session.disputeID) == Arbitrator.DisputeStatus.Appealable, "Dispute is not appealable.");
@@ -264,9 +264,10 @@ contract KlerosGovernor is Arbitrable{
         }
 
         Round storage round = session.rounds[session.rounds.length - 1];
-        require(!round.hasPaid[_submissionID], "Appeal fee has already been paid");
         uint appealCost = arbitrator.appealCost(session.disputeID, arbitratorExtraData);
         uint totalCost = appealCost.addCap((appealCost.mulCap(multiplier)) / MULTIPLIER_DIVISOR);
+
+        require(!round.hasPaid[_submissionID], "Appeal fee has already been paid");
 
         contribute(round, _submissionID, msg.sender, msg.value, totalCost);
 
@@ -345,16 +346,15 @@ contract KlerosGovernor is Arbitrable{
             }
             // Reimburse unspent fees proportionally if there is no winner and loser.
             if (session.ruling == 0) {
-                uint submissionReward = round.successfullyPaid > 0
+                reward += round.successfullyPaid > 0
                     ? (round.contributions[_beneficiary][i] * round.feeRewards) / round.successfullyPaid
                     : 0;
-                reward += submissionReward;
                 round.contributions[_beneficiary][i] = 0;
             } else if (session.ruling - 1 == i) {
                 // Reward the winner. Subtract 1 from ruling to sync submissionID with arbitrator's choice.
                 reward += round.paidFees[i] > 0
-                ? (round.contributions[_beneficiary][i] * round.feeRewards) / round.paidFees[i]
-                : 0;
+                    ? (round.contributions[_beneficiary][i] * round.feeRewards) / round.paidFees[i]
+                    : 0;
                 round.contributions[_beneficiary][i] = 0;
             }
         }
@@ -384,7 +384,7 @@ contract KlerosGovernor is Arbitrable{
      *  @param _ruling Ruling given by the arbitrator. Note that 0 is reserved for "Refuse to arbitrate".
      *  If the final ruling is "0" nothing is approved and deposits will stay locked in the contract.
      */
-    function executeRuling(uint _disputeID, uint _ruling) internal{
+    function executeRuling(uint _disputeID, uint _ruling) internal {
         Session storage session = sessions[sessions.length - 1];
         if(_ruling != 0){
             TransactionList storage txList = txLists[session.submittedLists[_ruling - 1]];
@@ -491,7 +491,8 @@ contract KlerosGovernor is Arbitrable{
 
     /** @dev Gets the array of submitted lists in the session.
      *  @param _session The ID of the session.
-     *  @return submittedLists Indexes of lists that were submitted during the session. count Number of submitted lists.
+     *  @return submittedLists Indexes of lists that were submitted during the session.
+     *  @return count Number of submitted lists.
      */
     function getSubmittedLists(uint _session) public view returns (uint[] submittedLists, uint count) {
         Session storage session = sessions[_session];
