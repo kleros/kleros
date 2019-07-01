@@ -22,8 +22,8 @@ contract KlerosGovernor is Arbitrable{
 
     struct Session{
         Round[] rounds; // Tracks each appeal round of a dispute.
-        uint ruling; // A ruling that was given in this session.
-        uint disputeID; // ID given to a dispute of the session.
+        uint ruling; // The ruling that was given in this session.
+        uint disputeID; // ID given to the dispute of the session.
         uint[] submittedLists; // Tracks all lists that were submitted in a session. submittedLists[submissionID].
         uint sumDeposit; // Sum of all submission deposits in a session (minus arbitration fees). Is needed for calculating a reward.
         Status status; // Status of a session.
@@ -39,7 +39,7 @@ contract KlerosGovernor is Arbitrable{
         address sender; // Submitter.
         uint deposit; // Value of a deposit paid upon submission of the list.
         Transaction[] txs; // Transactions stored in the list. txs[_transactionIndex].
-        bytes32 listHash; // A hash chain of all transactions stored in the list. Is needed to catch duplicates.
+        bytes32 listHash; // A hash chain of all transactions stored in the list. Is used for catching duplicates.
         uint submissionTime; // Time the list was submitted.
         bool approved; // Whether the list was approved for execution or not.
     }
@@ -57,7 +57,7 @@ contract KlerosGovernor is Arbitrable{
     uint public submissionDeposit; // Value in wei that needs to be paid in order to submit the list.
     uint public submissionTimeout; // Time in seconds allowed for submitting the lists. Once it's passed the contract enters the approval period.
     uint public withdrawTimeout; // Time in seconds allowed to withdraw a submitted list.
-    uint public sharedMultiplier; // Multiplier for calculating the appeal fee that must be paid by submitter in the case where there is no winner/loser (e.g. when the arbitrator ruled "refuse to arbitrate").
+    uint public sharedMultiplier; // Multiplier for calculating the appeal fee that must be paid by each side in the case where there is no winner/loser (e.g. when the arbitrator ruled "refuse to arbitrate").
     uint public winnerMultiplier; // Multiplier for calculating the appeal fee of the party that won the previous round.
     uint public loserMultiplier; // Multiplier for calculating the appeal fee of the party that lost the previous round.
     uint public constant MULTIPLIER_DIVISOR = 10000; // Divisor parameter for multipliers.
@@ -195,13 +195,13 @@ contract KlerosGovernor is Arbitrable{
 
     /** @dev Withdraws submitted transaction list. Reimburses submission deposit.
      *  @param _submissionID The ID that was given to the list upon submission.
-     *  @param _lisHash Hash of a withdrawing list.
+     *  @param _listHash Hash of a withdrawing list.
      */
-    function withdrawTransactionList(uint _submissionID, bytes32 _lisHash) public duringSubmissionPeriod {
+    function withdrawTransactionList(uint _submissionID, bytes32 _listHash) public duringSubmissionPeriod {
         Session storage session = sessions[sessions.length - 1];
         TransactionList storage txList = txLists[session.submittedLists[_submissionID]];
         // This require statement is an extra check to prevent _submissionID linking to the wrong list because of index swap during withdrawal.
-        require(txList.listHash == _lisHash, "Provided hash doesn't correspond with submission ID");
+        require(txList.listHash == _listHash, "Provided hash doesn't correspond with submission ID");
         require(txList.sender == msg.sender, "Can't withdraw the list created by someone else");
         require(now - txList.submissionTime <= withdrawTimeout, "Withdrawing time has passed");
         session.submittedLists[_submissionID] = session.submittedLists[session.submittedLists.length - 1];
@@ -277,24 +277,6 @@ contract KlerosGovernor is Arbitrable{
         }
     }
 
-    /** @dev Returns the contribution value and remainder from available ETH and required amount.
-     *  @param _available The amount of ETH available for the contribution.
-     *  @param _requiredAmount The amount of ETH required for the contribution.
-     *  @return taken The amount of ETH taken.
-     *  @return remainder The amount of ETH left from the contribution.
-     */
-    function calculateContribution(uint _available, uint _requiredAmount)
-        internal
-        pure
-        returns(uint taken, uint remainder)
-    {
-        if (_requiredAmount > _available)
-            return (_available, 0); // Take whatever is available, return 0 as leftover ETH.
-
-        remainder = _available - _requiredAmount;
-        return (_requiredAmount, remainder);
-    }
-
     /** @dev Makes a fee contribution for appeal rounds.
      *  @param _round The round to contribute.
      *  @param _submissionID The submission for which to contribute.
@@ -322,6 +304,24 @@ contract KlerosGovernor is Arbitrable{
 
         // Reimburse leftover ETH.
         _contributor.send(remainingETH);
+    }
+
+    /** @dev Returns the contribution value and remainder from available ETH and required amount.
+     *  @param _available The amount of ETH available for the contribution.
+     *  @param _requiredAmount The amount of ETH required for the contribution.
+     *  @return taken The amount of ETH taken.
+     *  @return remainder The amount of ETH left from the contribution.
+     */
+    function calculateContribution(uint _available, uint _requiredAmount)
+        internal
+        pure
+        returns(uint taken, uint remainder)
+    {
+        if (_requiredAmount > _available)
+            return (_available, 0); // Take whatever is available, return 0 as leftover ETH.
+
+        remainder = _available - _requiredAmount;
+        return (_requiredAmount, remainder);
     }
 
     /** @dev Sends the fee stake rewards and reimbursements proportional to the contributions made to the winner of a dispute. Reimburses contributions if there is no winner.
