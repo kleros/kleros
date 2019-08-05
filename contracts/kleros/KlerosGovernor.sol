@@ -166,7 +166,7 @@ contract KlerosGovernor is Arbitrable{
         submission.submitter = msg.sender;
         submission.deposit = submissionDeposit;
         bytes32 listHash;
-        //bytes32 prevTxHash;
+        bytes32 prevTxHash;
         uint pointer;
         for (uint i = 0; i < _target.length; i++){
             bytes memory tempData = new bytes(_dataSize[i]);
@@ -178,10 +178,9 @@ contract KlerosGovernor is Arbitrable{
             }
             transaction.data = tempData;
             pointer += _dataSize[i];
-            // Temporarily disabled this require until test file is updated.
-            //require(uint(keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data))) > uint(prevTxHash), "The transactions are in incorrect order");
+            require(uint(keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data))) > uint(prevTxHash), "The transactions are in incorrect order");
             listHash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data)), listHash));
-            //prevTxHash = keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data));
+            prevTxHash = keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data));
         }
         require(!alreadySubmitted[sessions.length - 1][listHash], "The same list was already submitted earlier");
         alreadySubmitted[sessions.length - 1][listHash] = true;
