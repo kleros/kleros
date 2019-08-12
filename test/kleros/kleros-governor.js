@@ -511,14 +511,9 @@ contract('KlerosGovernor', function(accounts) {
     const newBalance2 = await web3.eth.getBalance(submitter2)
     const newBalance3 = await web3.eth.getBalance(submitter3)
 
-    // The winner should be sent sum of deposits of losing sides minus arbitration fees.
-    // In sumDeposit fees are already subtracted, we only need to subtract the deposit of the winner party.
     assert.equal(
       newBalance1.toString(),
-      oldBalance1
-        .plus(sessionInfo[2])
-        .minus(submissionDeposit)
-        .toString(),
+      oldBalance1.plus(sessionInfo[2]).toString(),
       'Incorrect balance of the winning party after ruling'
     )
     // Balances of losing parties should stay the same
@@ -649,7 +644,6 @@ contract('KlerosGovernor', function(accounts) {
     const newBalance2 = await web3.eth.getBalance(submitter2) // winner
     const newBalance3 = await web3.eth.getBalance(submitter3)
 
-    // Winner should be rewarded with submission deposits of 2 losing parties minus arbitration fees.
     // Winner also gets rewarded with losing parties' appeal fees but he gets them through another function.
     assert.equal(
       newBalance1.toString(),
@@ -659,7 +653,7 @@ contract('KlerosGovernor', function(accounts) {
     assert.equal(
       newBalance2.toString(),
       oldBalance2
-        .plus(2e18)
+        .plus(3e18)
         .minus(1e17)
         .toString(),
       'Incorrect balance of the winning party after appealed ruling'

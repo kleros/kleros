@@ -388,8 +388,7 @@ contract KlerosGovernor is Arbitrable{
         if (_ruling != 0){
             Submission storage submission = submissions[session.submittedLists[_ruling - 1]];
             submission.approved = true;
-            uint reward = session.sumDeposit.subCap(submission.deposit);
-            submission.submitter.send(reward);
+            submission.submitter.send(session.sumDeposit);
         }
         session.sumDeposit = 0;
         shadowWinner = NO_SHADOW_WINNER;
