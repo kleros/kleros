@@ -194,7 +194,7 @@ contract('KlerosGovernor', function(accounts) {
       'The number of transactions is incorrect'
     )
 
-    tx1 = await klerosgovernor.getTransactionInfo(0, index1)
+    const tx1 = await klerosgovernor.getTransactionInfo(0, index1)
     assert.equal(
       tx1[0],
       klerosgovernor.address,
@@ -211,7 +211,7 @@ contract('KlerosGovernor', function(accounts) {
       'The data of the first transaction is incorrect'
     )
 
-    tx2 = await klerosgovernor.getTransactionInfo(0, index2)
+    const tx2 = await klerosgovernor.getTransactionInfo(0, index2)
     assert.equal(
       tx2[0],
       arbitrator.address,
