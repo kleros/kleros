@@ -28,6 +28,8 @@ contract('KlerosGovernor', function(accounts) {
   const arbitratorExtraData = 0x85
   const appealTimeout = 1200
   const MULTIPLIER_DIVISOR = 10000
+  // Though this description is for the list with 3 transactions, for test purposes an actual length of a submitted list is irrelevant.
+  const listDescription = 'tx1, tx2, tx3'
 
   const gasPrice = 5000000000
 
@@ -88,9 +90,25 @@ contract('KlerosGovernor', function(accounts) {
     await expectThrow(
       klerosgovernor.changeLoserMultiplier(330, { from: submitter2 })
     )
+
+    const arbitrator2 = await Arbitrator.new(
+      arbitrationFee,
+      general,
+      arbitratorExtraData,
+      appealTimeout,
+      { from: general }
+    )
+
+    await expectThrow(
+      klerosgovernor.changeArbitrator(
+        arbitrator2.address,
+        arbitratorExtraData,
+        { from: submitter2 }
+      )
+    )
   })
 
-  it('Should set correct values in a newly submitted list', async () => {
+  it('Should set correct values in a newly submitted list and fire the event', async () => {
     let index1
     let index2
     let dataString
@@ -102,6 +120,7 @@ contract('KlerosGovernor', function(accounts) {
         [],
         '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
         [36],
+        listDescription,
         { from: submitter1, value: submissionDeposit }
       )
     )
@@ -111,6 +130,7 @@ contract('KlerosGovernor', function(accounts) {
         [1e17],
         '0x246c76df0000000000000000000000000000000000000000000000000000000000000014953d6651000000000000000000000000000000000000000000000000000000000000fb',
         [71],
+        listDescription,
         { from: submitter1, value: submissionDeposit }
       )
     )
@@ -120,6 +140,7 @@ contract('KlerosGovernor', function(accounts) {
         [10],
         '0x246c76df0000000000000000000000000000000000000000000000000000000000000014953d6651000000000000000000000000000000000000000000000000000000000000fb',
         [],
+        listDescription,
         { from: submitter1, value: submissionDeposit }
       )
     )
@@ -131,6 +152,7 @@ contract('KlerosGovernor', function(accounts) {
         [10, 1e17],
         '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
         [36],
+        listDescription,
         { from: submitter1, value: submissionDeposit - 1000 }
       )
     )
@@ -167,15 +189,37 @@ contract('KlerosGovernor', function(accounts) {
         '0x953d6651000000000000000000000000000000000000000000000000000000000000fb246c76df0000000000000000000000000000000000000000000000000000000000000014'
     }
 
-    await klerosgovernor.submitList(
+    const submissionTx = await klerosgovernor.submitList(
       [addresses[index1], addresses[index2]],
       [values[index1], values[index2]],
       dataString,
       [data[index1], data[index2]],
+      listDescription,
       { from: submitter1, value: submissionDeposit }
     )
 
     const submission = await klerosgovernor.submissions(0)
+
+    assert.equal(
+      submissionTx.logs[0].event,
+      'listSubmitted',
+      'The event has not been created'
+    )
+    assert.equal(
+      submissionTx.logs[0].args._listID.toNumber(),
+      0,
+      'The event has wrong list ID'
+    )
+    assert.equal(
+      submissionTx.logs[0].args._submitter,
+      submitter1,
+      'The event has wrong submitter'
+    )
+    assert.equal(
+      submissionTx.logs[0].args._description,
+      listDescription,
+      'The event has wrong list description'
+    )
 
     assert.equal(
       submission[0],
@@ -249,6 +293,7 @@ contract('KlerosGovernor', function(accounts) {
         [180],
         '0xfdea',
         [2],
+        listDescription,
         { from: submitter2, value: submissionDeposit }
       )
     )
@@ -260,6 +305,7 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
+      listDescription,
       { from: submitter1, value: submissionDeposit }
     )
     // Check the case with the same and with different submitters.
@@ -269,6 +315,7 @@ contract('KlerosGovernor', function(accounts) {
         [10],
         '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
         [36],
+        listDescription,
         { from: submitter1, value: submissionDeposit }
       )
     )
@@ -279,6 +326,7 @@ contract('KlerosGovernor', function(accounts) {
         [10],
         '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
         [36],
+        listDescription,
         { from: submitter2, value: submissionDeposit }
       )
     )
@@ -290,6 +338,7 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0xfdea',
       [2],
+      listDescription,
       { from: submitter1, value: submissionDeposit }
     )
 
@@ -298,6 +347,7 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
+      listDescription,
       { from: submitter2, value: submissionDeposit }
     )
 
@@ -369,6 +419,7 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0xfdea',
       [2],
+      listDescription,
       { from: submitter1, value: submissionDeposit }
     )
 
@@ -393,6 +444,7 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
+      listDescription,
       { from: submitter1, value: submissionDeposit }
     )
 
@@ -425,7 +477,7 @@ contract('KlerosGovernor', function(accounts) {
     )
 
     // Check that submissions are working in the new submitting session
-    await klerosgovernor.submitList([], [], '', [], {
+    await klerosgovernor.submitList([], [], '', [], listDescription, {
       from: submitter2,
       value: submissionDeposit
     })
@@ -465,15 +517,23 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
+      listDescription,
       { from: submitter1, value: submissionDeposit }
     )
 
-    await klerosgovernor.submitList([arbitrator.address], [10], '0x2462', [2], {
-      from: submitter2,
-      value: submissionDeposit
-    })
+    await klerosgovernor.submitList(
+      [arbitrator.address],
+      [10],
+      '0x2462',
+      [2],
+      listDescription,
+      {
+        from: submitter2,
+        value: submissionDeposit
+      }
+    )
 
-    await klerosgovernor.submitList([], [], '0x24621111', [], {
+    await klerosgovernor.submitList([], [], '0x24621111', [], listDescription, {
       from: submitter3,
       value: submissionDeposit
     })
@@ -526,15 +586,23 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
+      listDescription,
       { from: submitter1, value: submissionDeposit }
     )
 
-    await klerosgovernor.submitList([arbitrator.address], [10], '0x2462', [2], {
-      from: submitter2,
-      value: submissionDeposit
-    })
+    await klerosgovernor.submitList(
+      [arbitrator.address],
+      [10],
+      '0x2462',
+      [2],
+      listDescription,
+      {
+        from: submitter2,
+        value: submissionDeposit
+      }
+    )
 
-    await klerosgovernor.submitList([], [], '0x24621111', [], {
+    await klerosgovernor.submitList([], [], '0x24621111', [], listDescription, {
       from: submitter3,
       value: submissionDeposit
     })
@@ -616,15 +684,23 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
+      listDescription,
       { from: submitter1, value: submissionDeposit }
     )
 
-    await klerosgovernor.submitList([arbitrator.address], [10], '0x2462', [2], {
-      from: submitter2,
-      value: submissionDeposit
-    })
+    await klerosgovernor.submitList(
+      [arbitrator.address],
+      [10],
+      '0x2462',
+      [2],
+      listDescription,
+      {
+        from: submitter2,
+        value: submissionDeposit
+      }
+    )
 
-    await klerosgovernor.submitList([], [], '0x24621111', [], {
+    await klerosgovernor.submitList([], [], '0x24621111', [], listDescription, {
       from: submitter3,
       value: submissionDeposit
     })
@@ -723,13 +799,21 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
+      listDescription,
       { from: submitter1, value: submissionDeposit }
     )
 
-    await klerosgovernor.submitList([arbitrator.address], [10], '0x2462', [2], {
-      from: submitter2,
-      value: submissionDeposit
-    })
+    await klerosgovernor.submitList(
+      [arbitrator.address],
+      [10],
+      '0x2462',
+      [2],
+      listDescription,
+      {
+        from: submitter2,
+        value: submissionDeposit
+      }
+    )
 
     await increaseTime(submissionTimeout + 1)
 
@@ -813,6 +897,7 @@ contract('KlerosGovernor', function(accounts) {
       [values[index1], values[index2]],
       dataString,
       [data[index1], data[index2]],
+      listDescription,
       { from: submitter1, value: submissionDeposit }
     )
 
@@ -827,12 +912,6 @@ contract('KlerosGovernor', function(accounts) {
 
     // Send spendable money via fallback.
     await klerosgovernor.sendTransaction({ from: other, value: 3e18 })
-
-    assert.equal(
-      (await klerosgovernor.expendableFunds()).toNumber(),
-      3e18,
-      'Incorrect expandableFunds value before execution'
-    )
 
     // Execute the first and the second transactions separately to check atomic execution.
     await klerosgovernor.executeTransactionList(0, 0, 1, { from: general })
@@ -883,12 +962,6 @@ contract('KlerosGovernor', function(accounts) {
       20,
       'The second transaction was not executed correctly'
     )
-
-    assert.equal(
-      (await klerosgovernor.expendableFunds()).toNumber(),
-      2.9e18,
-      'Incorrect expandableFunds value after execution'
-    )
   })
 
   it('Should correctly execute transactions in the approved list (batch execution)', async () => {
@@ -936,6 +1009,7 @@ contract('KlerosGovernor', function(accounts) {
       [values[index1], values[index2]],
       dataString,
       [data[index1], data[index2]],
+      listDescription,
       { from: submitter1, value: submissionDeposit }
     )
 
@@ -992,15 +1066,23 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
+      listDescription,
       { from: submitter1, value: submissionDeposit }
     )
 
-    await klerosgovernor.submitList([arbitrator.address], [10], '0x2462', [2], {
-      from: submitter2,
-      value: submissionDeposit
-    })
+    await klerosgovernor.submitList(
+      [arbitrator.address],
+      [10],
+      '0x2462',
+      [2],
+      listDescription,
+      {
+        from: submitter2,
+        value: submissionDeposit
+      }
+    )
 
-    await klerosgovernor.submitList([], [], '0x24621111', [], {
+    await klerosgovernor.submitList([], [], '0x24621111', [], listDescription, {
       from: submitter3,
       value: submissionDeposit
     })
@@ -1161,15 +1243,23 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
+      listDescription,
       { from: submitter1, value: submissionDeposit }
     )
 
-    await klerosgovernor.submitList([arbitrator.address], [10], '0x2462', [2], {
-      from: submitter2,
-      value: submissionDeposit
-    })
+    await klerosgovernor.submitList(
+      [arbitrator.address],
+      [10],
+      '0x2462',
+      [2],
+      listDescription,
+      {
+        from: submitter2,
+        value: submissionDeposit
+      }
+    )
 
-    await klerosgovernor.submitList([], [], '0x24621111', [], {
+    await klerosgovernor.submitList([], [], '0x24621111', [], listDescription, {
       from: submitter3,
       value: submissionDeposit
     })
@@ -1257,6 +1347,143 @@ contract('KlerosGovernor', function(accounts) {
       newBalance4.toString(),
       oldBalance4.plus(0.3 * roundInfo[2]).toString(),
       'Incorrect balance of the crowdfunder'
+    )
+  })
+
+  it('Check that funds are tracked correctly', async () => {
+    let reservedETH
+    let expendableFunds
+
+    await klerosgovernor.submitList(
+      [arbitrator.address],
+      ['100000000000000000'],
+      '0xc13517e1000000000000000000000000000000000000000000000000000000000000000b00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000001fa',
+      [101],
+      listDescription,
+      { from: submitter1, value: submissionDeposit }
+    )
+
+    await klerosgovernor.submitList(
+      [klerosgovernor.address],
+      [10],
+      '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
+      [36],
+      listDescription,
+      { from: submitter2, value: submissionDeposit }
+    )
+
+    reservedETH = (await klerosgovernor.reservedETH()).toNumber()
+    assert.equal(reservedETH, 2e18, 'Reserved funds are not tracked correctly')
+
+    const list2Info = await klerosgovernor.submissions(1)
+    const list2Hash = await list2Info[2]
+
+    await klerosgovernor.withdrawTransactionList(1, list2Hash, {
+      from: submitter2
+    })
+
+    reservedETH = (await klerosgovernor.reservedETH()).toNumber()
+    assert.equal(
+      reservedETH,
+      1e18,
+      'Reserved funds are not tracked correctly after withdrawal'
+    )
+
+    // Submit the same list again so we could have a dispute.
+    await klerosgovernor.submitList(
+      [klerosgovernor.address],
+      [10],
+      '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
+      [36],
+      listDescription,
+      { from: submitter2, value: submissionDeposit }
+    )
+
+    await increaseTime(submissionTimeout + 1)
+
+    await klerosgovernor.executeSubmissions({ from: general })
+
+    reservedETH = (await klerosgovernor.reservedETH()).toNumber()
+    assert.equal(
+      reservedETH,
+      1.9e18,
+      'Reserved funds are not tracked correctly after dispute creation'
+    )
+
+    await arbitrator.giveRuling(0, 2)
+
+    const loserAppealFee =
+      arbitrationFee + (arbitrationFee * loserMultiplier) / MULTIPLIER_DIVISOR
+
+    const winnerAppealFee =
+      arbitrationFee + (arbitrationFee * winnerMultiplier) / MULTIPLIER_DIVISOR
+
+    await klerosgovernor.fundAppeal(0, {
+      from: submitter1,
+      value: loserAppealFee
+    })
+
+    reservedETH = (await klerosgovernor.reservedETH()).toNumber()
+    assert.equal(
+      reservedETH,
+      20.7e17, // 2 submission deposits (2e18) - arbitrationFee (1e17) + loserFee(1.7e17)
+      'Reserved funds are not tracked correctly after loser funding'
+    )
+
+    await klerosgovernor.fundAppeal(1, {
+      from: other,
+      value: winnerAppealFee
+    })
+
+    reservedETH = (await klerosgovernor.reservedETH()).toNumber()
+    assert.equal(
+      reservedETH,
+      20.9e17, // Add winnerFee (1.2e17) - appealFee(1e17)
+      'Reserved funds are not tracked correctly after appeal creation'
+    )
+
+    await arbitrator.giveRuling(1, 1)
+    await increaseTime(appealTimeout + 1)
+    await arbitrator.giveRuling(1, 1)
+
+    // SumDeposit value (1.9e18) should be subtracted.
+    reservedETH = (await klerosgovernor.reservedETH()).toNumber()
+    assert.equal(
+      reservedETH,
+      1.9e17,
+      'Reserved funds are not tracked correctly after list execution'
+    )
+
+    // Check expendable funds while reserved funds are not yet depleted to make sure their values are not confused.
+    expendableFunds = (await klerosgovernor.getExpendableFunds()).toNumber()
+    assert.equal(
+      expendableFunds,
+      0,
+      'The contract should not have expendable funds yet'
+    )
+
+    await klerosgovernor.withdrawFeesAndRewards(submitter1, 0, 0, 0, 0, {
+      from: general
+    })
+
+    reservedETH = (await klerosgovernor.reservedETH()).toNumber()
+    assert.equal(reservedETH, 0, 'All reserved funds should be depleted')
+
+    await klerosgovernor.sendTransaction({ from: other, value: 3e18 })
+
+    expendableFunds = (await klerosgovernor.getExpendableFunds()).toNumber()
+    assert.equal(
+      expendableFunds,
+      3e18,
+      'Incorrect expendable funds value after funding'
+    )
+
+    await klerosgovernor.executeTransactionList(0, 0, 0, { from: general })
+    expendableFunds = (await klerosgovernor.getExpendableFunds()).toNumber()
+    assert.equal(
+      expendableFunds,
+      2.9e18,
+      'Incorrect expendable funds value after execution'
     )
   })
 })
