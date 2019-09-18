@@ -161,7 +161,7 @@ contract KlerosGovernor is Arbitrable{
         loserMultiplier = _loserMultiplier;
     }
 
-    /** @dev Change the arbitrator of the contract.
+    /** @dev Changes the arbitrator of the contract.
      *  @param _arbitrator The new trusted arbitrator.
      *  @param _arbitratorExtraData The extra data used by the new arbitrator.
      */
