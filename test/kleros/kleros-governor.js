@@ -1192,16 +1192,18 @@ contract('KlerosGovernor', function(accounts) {
       oldBalance1.toString(),
       'Balance of the first loser should stay the same'
     )
-    const oldBalance2 = await web3.eth.getBalance(submitter2)
+    let oldBalance2 = await web3.eth.getBalance(submitter2)
     await klerosgovernor.withdrawFeesAndRewards(submitter2, 0, 0, 0, 0, {
       from: general
     })
     let newBalance2 = await web3.eth.getBalance(submitter2)
     assert.equal(
       newBalance2.toString(),
-      oldBalance2.toString(),
-      'Balance of the second loser should stay the same after withdrawing fees of the first round'
+      oldBalance2.plus(arbitrationFee).toString(),
+      'Second loser should be reimbursed what he paid in the first round'
     )
+
+    oldBalance2 = await web3.eth.getBalance(submitter2)
     await klerosgovernor.withdrawFeesAndRewards(submitter2, 0, 1, 0, 0, {
       from: general
     })
@@ -1333,9 +1335,7 @@ contract('KlerosGovernor', function(accounts) {
     const newBalance3 = await web3.eth.getBalance(submitter3)
     assert.equal(
       newBalance3.toString(),
-      oldBalance3
-        .plus(0.2 * sharedAppealFee) // Third submitter is reimbursed the value of feeRewards/successfullyPaid * contribution: 2/3 * 0.3 * sharedAppealFee
-        .toString(),
+      oldBalance3.plus(0.3 * sharedAppealFee).toString(),
       'Incorrect balance of the 3rd submitter'
     )
     const oldBalance4 = await web3.eth.getBalance(other)

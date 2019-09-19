@@ -360,12 +360,12 @@ contract KlerosGovernor is Arbitrable{
         require(session.status == Status.Resolved, "Session has an ongoing dispute");
         uint reward;
         for (uint i = _cursor; i < session.submittedLists.length && (_count == 0 || i < _cursor + _count); i++){
-            // Allow to reimburse if funding of the last round was unsuccessful.
-            if (!round.hasPaid[i] && _round == session.rounds.length - 1) {
+            // Allow to reimburse if funding of the round was unsuccessful.
+            if (!round.hasPaid[i]) {
                 reward += round.contributions[_beneficiary][i];
                 round.contributions[_beneficiary][i] = 0;
-            } else if (session.ruling == 0) {
-                // Reimburse unspent fees proportionally if there is no winner and loser.
+            } else if (session.ruling == 0 || !round.hasPaid[session.ruling - 1]) {
+                // Reimburse unspent fees proportionally if there is no winner and loser. Also applies to the situation where the ultimate winner didn't pay appeal fees fully.
                 reward += round.successfullyPaid > 0
                     ? (round.contributions[_beneficiary][i] * round.feeRewards) / round.successfullyPaid
                     : 0;
