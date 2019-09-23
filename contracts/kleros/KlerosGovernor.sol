@@ -14,13 +14,16 @@ pragma solidity ^0.4.24;
 import "@kleros/kleros-interaction/contracts/standard/arbitration/Arbitrable.sol";
 import "@kleros/kleros-interaction/contracts/libraries/CappedMath.sol";
 
+/** @title KlerosGovernor
+ *  Note that this contract trusts that the Arbitrator is honest and will not re-enter or modify its costs during a call.
+ */
 contract KlerosGovernor is Arbitrable{
     using CappedMath for uint;
 
     /* *** Contract variables *** */
     enum Status {NoDispute, DisputeCreated, Resolved}
 
-    struct Session{
+    struct Session {
         Round[] rounds; // Tracks each appeal round of a dispute.
         uint ruling; // The ruling that was given in this session.
         uint disputeID; // ID given to the dispute of the session.
@@ -29,13 +32,13 @@ contract KlerosGovernor is Arbitrable{
         Status status; // Status of a session.
     }
 
-    struct Transaction{
+    struct Transaction {
         address target; // The address to call.
         uint value; // Value paid by governor contract that will be used as msg.value in the execution.
         bytes data; // Calldata of the transaction.
         bool executed; // Whether the transaction was already executed or not.
     }
-    struct Submission{
+    struct Submission {
         address submitter; // The one who submits the list.
         uint deposit; // Value of a deposit paid upon submission of the list.
         Transaction[] txs; // Transactions stored in the list. txs[_transactionIndex].
@@ -54,7 +57,7 @@ contract KlerosGovernor is Arbitrable{
 
     uint constant NO_SHADOW_WINNER = uint(-1); // The value that indicates that no one has successfully paid appeal fees in a current round. It's -1 and not 0, because 0 can be a valid submission index.
 
-    uint public expendableFunds; // Funds that are used for the execution of transactions to make sure the contract is not spending the money from submission deposits on transactions.
+    uint public reservedETH; // Sum of contract's submission deposits and appeal fees. These funds are not to be used in the execution of transactions.
 
     uint public submissionDeposit; // Value in wei that needs to be paid in order to submit the list. Note that this value should be higher than arbitration cost.
     uint public submissionTimeout; // Time in seconds allowed for submitting the lists. Once it's passed the contract enters the approval period.
@@ -65,7 +68,7 @@ contract KlerosGovernor is Arbitrable{
     uint public constant MULTIPLIER_DIVISOR = 10000; // Divisor parameter for multipliers.
 
     uint public lastApprovalTime; // The time of the last approval of a transaction list.
-    uint public shadowWinner; // Submission index of the first list that paid appeal fees. If it stays the only list that paid appeal fees it will win regardless of the final ruling.
+    uint public shadowWinner; // Submission index of the first list that paid appeal fees. If it stays the only list that paid appeal fees, it will win regardless of the final ruling.
 
     Submission[] public submissions; // Stores all created transaction lists. submissions[_listID].
     Session[] public sessions; // Stores all submitting sessions. sessions[_session].
@@ -75,6 +78,15 @@ contract KlerosGovernor is Arbitrable{
     modifier duringSubmissionPeriod() {require(now - lastApprovalTime <= submissionTimeout, "Submission time has ended"); _;}
     modifier duringApprovalPeriod() {require(now - lastApprovalTime > submissionTimeout, "Approval time has not started yet"); _;}
     modifier onlyByGovernor() {require(address(this) == msg.sender, "Only the governor can execute this"); _;}
+
+    /* *** Events *** */
+    /** @dev Emitted when a new list is submitted.
+     *  @param _listID The index of the transaction list in the array of lists.
+     *  @param _submitter // The one who submitted the list.
+     *  @param _description // The string in CSV format that contains labels of list's transactions.
+     *  Note that the submitter may give bad descriptions of correct actions, but this is to be seen as UI enhancement, not a critical feature and that would play against him in case of dispute.
+     */
+    event listSubmitted(uint _listID, address _submitter, string _description);
 
     /** @dev Constructor.
      *  @param _arbitrator The arbitrator of the contract.
@@ -86,7 +98,7 @@ contract KlerosGovernor is Arbitrable{
      *  @param _winnerMultiplier Multiplier of the appeal cost that the winner has to pay for a round. In basis points.
      *  @param _loserMultiplier Multiplier of the appeal cost that the loser has to pay for a round. In basis points.
      */
-    constructor(
+    constructor (
         Arbitrator _arbitrator,
         bytes _extraData,
         uint _submissionDeposit,
@@ -149,35 +161,43 @@ contract KlerosGovernor is Arbitrable{
         loserMultiplier = _loserMultiplier;
     }
 
+    /** @dev Changes the arbitrator of the contract.
+     *  @param _arbitrator The new trusted arbitrator.
+     *  @param _arbitratorExtraData The extra data used by the new arbitrator.
+     */
+    function changeArbitrator(Arbitrator _arbitrator, bytes _arbitratorExtraData) public onlyByGovernor duringSubmissionPeriod {
+        arbitrator = _arbitrator;
+        arbitratorExtraData = _arbitratorExtraData;
+    }
+
     /** @dev Creates transaction list based on input parameters and submits it for potential approval and execution.
      *  @param _target List of addresses to call.
      *  @param _value List of values required for respective addresses.
      *  @param _data Concatenated calldata of all transactions of this list.
      *  @param _dataSize List of lengths in bytes required to split calldata for its respective targets.
-     *  @return submissionID The ID that was given to the list upon submission. Starts with 0.
+     *  @param _description String in CSV format that describes list's transactions.
      */
-    function submitList(address[] _target, uint[] _value, bytes _data, uint[] _dataSize) public payable duringSubmissionPeriod returns(uint submissionID){
+    function submitList(address[] _target, uint[] _value, bytes _data, uint[] _dataSize, string _description) public payable duringSubmissionPeriod {
         require(_target.length == _value.length, "Incorrect input. Target and value arrays must be of the same length");
         require(_target.length == _dataSize.length, "Incorrect input. Target and datasize arrays must be of the same length");
         require(msg.value >= submissionDeposit, "Submission deposit must be paid");
         Session storage session = sessions[sessions.length - 1];
-        submissions.length++;
-        Submission storage submission = submissions[submissions.length - 1];
+        Submission storage submission = submissions[submissions.length++];
         submission.submitter = msg.sender;
         submission.deposit = submissionDeposit;
         bytes32 listHash;
         bytes32 prevTxHash;
-        uint pointer;
+        uint readingPosition;
         for (uint i = 0; i < _target.length; i++){
-            bytes memory tempData = new bytes(_dataSize[i]);
+            bytes memory readData = new bytes(_dataSize[i]);
             Transaction storage transaction = submission.txs[submission.txs.length++];
             transaction.target = _target[i];
             transaction.value = _value[i];
             for (uint j = 0; j < _dataSize[i]; j++){
-                tempData[j] = _data[j + pointer];
+                readData[j] = _data[j + readingPosition];
             }
-            transaction.data = tempData;
-            pointer += _dataSize[i];
+            transaction.data = readData;
+            readingPosition += _dataSize[i];
             require(uint(keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data))) > uint(prevTxHash), "The transactions are in incorrect order");
             listHash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data)), listHash));
             prevTxHash = keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data));
@@ -187,14 +207,17 @@ contract KlerosGovernor is Arbitrable{
         submission.listHash = listHash;
         submission.submissionTime = now;
         session.sumDeposit += submissionDeposit;
-        submissionID = session.submittedLists.push(submissions.length - 1);
+        session.submittedLists.push(submissions.length - 1);
+        emit listSubmitted(submissions.length - 1, msg.sender, _description);
 
         uint remainder = msg.value - submissionDeposit;
         if (remainder > 0) msg.sender.send(remainder);
+
+        reservedETH += submissionDeposit;
     }
 
     /** @dev Withdraws submitted transaction list. Reimburses submission deposit.
-     *  @param _submissionID The ID that was given to the list upon submission.
+     *  @param _submissionID Submission's index in the array of submitted lists of the current sesssion.
      *  @param _listHash Hash of a withdrawing list.
      */
     function withdrawTransactionList(uint _submissionID, bytes32 _listHash) public duringSubmissionPeriod {
@@ -209,9 +232,11 @@ contract KlerosGovernor is Arbitrable{
         session.submittedLists.length--;
         session.sumDeposit = session.sumDeposit.subCap(submission.deposit);
         msg.sender.transfer(submission.deposit);
+
+        reservedETH = reservedETH.subCap(submission.deposit);
     }
 
-    /** @dev Approves a transaction list or creates a dispute if more than one list was submitted.
+    /** @dev Approves a transaction list or creates a dispute if more than one list was submitted. TRUSTED.
      *  If nothing was submitted changes session.
      */
     function executeSubmissions() public duringApprovalPeriod {
@@ -230,17 +255,21 @@ contract KlerosGovernor is Arbitrable{
             lastApprovalTime = now;
             session.status = Status.Resolved;
             sessions.length++;
+
+            reservedETH = reservedETH.subCap(sumDeposit);
         } else {
             session.status = Status.DisputeCreated;
             uint arbitrationCost = arbitrator.arbitrationCost(arbitratorExtraData);
             session.disputeID = arbitrator.createDispute.value(arbitrationCost)(session.submittedLists.length, arbitratorExtraData);
             session.rounds.length++;
             session.sumDeposit = session.sumDeposit.subCap(arbitrationCost);
+
+            reservedETH = reservedETH.subCap(arbitrationCost);
         }
     }
 
-    /** @dev Takes up to the total amount required to fund a side of an appeal. Reimburses the rest. Creates an appeal if at least two lists are funded.
-     *  @param _submissionID The ID that was given to the list upon submission. Note that submissionID can be swapped with an ID of a withdrawn list in submission period.
+    /** @dev Takes up to the total amount required to fund a side of an appeal. Reimburses the rest. Creates an appeal if at least two lists are funded. TRUSTED.
+     *  @param _submissionID Submission's index in the array of submitted lists of the current sesssion. Note that submissionID can be swapped with an ID of a withdrawn list in submission period.
      */
     function fundAppeal(uint _submissionID) public payable {
         Session storage session = sessions[sessions.length - 1];
@@ -266,46 +295,37 @@ contract KlerosGovernor is Arbitrable{
         }
 
         Round storage round = session.rounds[session.rounds.length - 1];
+        require(!round.hasPaid[_submissionID], "Appeal fee has already been paid");
         uint appealCost = arbitrator.appealCost(session.disputeID, arbitratorExtraData);
         uint totalCost = appealCost.addCap((appealCost.mulCap(multiplier)) / MULTIPLIER_DIVISOR);
 
-        contribute(round, _submissionID, msg.sender, msg.value, totalCost);
+        // Take up to the amount necessary to fund the current round at the current costs.
+        uint contribution; // Amount contributed.
+        uint remainingETH; // Remaining ETH to send back.
+        (contribution, remainingETH) = calculateContribution(msg.value, totalCost.subCap(round.paidFees[_submissionID]));
+        round.contributions[msg.sender][_submissionID] += contribution;
+        round.paidFees[_submissionID] += contribution;
+        // Add contribution to reward when the fee funding is successful, otherwise it can be withdrawn later.
+        if (round.paidFees[_submissionID] >= totalCost){
+            round.hasPaid[_submissionID] = true;
+            if (shadowWinner == NO_SHADOW_WINNER)
+                shadowWinner = _submissionID;
+
+            round.feeRewards += round.paidFees[_submissionID];
+            round.successfullyPaid += round.paidFees[_submissionID];
+        }
+
+        // Reimburse leftover ETH.
+        msg.sender.send(remainingETH);
+        reservedETH += contribution;
 
         if (shadowWinner != NO_SHADOW_WINNER && shadowWinner != _submissionID && round.hasPaid[_submissionID]){
             shadowWinner = NO_SHADOW_WINNER;
             arbitrator.appeal.value(appealCost)(session.disputeID, arbitratorExtraData);
             session.rounds.length++;
             round.feeRewards = round.feeRewards.subCap(appealCost);
+            reservedETH = reservedETH.subCap(appealCost);
         }
-    }
-
-    /** @dev Makes a fee contribution for appeal rounds.
-     *  @param _round The round to contribute.
-     *  @param _submissionID The submission for which to contribute.
-     *  @param _contributor The contributor.
-     *  @param _amount The amount contributed.
-     *  @param _totalRequired The total amount required for this side.
-     */
-    function contribute(Round storage _round, uint _submissionID, address _contributor, uint _amount, uint _totalRequired) internal {
-        require(!_round.hasPaid[_submissionID], "Appeal fee has already been paid");
-        // Take up to the amount necessary to fund the current round at the current costs.
-        uint contribution; // Amount contributed.
-        uint remainingETH; // Remaining ETH to send back.
-        (contribution, remainingETH) = calculateContribution(_amount, _totalRequired.subCap(_round.paidFees[_submissionID]));
-        _round.contributions[_contributor][_submissionID] += contribution;
-        _round.paidFees[_submissionID] += contribution;
-        // Add contribution to reward when the fee funding is successful, otherwise it can be withdrawn later.
-        if (_round.paidFees[_submissionID] >= _totalRequired){
-            _round.hasPaid[_submissionID] = true;
-            if (shadowWinner == NO_SHADOW_WINNER)
-                shadowWinner = _submissionID;
-
-            _round.feeRewards += _round.paidFees[_submissionID];
-            _round.successfullyPaid += _round.paidFees[_submissionID];
-        }
-
-        // Reimburse leftover ETH.
-        _contributor.send(remainingETH);
     }
 
     /** @dev Returns the contribution value and remainder from available ETH and required amount.
@@ -320,10 +340,11 @@ contract KlerosGovernor is Arbitrable{
         returns(uint taken, uint remainder)
     {
         if (_requiredAmount > _available)
-            return (_available, 0); // Take whatever is available, return 0 as leftover ETH.
-
-        remainder = _available - _requiredAmount;
-        return (_requiredAmount, remainder);
+            taken = _available;
+        else {
+            taken = _requiredAmount;
+            remainder = _available - _requiredAmount;
+        }
     }
 
     /** @dev Sends the fee stake rewards and reimbursements proportional to the contributions made to the winner of a dispute. Reimburses contributions if there is no winner.
@@ -339,12 +360,12 @@ contract KlerosGovernor is Arbitrable{
         require(session.status == Status.Resolved, "Session has an ongoing dispute");
         uint reward;
         for (uint i = _cursor; i < session.submittedLists.length && (_count == 0 || i < _cursor + _count); i++){
-            // Allow to reimburse if funding of the last round was unsuccessful.
-            if (!round.hasPaid[i] && _round == session.rounds.length - 1) {
+            // Allow to reimburse if funding of the round was unsuccessful.
+            if (!round.hasPaid[i]) {
                 reward += round.contributions[_beneficiary][i];
                 round.contributions[_beneficiary][i] = 0;
-            } else if (session.ruling == 0) {
-                // Reimburse unspent fees proportionally if there is no winner and loser.
+            } else if (session.ruling == 0 || !round.hasPaid[session.ruling - 1]) {
+                // Reimburse unspent fees proportionally if there is no winner and loser. Also applies to the situation where the ultimate winner didn't pay appeal fees fully.
                 reward += round.successfullyPaid > 0
                     ? (round.contributions[_beneficiary][i] * round.feeRewards) / round.successfullyPaid
                     : 0;
@@ -359,6 +380,7 @@ contract KlerosGovernor is Arbitrable{
         }
 
         _beneficiary.send(reward); // It is the user responsibility to accept ETH.
+        reservedETH = reservedETH.subCap(reward);
     }
 
     /** @dev Gives a ruling for a dispute. Must be called by the arbitrator.
@@ -371,11 +393,11 @@ contract KlerosGovernor is Arbitrable{
         require(msg.sender == address(arbitrator), "Must be called by the arbitrator");
         require(session.status == Status.DisputeCreated, "The dispute has already been resolved");
         require(_ruling <= session.submittedLists.length, "Ruling is out of bounds");
-        uint ruling = _ruling;
-        if (shadowWinner != NO_SHADOW_WINNER)
-            ruling = shadowWinner + 1;
 
-        executeRuling(_disputeID, ruling);
+        if (shadowWinner != NO_SHADOW_WINNER)
+            executeRuling(_disputeID, shadowWinner + 1);
+        else
+            executeRuling(_disputeID, _ruling);
     }
 
     /** @dev Executes a ruling of a dispute.
@@ -390,6 +412,9 @@ contract KlerosGovernor is Arbitrable{
             submission.approved = true;
             submission.submitter.send(session.sumDeposit);
         }
+        // If the ruiling is "0" the reserved funds of this session become expendable.
+        reservedETH = reservedETH.subCap(session.sumDeposit);
+
         session.sumDeposit = 0;
         shadowWinner = NO_SHADOW_WINNER;
         lastApprovalTime = now;
@@ -398,7 +423,7 @@ contract KlerosGovernor is Arbitrable{
         sessions.length++;
     }
 
-    /** @dev Executes selected transactions of the list.
+    /** @dev Executes selected transactions of the list. UNTRUSTED.
      *  @param _listID The index of the transaction list in the array of lists.
      *  @param _cursor Index of the transaction from which to start executing.
      *  @param _count Number of transactions to execute. Executes until the end if set to "0" or number higher than number of transactions in the list.
@@ -408,8 +433,8 @@ contract KlerosGovernor is Arbitrable{
         require(submission.approved, "Can't execute list that wasn't approved");
         for (uint i = _cursor; i < submission.txs.length && (_count == 0 || i < _cursor + _count); i++){
             Transaction storage transaction = submission.txs[i];
+            uint expendableFunds = getExpendableFunds();
             if (!transaction.executed && transaction.value <= expendableFunds){
-                expendableFunds -= transaction.value;
                 transaction.executed = transaction.target.call.value(transaction.value)(transaction.data); // solium-disable-line security/no-call-value
             }
         }
@@ -417,15 +442,13 @@ contract KlerosGovernor is Arbitrable{
 
     /** @dev Fallback function to receive funds for the execution of transactions.
      */
-    function () public payable {
-        expendableFunds += msg.value;
-    }
+    function () public payable {}
 
-    /** @dev Gets the sum of contract funds, particularly submission deposits and appeal fees, that are not used for the execution of transactions.
-     *  @return Contract balance without expendable funds.
+    /** @dev Gets the sum of contract funds that are used for the execution of transactions.
+     *  @return Contract balance without reserved ETH.
      */
-    function getSumOfDeposits() public view returns (uint) {
-        return address(this).balance.subCap(expendableFunds);
+    function getExpendableFunds() public view returns (uint) {
+        return address(this).balance.subCap(reservedETH);
     }
 
     /** @dev Gets the info of the specified transaction in the specified list.
