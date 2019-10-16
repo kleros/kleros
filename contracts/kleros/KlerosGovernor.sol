@@ -362,15 +362,15 @@ contract KlerosGovernor is Arbitrable{
         uint reward;
         // Allow to reimburse if funding of the round was unsuccessful.
         if (!round.hasPaid[_submissionID]) {
-            reward += round.contributions[_beneficiary][_submissionID];
+            reward = round.contributions[_beneficiary][_submissionID];
         } else if (session.ruling == 0 || !round.hasPaid[session.ruling - 1]) {
             // Reimburse unspent fees proportionally if there is no winner and loser. Also applies to the situation where the ultimate winner didn't pay appeal fees fully.
-            reward += round.successfullyPaid > 0
+            reward = round.successfullyPaid > 0
                 ? (round.contributions[_beneficiary][_submissionID] * round.feeRewards) / round.successfullyPaid
                 : 0;
         } else if (session.ruling - 1 == _submissionID) {
             // Reward the winner. Subtract 1 from ruling to sync submissionID with arbitrator's choice.
-            reward += round.paidFees[_submissionID] > 0
+            reward = round.paidFees[_submissionID] > 0
                 ? (round.contributions[_beneficiary][_submissionID] * round.feeRewards) / round.paidFees[_submissionID]
                 : 0;
         }

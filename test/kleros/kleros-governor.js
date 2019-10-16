@@ -407,7 +407,7 @@ contract('KlerosGovernor', function(accounts) {
 
   it('Should not be possible to withdraw in the 2nd half of the submission period', async () => {
     // Increase time in such way to check that the call throws because of the submission timeout, and not because of withdraw timeout.
-    // Submission timeout is 1800 and withdraw timeout is 60.
+    // Submission timeout is 3600 and withdraw timeout is 60.
     await increaseTime(1790)
     await klerosgovernor.submitList(
       [klerosgovernor.address],
