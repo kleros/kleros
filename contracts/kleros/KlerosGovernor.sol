@@ -16,6 +16,7 @@ import "@kleros/kleros-interaction/contracts/libraries/CappedMath.sol";
 
 /** @title KlerosGovernor
  *  Note that this contract trusts that the Arbitrator is honest and will not re-enter or modify its costs during a call.
+ *  Also note that tx.origin should not matter in contracts called by the governor.
  */
 contract KlerosGovernor is Arbitrable{
     using CappedMath for uint;
@@ -129,7 +130,7 @@ contract KlerosGovernor is Arbitrable{
     /** @dev Changes the time allocated for submission.
      *  @param _submissionTimeout The new duration of submission time. In seconds.
      */
-    function changeSubmissionTimeout(uint _submissionTimeout) public onlyByGovernor {
+    function changeSubmissionTimeout(uint _submissionTimeout) public onlyByGovernor duringSubmissionPeriod {
         submissionTimeout = _submissionTimeout;
     }
 
@@ -194,11 +195,11 @@ contract KlerosGovernor is Arbitrable{
             transaction.target = _target[i];
             transaction.value = _value[i];
             for (uint j = 0; j < _dataSize[i]; j++){
-                readData[j] = _data[j + readingPosition];
+                readData[j] = _data[readingPosition + j];
             }
             transaction.data = readData;
             readingPosition += _dataSize[i];
-            require(uint(keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data))) > uint(prevTxHash), "The transactions are in incorrect order");
+            require(uint(keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data))) >= uint(prevTxHash), "The transactions are in incorrect order");
             listHash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data)), listHash));
             prevTxHash = keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data));
         }
@@ -220,7 +221,8 @@ contract KlerosGovernor is Arbitrable{
      *  @param _submissionID Submission's index in the array of submitted lists of the current sesssion.
      *  @param _listHash Hash of a withdrawing list.
      */
-    function withdrawTransactionList(uint _submissionID, bytes32 _listHash) public duringSubmissionPeriod {
+    function withdrawTransactionList(uint _submissionID, bytes32 _listHash) public {
+        require(now - lastApprovalTime <= submissionTimeout / 2, "Lists can be withdrawn only in the first half of the submission period");
         Session storage session = sessions[sessions.length - 1];
         Submission storage submission = submissions[session.submittedLists[_submissionID]];
         // This require statement is an extra check to prevent _submissionID linking to the wrong list because of index swap during withdrawal.
@@ -351,33 +353,28 @@ contract KlerosGovernor is Arbitrable{
      *  @param _beneficiary The address that made contributions to a request.
      *  @param _session Submitting session which rounds to query.
      *  @param _round The round from which to withdraw.
-     *  @param _cursor SubmissionID from which to start withdrawing.
-     *  @param _count Number of submissions to query contributions from. Executes until the end if set to "0" or number higher than number of submissions in session.
+     *  @param _submissionID Submission's index in the array of submitted lists of the queried sesssion which sender contributed to.
      */
-    function withdrawFeesAndRewards(address _beneficiary, uint _session, uint _round, uint _cursor, uint _count) public {
+    function withdrawFeesAndRewards(address _beneficiary, uint _session, uint _round, uint _submissionID) public {
         Session storage session = sessions[_session];
         Round storage round = session.rounds[_round];
         require(session.status == Status.Resolved, "Session has an ongoing dispute");
         uint reward;
-        for (uint i = _cursor; i < session.submittedLists.length && (_count == 0 || i < _cursor + _count); i++){
-            // Allow to reimburse if funding of the round was unsuccessful.
-            if (!round.hasPaid[i]) {
-                reward += round.contributions[_beneficiary][i];
-                round.contributions[_beneficiary][i] = 0;
-            } else if (session.ruling == 0 || !round.hasPaid[session.ruling - 1]) {
-                // Reimburse unspent fees proportionally if there is no winner and loser. Also applies to the situation where the ultimate winner didn't pay appeal fees fully.
-                reward += round.successfullyPaid > 0
-                    ? (round.contributions[_beneficiary][i] * round.feeRewards) / round.successfullyPaid
-                    : 0;
-                round.contributions[_beneficiary][i] = 0;
-            } else if (session.ruling - 1 == i) {
-                // Reward the winner. Subtract 1 from ruling to sync submissionID with arbitrator's choice.
-                reward += round.paidFees[i] > 0
-                    ? (round.contributions[_beneficiary][i] * round.feeRewards) / round.paidFees[i]
-                    : 0;
-                round.contributions[_beneficiary][i] = 0;
-            }
+        // Allow to reimburse if funding of the round was unsuccessful.
+        if (!round.hasPaid[_submissionID]) {
+            reward += round.contributions[_beneficiary][_submissionID];
+        } else if (session.ruling == 0 || !round.hasPaid[session.ruling - 1]) {
+            // Reimburse unspent fees proportionally if there is no winner and loser. Also applies to the situation where the ultimate winner didn't pay appeal fees fully.
+            reward += round.successfullyPaid > 0
+                ? (round.contributions[_beneficiary][_submissionID] * round.feeRewards) / round.successfullyPaid
+                : 0;
+        } else if (session.ruling - 1 == _submissionID) {
+            // Reward the winner. Subtract 1 from ruling to sync submissionID with arbitrator's choice.
+            reward += round.paidFees[_submissionID] > 0
+                ? (round.contributions[_beneficiary][_submissionID] * round.feeRewards) / round.paidFees[_submissionID]
+                : 0;
         }
+        round.contributions[_beneficiary][_submissionID] = 0;
 
         _beneficiary.send(reward); // It is the user responsibility to accept ETH.
         reservedETH = reservedETH.subCap(reward);
@@ -435,7 +432,12 @@ contract KlerosGovernor is Arbitrable{
             Transaction storage transaction = submission.txs[i];
             uint expendableFunds = getExpendableFunds();
             if (!transaction.executed && transaction.value <= expendableFunds){
-                transaction.executed = transaction.target.call.value(transaction.value)(transaction.data); // solium-disable-line security/no-call-value
+                bool callResult = transaction.target.call.value(transaction.value)(transaction.data); // solium-disable-line security/no-call-value
+                // An extra check to prevent re-entrancy through target call.
+                if (callResult == true) {
+                    require(!transaction.executed, "This transaction has already been executed");
+                    transaction.executed = true;
+                }
             }
         }
     }
@@ -528,6 +530,7 @@ contract KlerosGovernor is Arbitrable{
     }
 
     /** @dev Gets the array of submitted lists in the session.
+     *  Note that this function is O(n), where n is the number of submissions in the session. This could exceed the gas limit, therefore this function should only be used for interface display and not by other contracts.
      *  @param _session The ID of the session.
      *  @return submittedLists Indexes of lists that were submitted during the session.
      */
