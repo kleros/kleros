@@ -405,6 +405,27 @@ contract('KlerosGovernor', function(accounts) {
     )
   })
 
+  it('Should not be possible to withdraw in the 2nd half of the submission period', async () => {
+    // Increase time in such way to check that the call throws because of the submission timeout, and not because of withdraw timeout.
+    // Submission timeout is 3600 and withdraw timeout is 60.
+    await increaseTime(1790)
+    await klerosgovernor.submitList(
+      [klerosgovernor.address],
+      [10],
+      '0xfdea',
+      [2],
+      listDescription,
+      { from: submitter1, value: submissionDeposit }
+    )
+
+    await increaseTime(11)
+    const listInfo = await klerosgovernor.submissions(0)
+    const listHash = await listInfo[2]
+    await expectThrow(
+      klerosgovernor.withdrawTransactionList(0, listHash, { from: submitter1 })
+    )
+  })
+
   it('Should switch to approval period if no lists were submitted', async () => {
     // Shouldn't be possible to switch to approval period before timeout
     await expectThrow(klerosgovernor.executeSubmissions({ from: general }))
@@ -1123,7 +1144,7 @@ contract('KlerosGovernor', function(accounts) {
 
     // Check that it's not possible to withdraw fees if dispute is unresolved.
     await expectThrow(
-      klerosgovernor.withdrawFeesAndRewards(submitter1, 0, 0, 0, 0, {
+      klerosgovernor.withdrawFeesAndRewards(submitter1, 0, 0, 0, {
         from: general
       })
     )
@@ -1183,7 +1204,7 @@ contract('KlerosGovernor', function(accounts) {
     await arbitrator.giveRuling(1, 3)
 
     const oldBalance1 = await web3.eth.getBalance(submitter1)
-    await klerosgovernor.withdrawFeesAndRewards(submitter1, 0, 0, 0, 0, {
+    await klerosgovernor.withdrawFeesAndRewards(submitter1, 0, 0, 0, {
       from: general
     })
     const newBalance1 = await web3.eth.getBalance(submitter1)
@@ -1193,7 +1214,7 @@ contract('KlerosGovernor', function(accounts) {
       'Balance of the first loser should stay the same'
     )
     let oldBalance2 = await web3.eth.getBalance(submitter2)
-    await klerosgovernor.withdrawFeesAndRewards(submitter2, 0, 0, 0, 0, {
+    await klerosgovernor.withdrawFeesAndRewards(submitter2, 0, 0, 1, {
       from: general
     })
     let newBalance2 = await web3.eth.getBalance(submitter2)
@@ -1204,7 +1225,7 @@ contract('KlerosGovernor', function(accounts) {
     )
 
     oldBalance2 = await web3.eth.getBalance(submitter2)
-    await klerosgovernor.withdrawFeesAndRewards(submitter2, 0, 1, 0, 0, {
+    await klerosgovernor.withdrawFeesAndRewards(submitter2, 0, 1, 1, {
       from: general
     })
     newBalance2 = await web3.eth.getBalance(submitter2)
@@ -1218,7 +1239,7 @@ contract('KlerosGovernor', function(accounts) {
     )
 
     const oldBalance3 = await web3.eth.getBalance(submitter3)
-    await klerosgovernor.withdrawFeesAndRewards(submitter3, 0, 0, 0, 0, {
+    await klerosgovernor.withdrawFeesAndRewards(submitter3, 0, 0, 2, {
       from: general
     })
     const newBalance3 = await web3.eth.getBalance(submitter3) // winner
@@ -1228,7 +1249,7 @@ contract('KlerosGovernor', function(accounts) {
       'Incorrect balance of the first crowdfunder after funding winning list'
     )
     const oldBalance4 = await web3.eth.getBalance(other)
-    await klerosgovernor.withdrawFeesAndRewards(other, 0, 0, 0, 0, {
+    await klerosgovernor.withdrawFeesAndRewards(other, 0, 0, 2, {
       from: general
     })
     const newBalance4 = await web3.eth.getBalance(other)
@@ -1308,7 +1329,7 @@ contract('KlerosGovernor', function(accounts) {
     await arbitrator.giveRuling(1, 0)
 
     const oldBalance1 = await web3.eth.getBalance(submitter1)
-    await klerosgovernor.withdrawFeesAndRewards(submitter1, 0, 0, 0, 0, {
+    await klerosgovernor.withdrawFeesAndRewards(submitter1, 0, 0, 0, {
       from: general
     })
     const newBalance1 = await web3.eth.getBalance(submitter1)
@@ -1318,7 +1339,7 @@ contract('KlerosGovernor', function(accounts) {
       'Incorrect balance of the first submitter'
     )
     const oldBalance2 = await web3.eth.getBalance(submitter2)
-    await klerosgovernor.withdrawFeesAndRewards(submitter2, 0, 0, 0, 0, {
+    await klerosgovernor.withdrawFeesAndRewards(submitter2, 0, 0, 1, {
       from: general
     })
     const newBalance2 = await web3.eth.getBalance(submitter2)
@@ -1329,7 +1350,7 @@ contract('KlerosGovernor', function(accounts) {
     )
 
     const oldBalance3 = await web3.eth.getBalance(submitter3)
-    await klerosgovernor.withdrawFeesAndRewards(submitter3, 0, 0, 0, 0, {
+    await klerosgovernor.withdrawFeesAndRewards(submitter3, 0, 0, 2, {
       from: general
     })
     const newBalance3 = await web3.eth.getBalance(submitter3)
@@ -1339,7 +1360,10 @@ contract('KlerosGovernor', function(accounts) {
       'Incorrect balance of the 3rd submitter'
     )
     const oldBalance4 = await web3.eth.getBalance(other)
-    await klerosgovernor.withdrawFeesAndRewards(other, 0, 0, 0, 0, {
+    await klerosgovernor.withdrawFeesAndRewards(other, 0, 0, 0, {
+      from: general
+    })
+    await klerosgovernor.withdrawFeesAndRewards(other, 0, 0, 1, {
       from: general
     })
     const newBalance4 = await web3.eth.getBalance(other)
@@ -1462,7 +1486,7 @@ contract('KlerosGovernor', function(accounts) {
       'The contract should not have expendable funds yet'
     )
 
-    await klerosgovernor.withdrawFeesAndRewards(submitter1, 0, 0, 0, 0, {
+    await klerosgovernor.withdrawFeesAndRewards(submitter1, 0, 0, 0, {
       from: general
     })
 
