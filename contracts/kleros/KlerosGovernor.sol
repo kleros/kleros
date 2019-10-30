@@ -87,7 +87,7 @@ contract KlerosGovernor is Arbitrable{
      *  @param _description The string in CSV format that contains labels of list's transactions.
      *  Note that the submitter may give bad descriptions of correct actions, but this is to be seen as UI enhancement, not a critical feature and that would play against him in case of dispute.
      */
-    event listSubmitted(uint _listID, address _submitter, string _description);
+    event ListSubmitted(uint indexed _listID, address indexed _submitter, string _description);
 
     /** @dev Constructor.
      *  @param _arbitrator The arbitrator of the contract. It should support appealPeriod.
@@ -210,7 +210,7 @@ contract KlerosGovernor is Arbitrable{
         submission.submissionTime = now;
         session.sumDeposit += submissionDeposit;
         session.submittedLists.push(submissions.length - 1);
-        emit listSubmitted(submissions.length - 1, msg.sender, _description);
+        emit ListSubmitted(submissions.length - 1, msg.sender, _description);
 
         uint remainder = msg.value - submissionDeposit;
         if (remainder > 0) msg.sender.send(remainder);

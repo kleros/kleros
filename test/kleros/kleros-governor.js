@@ -202,7 +202,7 @@ contract('KlerosGovernor', function(accounts) {
 
     assert.equal(
       submissionTx.logs[0].event,
-      'listSubmitted',
+      'ListSubmitted',
       'The event has not been created'
     )
     assert.equal(
