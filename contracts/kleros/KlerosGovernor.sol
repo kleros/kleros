@@ -90,7 +90,7 @@ contract KlerosGovernor is Arbitrable{
     event listSubmitted(uint _listID, address _submitter, string _description);
 
     /** @dev Constructor.
-     *  @param _arbitrator The arbitrator of the contract.
+     *  @param _arbitrator The arbitrator of the contract. It should support appealPeriod.
      *  @param _extraData Extra data for the arbitrator.
      *  @param _submissionDeposit The deposit required for submission.
      *  @param _submissionTimeout Time in seconds allocated for submitting transaction list.
