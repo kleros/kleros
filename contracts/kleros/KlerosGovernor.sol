@@ -83,8 +83,8 @@ contract KlerosGovernor is Arbitrable{
     /* *** Events *** */
     /** @dev Emitted when a new list is submitted.
      *  @param _listID The index of the transaction list in the array of lists.
-     *  @param _submitter // The one who submitted the list.
-     *  @param _description // The string in CSV format that contains labels of list's transactions.
+     *  @param _submitter The one who submitted the list.
+     *  @param _description The string in CSV format that contains labels of list's transactions.
      *  Note that the submitter may give bad descriptions of correct actions, but this is to be seen as UI enhancement, not a critical feature and that would play against him in case of dispute.
      */
     event listSubmitted(uint _listID, address _submitter, string _description);
