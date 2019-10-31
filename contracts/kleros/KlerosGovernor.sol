@@ -172,6 +172,7 @@ contract KlerosGovernor is Arbitrable{
     }
 
     /** @dev Creates transaction list based on input parameters and submits it for potential approval and execution.
+     *  Transactions must be ordered by their hash.
      *  @param _target List of addresses to call.
      *  @param _value List of values required for respective addresses.
      *  @param _data Concatenated calldata of all transactions of this list.
