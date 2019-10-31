@@ -141,22 +141,22 @@ contract KlerosGovernor is Arbitrable{
         withdrawTimeout = _withdrawTimeout;
     }
 
-    /** @dev Changes the percentage of appeal fees that must be added to appeal cost when there is no winner or loser.
-     *  @param _sharedMultiplier The new shared mulitplier value.
+    /** @dev Changes the proportion of appeal fees that must be added to appeal cost when there is no winner or loser.
+     *  @param _sharedMultiplier The new shared multiplier value in basis points.
      */
     function changeSharedMultiplier(uint _sharedMultiplier) public onlyByGovernor {
         sharedMultiplier = _sharedMultiplier;
     }
 
-    /** @dev Changes the percentage of appeal fees that must be added to appeal cost for the winning party.
-     *  @param _winnerMultiplier The new winner mulitplier value.
+    /** @dev Changes the proportion of appeal fees that must be added to appeal cost for the winning party.
+     *  @param _winnerMultiplier The new winner multiplier value in basis points.
      */
     function changeWinnerMultiplier(uint _winnerMultiplier) public onlyByGovernor {
         winnerMultiplier = _winnerMultiplier;
     }
 
-    /** @dev Changes the percentage of appeal fees that must be added to appeal cost for the losing party.
-     *  @param _loserMultiplier The new loser mulitplier value.
+    /** @dev Changes the proportion of appeal fees that must be added to appeal cost for the losing party.
+     *  @param _loserMultiplier The new loser multiplier value in basis points.
      */
     function changeLoserMultiplier(uint _loserMultiplier) public onlyByGovernor {
         loserMultiplier = _loserMultiplier;
