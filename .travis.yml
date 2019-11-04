@@ -8,9 +8,8 @@ cache:
 install: yarn install --pure-lockfile
 script:
   - yarn run lint
-  - yarn test
-  - if [ -n "$COVERALLS_REPO_TOKEN" ]; then travis_wait 30 yarn run test:coveralls; fi
-  - yarn run build
+  - yarn run test:ganache
+  - yarn run test:truffle
 notifications:
   kleros:
     slack: 'kleros:Ub8n81EgKJ3iRrMDyWyQIVJp'
