@@ -9,27 +9,27 @@ contract('SortitionSumTreeFactory', () =>
     const sortitionSumTreeFactory = await ExposedSortitionSumTreeFactory.new()
 
     // Create tree and populate with 4 candidates
-    const tree = { key: '0x01', K: 2 }
+    const tree = { K: 2, key: '0x01' }
     const candidates = {
-      bob: {
+      ali: {
         ID:
           '0x0000000000000000000000000000000000000000000000000000000000000002',
         treeIndex: 0,
         value: 15
       },
-      dave: {
+      bob: {
         ID:
           '0x0000000000000000000000000000000000000000000000000000000000000004',
         treeIndex: 0,
         value: 5
       },
-      alice: {
+      carl: {
         ID:
           '0x0000000000000000000000000000000000000000000000000000000000000001',
         treeIndex: 0,
         value: 10
       },
-      carl: {
+      deli: {
         ID:
           '0x0000000000000000000000000000000000000000000000000000000000000003',
         treeIndex: 0,
@@ -50,41 +50,41 @@ contract('SortitionSumTreeFactory', () =>
       )
     }
 
-    // Test drawing Bob with 13 and Carl with 27
+    // Test drawing ali with 13 and deli with 27
     expect(await sortitionSumTreeFactory._draw(tree.key, 13)).to.equal(
-      candidates.bob.ID
+      candidates.ali.ID
     )
     expect(await sortitionSumTreeFactory._draw(tree.key, 27)).to.equal(
+      candidates.deli.ID
+    )
+
+    // Set carl to 14 to draw her with 13 and then set her back to 10 to draw ali again
+    await sortitionSumTreeFactory._set(tree.key, 14, candidates.carl.ID)
+    expect(await sortitionSumTreeFactory._draw(tree.key, 13)).to.equal(
       candidates.carl.ID
     )
-
-    // Set Alice to 14 to draw her with 13 and then set her back to 10 to draw Bob again
-    await sortitionSumTreeFactory._set(tree.key, 14, candidates.alice.ID)
+    await sortitionSumTreeFactory._set(tree.key, 10, candidates.carl.ID)
     expect(await sortitionSumTreeFactory._draw(tree.key, 13)).to.equal(
-      candidates.alice.ID
+      candidates.ali.ID
     )
-    await sortitionSumTreeFactory._set(tree.key, 10, candidates.alice.ID)
-    expect(await sortitionSumTreeFactory._draw(tree.key, 13)).to.equal(
+
+    // Remove deli to draw bob with 27 and add him back in to draw him again
+    await sortitionSumTreeFactory._set(tree.key, 0, candidates.deli.ID)
+    expect(await sortitionSumTreeFactory._draw(tree.key, 27)).to.equal(
       candidates.bob.ID
     )
-
-    // Remove Carl to draw Dave with 27 and add him back in to draw him again
-    await sortitionSumTreeFactory._set(tree.key, 0, candidates.carl.ID)
-    expect(await sortitionSumTreeFactory._draw(tree.key, 27)).to.equal(
-      candidates.dave.ID
-    )
-    candidates.carl.treeIndex = await sortitionSumTreeFactory._set.call(
+    candidates.deli.treeIndex = await sortitionSumTreeFactory._set.call(
       tree.key,
-      candidates.carl.value,
-      candidates.carl.ID
+      candidates.deli.value,
+      candidates.deli.ID
     )
     await sortitionSumTreeFactory._set(
       tree.key,
-      candidates.carl.value,
-      candidates.carl.ID
+      candidates.deli.value,
+      candidates.deli.ID
     )
     expect(await sortitionSumTreeFactory._draw(tree.key, 27)).to.equal(
-      candidates.carl.ID
+      candidates.deli.ID
     )
 
     // Test stake view
