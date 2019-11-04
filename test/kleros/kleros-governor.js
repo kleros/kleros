@@ -202,7 +202,7 @@ contract('KlerosGovernor', function(accounts) {
 
     assert.equal(
       submissionTx.logs[0].event,
-      'listSubmitted',
+      'ListSubmitted',
       'The event has not been created'
     )
     assert.equal(
@@ -220,7 +220,11 @@ contract('KlerosGovernor', function(accounts) {
       listDescription,
       'The event has wrong list description'
     )
-
+    assert.equal(
+      submissionTx.logs[0].args._session.toNumber(),
+      0,
+      'The event has wrong session number'
+    )
     assert.equal(
       submission[0],
       submitter1,

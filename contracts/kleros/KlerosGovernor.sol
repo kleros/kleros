@@ -84,10 +84,11 @@ contract KlerosGovernor is Arbitrable{
     /** @dev Emitted when a new list is submitted.
      *  @param _listID The index of the transaction list in the array of lists.
      *  @param _submitter The one who submitted the list.
+     *  @param _session The number of the current session.
      *  @param _description The string in CSV format that contains labels of list's transactions.
      *  Note that the submitter may give bad descriptions of correct actions, but this is to be seen as UI enhancement, not a critical feature and that would play against him in case of dispute.
      */
-    event listSubmitted(uint _listID, address _submitter, string _description);
+    event ListSubmitted(uint indexed _listID, address indexed _submitter, uint _session, string _description);
 
     /** @dev Constructor.
      *  @param _arbitrator The arbitrator of the contract. It should support appealPeriod.
@@ -210,7 +211,7 @@ contract KlerosGovernor is Arbitrable{
         submission.submissionTime = now;
         session.sumDeposit += submissionDeposit;
         session.submittedLists.push(submissions.length - 1);
-        emit listSubmitted(submissions.length - 1, msg.sender, _description);
+        emit ListSubmitted(submissions.length - 1, msg.sender, sessions.length - 1, _description);
 
         uint remainder = msg.value - submissionDeposit;
         if (remainder > 0) msg.sender.send(remainder);
@@ -218,7 +219,7 @@ contract KlerosGovernor is Arbitrable{
         reservedETH += submissionDeposit;
     }
 
-    /** @dev Withdraws submitted transaction list. Reimburses submission deposit. 
+    /** @dev Withdraws submitted transaction list. Reimburses submission deposit.
      *  Withdrawal is only possible during the first half of the submission period and during withdrawPeriod seconds after the submission is made.
      *  @param _submissionID Submission's index in the array of submitted lists of the current sesssion.
      *  @param _listHash Hash of a withdrawing list.
