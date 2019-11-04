@@ -31,13 +31,7 @@ const generateSubcourts = (
   const newMinStake = Math.max(randomInt(100), minStake)
   const subcourtTree = {
     ID,
-    hiddenVotes: ID % 2 === 0,
-    minStake: newMinStake,
     alpha: randomInt(1000),
-    jurorFee: randomInt(100),
-    jurorsForJump: randomInt(15, 3),
-    timesPerPeriod: [...new Array(4)].map(_ => randomInt(5)),
-    sortitionSumTreeK: randomInt(2, 5),
     children:
       depth > 1
         ? [...new Array(K)].map(
@@ -50,7 +44,13 @@ const generateSubcourts = (
                 subcourtMap
               ).subcourtTree
           )
-        : undefined
+        : undefined,
+    hiddenVotes: ID % 2 === 0,
+    jurorFee: randomInt(100),
+    jurorsForJump: randomInt(15, 3),
+    minStake: newMinStake,
+    sortitionSumTreeK: randomInt(2, 5),
+    timesPerPeriod: [...new Array(4)].map(_ => randomInt(5))
   }
   if (ID === 0) subcourtTree.parent = 0
   else {
@@ -61,7 +61,7 @@ const generateSubcourts = (
         subcourtTree.children && subcourtTree.children.map(child => child.ID)
     }
   }
-  return { subcourtTree, subcourtMap }
+  return { subcourtMap, subcourtTree }
 }
 const checkOnlyByGovernor = async (
   getter,
@@ -110,8 +110,8 @@ contract('KlerosLiquid', accounts => {
     minStakingTime = 1
     maxDrawingTime = 1
     const {
-      subcourtTree: _subcourtTree,
-      subcourtMap: _subcourtMap
+      subcourtMap: _subcourtMap,
+      subcourtTree: _subcourtTree
     } = generateSubcourts(randomInt(4, 2), 3)
     subcourtTree = _subcourtTree
     subcourtMap = _subcourtMap
@@ -240,31 +240,31 @@ contract('KlerosLiquid', accounts => {
     const disputes = [
       {
         ID: 0,
-        subcourtID: subcourtTree.children[0].children[0].ID,
-        voteRatios: [0, 1, 2],
         appeals: 0,
-        numberOfJurors: subcourtTree.children[0].children[0].jurorsForJump
+        numberOfJurors: subcourtTree.children[0].children[0].jurorsForJump,
+        subcourtID: subcourtTree.children[0].children[0].ID,
+        voteRatios: [0, 1, 2]
       },
       {
         ID: 1,
-        subcourtID: subcourtTree.children[0].children[1].ID,
-        voteRatios: [0, 2, 1],
         appeals: 1,
-        numberOfJurors: subcourtTree.children[0].children[1].jurorsForJump
+        numberOfJurors: subcourtTree.children[0].children[1].jurorsForJump,
+        subcourtID: subcourtTree.children[0].children[1].ID,
+        voteRatios: [0, 2, 1]
       },
       {
         ID: 2,
-        subcourtID: subcourtTree.children[1].children[0].ID,
-        voteRatios: [1, 1, 2],
         appeals: 2,
-        numberOfJurors: subcourtTree.children[1].children[0].jurorsForJump
+        numberOfJurors: subcourtTree.children[1].children[0].jurorsForJump,
+        subcourtID: subcourtTree.children[1].children[0].ID,
+        voteRatios: [1, 1, 2]
       },
       {
         ID: 3,
-        subcourtID: subcourtTree.children[1].children[1].ID,
-        voteRatios: [1, 2, 1],
         appeals: 4,
-        numberOfJurors: subcourtTree.jurorsForJump
+        numberOfJurors: subcourtTree.jurorsForJump,
+        subcourtID: subcourtTree.children[1].children[1].ID,
+        voteRatios: [1, 2, 1]
       }
     ]
 
