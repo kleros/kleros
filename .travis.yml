@@ -9,7 +9,7 @@ install: yarn install --pure-lockfile
 script:
   - yarn run lint
   - yarn run test:ganache
-  - yarn run test:truffle
+  - travis_retry yarn run test:truffle
 notifications:
   kleros:
     slack: 'kleros:Ub8n81EgKJ3iRrMDyWyQIVJp'
