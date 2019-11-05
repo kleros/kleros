@@ -100,6 +100,7 @@ contract KlerosGovernor is Arbitrable{
      *  @param _sharedMultiplier Multiplier of the appeal cost that submitters has to pay for a round when there is no winner/loser in the previous round. In basis points.
      *  @param _winnerMultiplier Multiplier of the appeal cost that the winner has to pay for a round. In basis points.
      *  @param _loserMultiplier Multiplier of the appeal cost that the loser has to pay for a round. In basis points.
+     *  @param _metaEvidence The URI of the meta-evidence JSON.
      */
     constructor (
         Arbitrator _arbitrator,
@@ -109,7 +110,8 @@ contract KlerosGovernor is Arbitrable{
         uint _withdrawTimeout,
         uint _sharedMultiplier,
         uint _winnerMultiplier,
-        uint _loserMultiplier
+        uint _loserMultiplier,
+        string _metaEvidence
     ) public Arbitrable(_arbitrator, _extraData){
         lastApprovalTime = now;
         submissionDeposit = _submissionDeposit;
@@ -120,6 +122,8 @@ contract KlerosGovernor is Arbitrable{
         loserMultiplier = _loserMultiplier;
         shadowWinner = NO_SHADOW_WINNER;
         sessions.length++;
+
+        emit MetaEvidence(0, _metaEvidence);
     }
 
     /** @dev Changes the value of the deposit required for submitting a list.
@@ -272,6 +276,7 @@ contract KlerosGovernor is Arbitrable{
             session.sumDeposit = session.sumDeposit.subCap(arbitrationCost);
 
             reservedETH = reservedETH.subCap(arbitrationCost);
+            emit Dispute(arbitrator, session.disputeID, 0, sessions.length - 1);
         }
     }
 
