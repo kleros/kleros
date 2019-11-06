@@ -28,6 +28,7 @@ contract('KlerosGovernor', function(accounts) {
   const arbitratorExtraData = 0x85
   const appealTimeout = 1200
   const MULTIPLIER_DIVISOR = 10000
+  const metaEvidenceURI = 'https://metaevidence.io'
   // Though this description is for the list with 3 transactions, for test purposes an actual length of a submitted list is irrelevant.
   const listDescription = 'tx1, tx2, tx3'
 
@@ -55,6 +56,7 @@ contract('KlerosGovernor', function(accounts) {
       sharedMultiplier,
       winnerMultiplier,
       loserMultiplier,
+      metaEvidenceURI,
       { from: general }
     )
   })
@@ -567,7 +569,33 @@ contract('KlerosGovernor', function(accounts) {
     let sessionInfo = await klerosgovernor.sessions(0)
     const oldSumDeposit = await sessionInfo[2]
 
-    await klerosgovernor.executeSubmissions({ from: general })
+    const executeTx = await klerosgovernor.executeSubmissions({ from: general })
+
+    assert.equal(
+      executeTx.logs[0].event,
+      'Dispute',
+      'The dispute event has not been created'
+    )
+    assert.equal(
+      executeTx.logs[0].args._arbitrator,
+      arbitrator.address,
+      'The event has the wrong arbitrator'
+    )
+    assert.equal(
+      executeTx.logs[0].args._disputeID,
+      0,
+      'The event has the wrong disputeID'
+    )
+    assert.equal(
+      executeTx.logs[0].args._metaEvidenceID,
+      0,
+      'The event has the wrong metaevidence'
+    )
+    assert.equal(
+      executeTx.logs[0].args._evidenceGroupID,
+      0,
+      'The event has wrong list evidence group'
+    )
 
     sessionInfo = await klerosgovernor.sessions(0)
     const newSumDeposit = await sessionInfo[2]
