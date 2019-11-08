@@ -56,9 +56,10 @@ contract('KlerosGovernor', function(accounts) {
       sharedMultiplier,
       winnerMultiplier,
       loserMultiplier,
-      metaEvidenceURI,
       { from: general }
     )
+
+    await klerosgovernor.setMetaEvidence(metaEvidenceURI, { from: general })
   })
 
   it('Should set correct values in constructor', async () => {

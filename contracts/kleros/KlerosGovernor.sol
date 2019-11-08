@@ -59,6 +59,8 @@ contract KlerosGovernor is Arbitrable{
 
     uint constant NO_SHADOW_WINNER = uint(-1); // The value that indicates that no one has successfully paid appeal fees in a current round. It's -1 and not 0, because 0 can be a valid submission index.
 
+    address public deployer; // The address of the deployer of the contract.
+
     uint public reservedETH; // Sum of contract's submission deposits and appeal fees. These funds are not to be used in the execution of transactions.
 
     uint public submissionDeposit; // Value in wei that needs to be paid in order to submit the list. Note that this value should be higher than arbitration cost.
@@ -100,7 +102,6 @@ contract KlerosGovernor is Arbitrable{
      *  @param _sharedMultiplier Multiplier of the appeal cost that submitters has to pay for a round when there is no winner/loser in the previous round. In basis points.
      *  @param _winnerMultiplier Multiplier of the appeal cost that the winner has to pay for a round. In basis points.
      *  @param _loserMultiplier Multiplier of the appeal cost that the loser has to pay for a round. In basis points.
-     *  @param _metaEvidence The URI of the meta-evidence JSON.
      */
     constructor (
         Arbitrator _arbitrator,
@@ -110,8 +111,7 @@ contract KlerosGovernor is Arbitrable{
         uint _withdrawTimeout,
         uint _sharedMultiplier,
         uint _winnerMultiplier,
-        uint _loserMultiplier,
-        string _metaEvidence
+        uint _loserMultiplier
     ) public Arbitrable(_arbitrator, _extraData){
         lastApprovalTime = now;
         submissionDeposit = _submissionDeposit;
@@ -122,7 +122,15 @@ contract KlerosGovernor is Arbitrable{
         loserMultiplier = _loserMultiplier;
         shadowWinner = NO_SHADOW_WINNER;
         sessions.length++;
+        deployer=msg.sender;
+    }
 
+    /** @dev Sets the meta evidence. Can only be called once.
+     *  @param _metaEvidence The URI of the meta evidence file.
+     */
+    function setMetaEvidence(string _metaEvidence) external {
+        require(msg.sender == deployer, "Can only be called once by the deployer of the contract.");
+        deployer = address(0);
         emit MetaEvidence(0, _metaEvidence);
     }
 
@@ -570,5 +578,13 @@ contract KlerosGovernor is Arbitrable{
      */
     function getCurrentSessionNumber() public view returns (uint){
         return sessions.length - 1;
+    }
+
+    /** @dev Gets the number rounds in ongoing session.
+     *  @return The number of rounds in session.
+     */
+    function getSessionRoundsNumber(uint _session) public view returns (uint){
+        Session storage session = sessions[_session];
+        return session.rounds.length;
     }
 }
