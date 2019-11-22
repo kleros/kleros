@@ -152,11 +152,22 @@ contract('KlerosGovernor', function(accounts) {
     await expectThrow(
       klerosgovernor.submitList(
         [klerosgovernor.address],
-        [10, 1e17],
+        [10],
         '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
         [36],
         listDescription,
         { from: submitter1, value: submissionDeposit - 1000 }
+      )
+    )
+    // Should fail when submitting more
+    await expectThrow(
+      klerosgovernor.submitList(
+        [klerosgovernor.address],
+        [10],
+        '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
+        [36],
+        listDescription,
+        { from: submitter1, value: submissionDeposit + 1000 }
       )
     )
 

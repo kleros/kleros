@@ -121,7 +121,7 @@ contract KlerosGovernor is Arbitrable{
         loserMultiplier = _loserMultiplier;
         shadowWinner = NO_SHADOW_WINNER;
         sessions.length++;
-        deployer=msg.sender;
+        deployer = msg.sender;
     }
 
     /** @dev Sets the meta evidence. Can only be called once.
@@ -195,13 +195,14 @@ contract KlerosGovernor is Arbitrable{
     function submitList(address[] _target, uint[] _value, bytes _data, uint[] _dataSize, string _description) public payable duringSubmissionPeriod {
         require(_target.length == _value.length, "Incorrect input. Target and value arrays must be of the same length.");
         require(_target.length == _dataSize.length, "Incorrect input. Target and datasize arrays must be of the same length.");
-        require(msg.value >= submissionDeposit, "Submission deposit must be paid.");
+        require(msg.value == submissionDeposit, "Submission deposit must be paid in exact amount.");
         Session storage session = sessions[sessions.length - 1];
         Submission storage submission = submissions[submissions.length++];
         submission.submitter = msg.sender;
         submission.deposit = submissionDeposit;
         bytes32 listHash;
         bytes32 prevTxHash;
+        bytes32 currentTxHash;
         uint readingPosition;
         for (uint i = 0; i < _target.length; i++){
             bytes memory readData = new bytes(_dataSize[i]);
@@ -213,9 +214,10 @@ contract KlerosGovernor is Arbitrable{
             }
             transaction.data = readData;
             readingPosition += _dataSize[i];
-            require(uint(keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data))) >= uint(prevTxHash), "The transactions are in incorrect order.");
-            listHash = keccak256(abi.encodePacked(keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data)), listHash));
-            prevTxHash = keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data));
+            currentTxHash = keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data));
+            require(uint(currentTxHash) >= uint(prevTxHash), "The transactions are in incorrect order.");
+            listHash = keccak256(abi.encodePacked(currentTxHash, listHash));
+            prevTxHash = currentTxHash;
         }
         require(!session.alreadySubmitted[listHash], "The same list was already submitted earlier.");
         session.alreadySubmitted[listHash] = true;
@@ -224,10 +226,6 @@ contract KlerosGovernor is Arbitrable{
         session.sumDeposit += submissionDeposit;
         session.submittedLists.push(submissions.length - 1);
         emit ListSubmitted(submissions.length - 1, msg.sender, sessions.length - 1, _description);
-
-        uint remainder = msg.value - submissionDeposit;
-        if (remainder > 0)
-            msg.sender.send(remainder);
 
         reservedETH += submissionDeposit;
     }
