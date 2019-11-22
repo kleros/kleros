@@ -74,7 +74,6 @@ contract KlerosGovernor is Arbitrable{
 
     Submission[] public submissions; // Stores all created transaction lists. submissions[_listID].
     Session[] public sessions; // Stores all submitting sessions. sessions[_session].
-    mapping(uint => mapping(bytes32 => bool)) public alreadySubmitted; // Indicates whether or not the transaction list was already submitted in order to catch duplicates. alreadySubmitted[_session][_listHash].
 
     /* *** Modifiers *** */
     modifier duringSubmissionPeriod() {require(now - lastApprovalTime <= submissionTimeout, "Submission time has ended."); _;}
