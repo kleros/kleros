@@ -366,9 +366,9 @@ contract KlerosGovernor is Arbitrable{
 
     /** @dev Sends the fee stake rewards and reimbursements proportional to the contributions made to the winner of a dispute. Reimburses contributions if there is no winner.
      *  @param _beneficiary The address that made contributions to a request.
-     *  @param _session Submitting session which rounds to query.
+     *  @param _session The session from which to withdraw.
      *  @param _round The round from which to withdraw.
-     *  @param _submissionID Submission's index in the array of submitted lists of the queried sesssion which beneficiary contributed to.
+     *  @param _submissionID Submission's index in the array of submitted lists of the session which the beneficiary contributed to.
      */
     function withdrawFeesAndRewards(address _beneficiary, uint _session, uint _round, uint _submissionID) public {
         Session storage session = sessions[_session];
