@@ -26,10 +26,10 @@ contract KlerosGovernor is Arbitrable{
 
     struct Session {
         Round[] rounds; // Tracks each appeal round of a dispute.
-        uint ruling; // The ruling that was given in this session.
-        uint disputeID; // ID given to the dispute of the session.
+        uint ruling; // The ruling that was given in this session, if any.
+        uint disputeID; // ID given to the dispute of the session, if any.
         uint[] submittedLists; // Tracks all lists that were submitted in a session. submittedLists[submissionID].
-        uint sumDeposit; // Sum of all submission deposits in a session (minus arbitration fees). Is needed for calculating a reward.
+        uint sumDeposit; // Sum of all submission deposits in a session (minus arbitration fees). This is used to calculate the reward.
         Status status; // Status of a session.
         mapping(bytes32 => bool) alreadySubmitted; // Indicates whether or not the transaction list was already submitted in order to catch duplicates. alreadySubmitted[listHash].
     }
@@ -40,12 +40,13 @@ contract KlerosGovernor is Arbitrable{
         bytes data; // Calldata of the transaction.
         bool executed; // Whether the transaction was already executed or not.
     }
+
     struct Submission {
         address submitter; // The one who submits the list.
-        uint deposit; // Value of a deposit paid upon submission of the list.
+        uint deposit; // Value of the deposit paid upon submission of the list.
         Transaction[] txs; // Transactions stored in the list. txs[_transactionIndex].
-        bytes32 listHash; // A hash chain of all transactions stored in the list. Is used for catching duplicates.
-        uint submissionTime; // Time the list was submitted.
+        bytes32 listHash; // A hash chain of all transactions stored in the list. This is used to catch duplicates.
+        uint submissionTime; // The time when the list was submitted.
         bool approved; // Whether the list was approved for execution or not.
     }
 
@@ -57,7 +58,7 @@ contract KlerosGovernor is Arbitrable{
         uint successfullyPaid; // Sum of all successfully paid fees paid by all sides.
     }
 
-    uint constant NO_SHADOW_WINNER = uint(-1); // The value that indicates that no one has successfully paid appeal fees in a current round. It's -1 and not 0, because 0 can be a valid submission index.
+    uint constant NO_SHADOW_WINNER = uint(-1); // The value that indicates that no one has successfully paid appeal fees in a current round. It's the largest integer and not 0, because 0 can be a valid submission index.
 
     address public deployer; // The address of the deployer of the contract.
 
