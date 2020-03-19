@@ -572,7 +572,7 @@ contract KlerosGovernor is Arbitrable {
     }
 
     /** @dev Gets the number of ongoing session.
-     *  @return The number of ongoing session or the maximum unsined integer if no sessions were ever submitted.
+     *  @return The number of ongoing sessions.
      */
     function getCurrentSessionNumber() public view returns (uint){
         return sessions.length - 1;
