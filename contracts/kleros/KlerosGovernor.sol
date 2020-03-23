@@ -9,7 +9,7 @@
 /* solium-disable security/no-block-members */
 /* solium-disable max-len*/
 
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.26;
 
 import "@kleros/kleros-interaction/contracts/standard/arbitration/Arbitrable.sol";
 import "@kleros/kleros-interaction/contracts/libraries/CappedMath.sol";
