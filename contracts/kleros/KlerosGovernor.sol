@@ -1,6 +1,6 @@
 /**
  *  @authors: [@unknownunknown1]
- *  @reviewers: [@ferittuncer, @clesaege, @satello]
+ *  @reviewers: [@ferittuncer, @clesaege, @satello, @mtsalenc]
  *  @auditors: []
  *  @bounties: []
  *  @deployments: []
@@ -9,7 +9,7 @@
 /* solium-disable security/no-block-members */
 /* solium-disable max-len*/
 
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.26;
 
 import "@kleros/kleros-interaction/contracts/standard/arbitration/Arbitrable.sol";
 import "@kleros/kleros-interaction/contracts/libraries/CappedMath.sol";
@@ -18,7 +18,7 @@ import "@kleros/kleros-interaction/contracts/libraries/CappedMath.sol";
  *  Note that this contract trusts that the Arbitrator is honest and will not re-enter or modify its costs during a call.
  *  Also note that tx.origin should not matter in contracts called by the governor.
  */
-contract KlerosGovernor is Arbitrable{
+contract KlerosGovernor is Arbitrable {
     using CappedMath for uint;
 
     /* *** Contract variables *** */
@@ -86,7 +86,7 @@ contract KlerosGovernor is Arbitrable{
     /* *** Events *** */
     /** @dev Emitted when a new list is submitted.
      *  @param _listID The index of the transaction list in the array of lists.
-     *  @param _submitter The one who submitted the list.
+     *  @param _submitter The address that submitted the list.
      *  @param _session The number of the current session.
      *  @param _description The string in CSV format that contains labels of list's transactions.
      *  Note that the submitter may give bad descriptions of correct actions, but this is to be seen as UI enhancement, not a critical feature and that would play against him in case of dispute.
@@ -135,21 +135,21 @@ contract KlerosGovernor is Arbitrable{
     }
 
     /** @dev Changes the value of the deposit required for submitting a list.
-     *  @param _submissionDeposit The new value of a required deposit. In wei.
+     *  @param _submissionDeposit The new value of the deposit, in wei. Note that this value should be higher than arbitration cost.
      */
     function changeSubmissionDeposit(uint _submissionDeposit) public onlyByGovernor {
         submissionDeposit = _submissionDeposit;
     }
 
     /** @dev Changes the time allocated for submission.
-     *  @param _submissionTimeout The new duration of submission time. In seconds.
+     *  @param _submissionTimeout The new duration of the submission period, in seconds.
      */
     function changeSubmissionTimeout(uint _submissionTimeout) public onlyByGovernor duringSubmissionPeriod {
         submissionTimeout = _submissionTimeout;
     }
 
     /** @dev Changes the time allowed for list withdrawal.
-     *  @param _withdrawTimeout The new duration of withdraw timeout. In seconds.
+     *  @param _withdrawTimeout The new duration of withdraw period, in seconds.
      */
     function changeWithdrawTimeout(uint _withdrawTimeout) public onlyByGovernor {
         withdrawTimeout = _withdrawTimeout;
@@ -571,8 +571,8 @@ contract KlerosGovernor is Arbitrable{
         return submissions.length;
     }
 
-    /** @dev Gets the number of ongoing session.
-     *  @return The number of ongoing session.
+    /** @dev Gets the number of the ongoing session.
+     *  @return The number of the ongoing session.
      */
     function getCurrentSessionNumber() public view returns (uint){
         return sessions.length - 1;
