@@ -19,6 +19,7 @@ contract('KlerosGovernor', function(accounts) {
   const submitter3 = accounts[3]
   const other = accounts[4]
   const submissionDeposit = 1e18
+  const executionTimeout = 3000
   const submissionTimeout = 3600
   const withdrawTimeout = 100
   const sharedMultiplier = 5000
@@ -52,6 +53,7 @@ contract('KlerosGovernor', function(accounts) {
       arbitratorExtraData,
       submissionDeposit,
       submissionTimeout,
+      executionTimeout,
       withdrawTimeout,
       sharedMultiplier,
       winnerMultiplier,
@@ -67,6 +69,7 @@ contract('KlerosGovernor', function(accounts) {
     assert.equal(await klerosgovernor.arbitratorExtraData(), 0x85)
     assert.equal((await klerosgovernor.submissionDeposit()).toNumber(), 1e18)
     assert.equal((await klerosgovernor.submissionTimeout()).toNumber(), 3600)
+    assert.equal((await klerosgovernor.executionTimeout()).toNumber(), 3000)
     assert.equal((await klerosgovernor.withdrawTimeout()).toNumber(), 100)
     assert.equal((await klerosgovernor.sharedMultiplier()).toNumber(), 5000)
     assert.equal((await klerosgovernor.winnerMultiplier()).toNumber(), 2000)
@@ -80,6 +83,9 @@ contract('KlerosGovernor', function(accounts) {
     )
     await expectThrow(
       klerosgovernor.changeSubmissionTimeout(51, { from: submitter1 })
+    )
+    await expectThrow(
+      klerosgovernor.changeExecutionTimeout(5, { from: submitter1 })
     )
     await expectThrow(
       klerosgovernor.changeWithdrawTimeout(23, { from: submitter2 })
@@ -159,17 +165,6 @@ contract('KlerosGovernor', function(accounts) {
         { from: submitter1, value: submissionDeposit - 1000 }
       )
     )
-    // Should fail when submitting more
-    await expectThrow(
-      klerosgovernor.submitList(
-        [klerosgovernor.address],
-        [10],
-        '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
-        [36],
-        listDescription,
-        { from: submitter1, value: submissionDeposit + 1000 }
-      )
-    )
 
     const addresses = [klerosgovernor.address, arbitrator.address]
     const values = [10, 1e17]
@@ -209,7 +204,7 @@ contract('KlerosGovernor', function(accounts) {
       dataString,
       [data[index1], data[index2]],
       listDescription,
-      { from: submitter1, value: submissionDeposit }
+      { from: submitter1, value: submissionDeposit + 1000 }
     )
 
     const submission = await klerosgovernor.submissions(0)
@@ -1552,6 +1547,28 @@ contract('KlerosGovernor', function(accounts) {
       expendableFunds,
       2.9e18,
       'Incorrect expendable funds value after execution'
+    )
+  })
+
+  it('Should not be possible to execute transaction list after the execution timeout', async () => {
+    await klerosgovernor.submitList(
+      [klerosgovernor.address],
+      [0],
+      '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
+      [36],
+      listDescription,
+      { from: submitter1, value: submissionDeposit }
+    )
+
+    await increaseTime(submissionTimeout + 1)
+
+    await klerosgovernor.executeSubmissions({ from: general })
+
+    await klerosgovernor.sendTransaction({ from: other, value: 3e18 })
+
+    await increaseTime(executionTimeout + 1)
+    await expectThrow(
+      klerosgovernor.executeTransactionList(0, 0, 0, { from: general })
     )
   })
 })
