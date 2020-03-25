@@ -32,6 +32,7 @@ contract KlerosGovernor is Arbitrable {
         uint sumDeposit; // Sum of all submission deposits in a session (minus arbitration fees). This is used to calculate the reward.
         Status status; // Status of a session.
         mapping(bytes32 => bool) alreadySubmitted; // Indicates whether or not the transaction list was already submitted in order to catch duplicates. alreadySubmitted[listHash].
+        uint durationOffset; // Time in seconds that prolongs the submission period after the first submission, to give other submitters time to react.
     }
 
     struct Transaction {
@@ -81,8 +82,16 @@ contract KlerosGovernor is Arbitrable {
     Session[] public sessions; // Stores all submitting sessions. sessions[_session].
 
     /* *** Modifiers *** */
-    modifier duringSubmissionPeriod() {require(now - lastApprovalTime <= submissionTimeout, "Submission time has ended."); _;}
-    modifier duringApprovalPeriod() {require(now - lastApprovalTime > submissionTimeout, "Approval time has not started yet."); _;}
+    modifier duringSubmissionPeriod() {
+        uint offset = sessions[sessions.length - 1].durationOffset;
+        require(now - lastApprovalTime <= submissionTimeout.addCap(offset), "Submission time has ended.");
+        _;
+    }
+    modifier duringApprovalPeriod() {
+        uint offset = sessions[sessions.length - 1].durationOffset;
+        require(now - lastApprovalTime > submissionTimeout.addCap(offset), "Approval time has not started yet.");
+        _;
+    }
     modifier onlyByGovernor() {require(address(this) == msg.sender, "Only the governor can execute this."); _;}
 
     /* *** Events *** */
@@ -240,6 +249,9 @@ contract KlerosGovernor is Arbitrable {
         submission.submissionTime = now;
         session.sumDeposit += submissionDeposit;
         session.submittedLists.push(submissions.length - 1);
+        if (session.submittedLists.length == 1)
+            session.durationOffset = now.subCap(lastApprovalTime);
+
         emit ListSubmitted(submissions.length - 1, msg.sender, sessions.length - 1, _description);
 
         uint remainder = msg.value - submissionDeposit;
