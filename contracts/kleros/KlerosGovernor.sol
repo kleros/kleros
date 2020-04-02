@@ -8,6 +8,7 @@
 
 /* solium-disable security/no-block-members */
 /* solium-disable max-len*/
+/* solium-disable security/no-send */
 
 pragma solidity ^0.4.26;
 
@@ -125,7 +126,7 @@ contract KlerosGovernor is Arbitrable {
         uint _sharedMultiplier,
         uint _winnerMultiplier,
         uint _loserMultiplier
-    ) public Arbitrable(_arbitrator, _extraData){
+    ) public Arbitrable(_arbitrator, _extraData) {
         lastApprovalTime = now;
         submissionDeposit = _submissionDeposit;
         submissionTimeout = _submissionTimeout;
@@ -217,7 +218,7 @@ contract KlerosGovernor is Arbitrable {
     function submitList(address[] _target, uint[] _value, bytes _data, uint[] _dataSize, string _description) public payable duringSubmissionPeriod {
         require(_target.length == _value.length, "Incorrect input. Target and value arrays must be of the same length.");
         require(_target.length == _dataSize.length, "Incorrect input. Target and datasize arrays must be of the same length.");
-        require(msg.value >= submissionDeposit, "Submission deposit must be paid.");
+        require(msg.value >= submissionDeposit + arbitrator.arbitrationCost(arbitratorExtraData), "Submission deposit must be paid.");
         Session storage session = sessions[sessions.length - 1];
         Submission storage submission = submissions[submissions.length++];
         submission.submitter = msg.sender;
@@ -228,12 +229,12 @@ contract KlerosGovernor is Arbitrable {
         // 2 - Current transaction hash.
         bytes32[3] memory hashes;
         uint readingPosition;
-        for (uint i = 0; i < _target.length; i++){
+        for (uint i = 0; i < _target.length; i++) {
             bytes memory readData = new bytes(_dataSize[i]);
             Transaction storage transaction = submission.txs[submission.txs.length++];
             transaction.target = _target[i];
             transaction.value = _value[i];
-            for (uint j = 0; j < _dataSize[i]; j++){
+            for (uint j = 0; j < _dataSize[i]; j++) {
                 readData[j] = _data[readingPosition + j];
             }
             transaction.data = readData;
@@ -289,11 +290,11 @@ contract KlerosGovernor is Arbitrable {
     function executeSubmissions() public duringApprovalPeriod {
         Session storage session = sessions[sessions.length - 1];
         require(session.status == Status.NoDispute, "Can't approve transaction list while dispute is active.");
-        if (session.submittedLists.length == 0){
+        if (session.submittedLists.length == 0) {
             lastApprovalTime = now;
             session.status = Status.Resolved;
             sessions.length++;
-        } else if (session.submittedLists.length == 1){
+        } else if (session.submittedLists.length == 1) {
             Submission storage submission = submissions[session.submittedLists[0]];
             submission.approved = true;
             submission.approvalTime = now;
@@ -334,9 +335,9 @@ contract KlerosGovernor is Arbitrable {
         uint winner = arbitrator.currentRuling(session.disputeID);
         uint multiplier;
         // Unlike in submittedLists, in arbitrator "0" is reserved for "refuse to arbitrate" option. So we need to add 1 to map submission IDs with choices correctly.
-        if (winner == _submissionID + 1){
+        if (winner == _submissionID + 1) {
             multiplier = winnerMultiplier;
-        } else if (winner == 0){
+        } else if (winner == 0) {
             multiplier = sharedMultiplier;
         } else {
             require(now - appealPeriodStart < (appealPeriodEnd - appealPeriodStart)/2, "The loser must pay during the first half of the appeal period.");
@@ -355,7 +356,7 @@ contract KlerosGovernor is Arbitrable {
         round.contributions[msg.sender][_submissionID] += contribution;
         round.paidFees[_submissionID] += contribution;
         // Add contribution to reward when the fee funding is successful, otherwise it can be withdrawn later.
-        if (round.paidFees[_submissionID] >= totalCost){
+        if (round.paidFees[_submissionID] >= totalCost) {
             round.hasPaid[_submissionID] = true;
             if (shadowWinner == NO_SHADOW_WINNER)
                 shadowWinner = _submissionID;
@@ -368,7 +369,7 @@ contract KlerosGovernor is Arbitrable {
         msg.sender.send(remainingETH);
         reservedETH += contribution;
 
-        if (shadowWinner != NO_SHADOW_WINNER && shadowWinner != _submissionID && round.hasPaid[_submissionID]){
+        if (shadowWinner != NO_SHADOW_WINNER && shadowWinner != _submissionID && round.hasPaid[_submissionID]) {
             shadowWinner = NO_SHADOW_WINNER;
             arbitrator.appeal.value(appealCost)(session.disputeID, arbitratorExtraData);
             session.rounds.length++;
@@ -451,7 +452,7 @@ contract KlerosGovernor is Arbitrable {
      */
     function executeRuling(uint _disputeID, uint _ruling) internal {
         Session storage session = sessions[sessions.length - 1];
-        if (_ruling != 0){
+        if (_ruling != 0) {
             Submission storage submission = submissions[session.submittedLists[_ruling - 1]];
             submission.approved = true;
             submission.approvalTime = now;
@@ -477,10 +478,10 @@ contract KlerosGovernor is Arbitrable {
         Submission storage submission = submissions[_listID];
         require(submission.approved, "Can't execute list that wasn't approved.");
         require(now - submission.approvalTime <= executionTimeout, "Time to execute the transaction list has passed.");
-        for (uint i = _cursor; i < submission.txs.length && (_count == 0 || i < _cursor + _count); i++){
+        for (uint i = _cursor; i < submission.txs.length && (_count == 0 || i < _cursor + _count); i++) {
             Transaction storage transaction = submission.txs[i];
             uint expendableFunds = getExpendableFunds();
-            if (!transaction.executed && transaction.value <= expendableFunds){
+            if (!transaction.executed && transaction.value <= expendableFunds) {
                 bool callResult = transaction.target.call.value(transaction.value)(transaction.data); // solium-disable-line security/no-call-value
                 // An extra check to prevent re-entrancy through target call.
                 if (callResult == true) {
@@ -592,7 +593,7 @@ contract KlerosGovernor is Arbitrable {
      *  @param _listID The index of the transaction list in the array of lists.
      *  @return txCount The number of transactions in the list.
      */
-    function getNumberOfTransactions(uint _listID) public view returns (uint txCount){
+    function getNumberOfTransactions(uint _listID) public view returns (uint txCount) {
         Submission storage submission = submissions[_listID];
         return submission.txs.length;
     }
@@ -600,21 +601,21 @@ contract KlerosGovernor is Arbitrable {
     /** @dev Gets the number of lists created in contract's lifetime.
      *  @return The number of created lists.
      */
-    function getNumberOfCreatedLists() public view returns (uint){
+    function getNumberOfCreatedLists() public view returns (uint) {
         return submissions.length;
     }
 
     /** @dev Gets the number of the ongoing session.
      *  @return The number of the ongoing session.
      */
-    function getCurrentSessionNumber() public view returns (uint){
+    function getCurrentSessionNumber() public view returns (uint) {
         return sessions.length - 1;
     }
 
     /** @dev Gets the number rounds in ongoing session.
      *  @return The number of rounds in session.
      */
-    function getSessionRoundsNumber(uint _session) public view returns (uint){
+    function getSessionRoundsNumber(uint _session) public view returns (uint) {
         Session storage session = sessions[_session];
         return session.rounds.length;
     }
