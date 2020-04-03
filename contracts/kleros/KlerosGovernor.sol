@@ -67,7 +67,7 @@ contract KlerosGovernor is Arbitrable {
 
     uint public reservedETH; // Sum of contract's submission deposits and appeal fees. These funds are not to be used in the execution of transactions.
 
-    uint public submissionDeposit; // Value in wei that needs to be paid in order to submit the list. Note that this value should be higher than arbitration cost.
+    uint public submissionBaseDeposit; // The base deposit in wei that needs to be paid in order to submit the list.
     uint public submissionTimeout; // Time in seconds allowed for submitting the lists. Once it's passed the contract enters the approval period.
     uint public executionTimeout; // Time in seconds allowed for the execution of approved lists.
     uint public withdrawTimeout; // Time in seconds allowed to withdraw a submitted list.
@@ -108,7 +108,7 @@ contract KlerosGovernor is Arbitrable {
     /** @dev Constructor.
      *  @param _arbitrator The arbitrator of the contract. It should support appealPeriod.
      *  @param _extraData Extra data for the arbitrator.
-     *  @param _submissionDeposit The deposit required for submission.
+     *  @param _submissionBaseDeposit The base deposit required for submission.
      *  @param _submissionTimeout Time in seconds allocated for submitting transaction list.
      *  @param _executionTimeout Time in seconds after approval that allows to execute transactions of the approved list.
      *  @param _withdrawTimeout Time in seconds after submission that allows to withdraw submitted list.
@@ -119,7 +119,7 @@ contract KlerosGovernor is Arbitrable {
     constructor (
         Arbitrator _arbitrator,
         bytes _extraData,
-        uint _submissionDeposit,
+        uint _submissionBaseDeposit,
         uint _submissionTimeout,
         uint _executionTimeout,
         uint _withdrawTimeout,
@@ -128,7 +128,7 @@ contract KlerosGovernor is Arbitrable {
         uint _loserMultiplier
     ) public Arbitrable(_arbitrator, _extraData) {
         lastApprovalTime = now;
-        submissionDeposit = _submissionDeposit;
+        submissionBaseDeposit = _submissionBaseDeposit;
         submissionTimeout = _submissionTimeout;
         executionTimeout = _executionTimeout;
         withdrawTimeout = _withdrawTimeout;
@@ -149,11 +149,11 @@ contract KlerosGovernor is Arbitrable {
         emit MetaEvidence(0, _metaEvidence);
     }
 
-    /** @dev Changes the value of the deposit required for submitting a list.
-     *  @param _submissionDeposit The new value of the deposit, in wei. Note that this value should be higher than arbitration cost.
+    /** @dev Changes the value of the base deposit required for submitting a list.
+     *  @param _submissionBaseDeposit The new value of the base deposit, in wei.
      */
-    function changeSubmissionDeposit(uint _submissionDeposit) public onlyByGovernor {
-        submissionDeposit = _submissionDeposit;
+    function changeSubmissionDeposit(uint _submissionBaseDeposit) public onlyByGovernor {
+        submissionBaseDeposit = _submissionBaseDeposit;
     }
 
     /** @dev Changes the time allocated for submission.
@@ -215,14 +215,14 @@ contract KlerosGovernor is Arbitrable {
      *  @param _dataSize List of lengths in bytes required to split calldata for its respective targets.
      *  @param _description String in CSV format that describes list's transactions.
      */
-    function submitList(address[] _target, uint[] _value, bytes _data, uint[] _dataSize, string _description) public payable duringSubmissionPeriod {
+    function submitList (address[] _target, uint[] _value, bytes _data, uint[] _dataSize, string _description) public payable duringSubmissionPeriod {
         require(_target.length == _value.length, "Incorrect input. Target and value arrays must be of the same length.");
         require(_target.length == _dataSize.length, "Incorrect input. Target and datasize arrays must be of the same length.");
-        require(msg.value >= submissionDeposit + arbitrator.arbitrationCost(arbitratorExtraData), "Submission deposit must be paid.");
+        require(msg.value >= getSubmissionCost(), "Submission deposit must be paid in full.");
         Session storage session = sessions[sessions.length - 1];
         Submission storage submission = submissions[submissions.length++];
         submission.submitter = msg.sender;
-        submission.deposit = submissionDeposit;
+        submission.deposit = getSubmissionCost();
         // Using an array to get around the stack limit.
         // 0 - List hash.
         // 1 - Previous transaction hash.
@@ -248,18 +248,18 @@ contract KlerosGovernor is Arbitrable {
         session.alreadySubmitted[hashes[0]] = true;
         submission.listHash = hashes[0];
         submission.submissionTime = now;
-        session.sumDeposit += submissionDeposit;
+        session.sumDeposit += submission.deposit;
         session.submittedLists.push(submissions.length - 1);
         if (session.submittedLists.length == 1)
             session.durationOffset = now.subCap(lastApprovalTime);
 
         emit ListSubmitted(submissions.length - 1, msg.sender, sessions.length - 1, _description);
 
-        uint remainder = msg.value - submissionDeposit;
+        uint remainder = msg.value - submission.deposit;
         if (remainder > 0)
             msg.sender.send(remainder);
 
-        reservedETH += submissionDeposit;
+        reservedETH += submission.deposit;
     }
 
     /** @dev Withdraws submitted transaction list. Reimburses submission deposit.
@@ -618,5 +618,9 @@ contract KlerosGovernor is Arbitrable {
     function getSessionRoundsNumber(uint _session) public view returns (uint) {
         Session storage session = sessions[_session];
         return session.rounds.length;
+    }
+
+    function getSubmissionCost() public view returns (uint) {
+        return submissionBaseDeposit + arbitrator.arbitrationCost(arbitratorExtraData);
     }
 }
