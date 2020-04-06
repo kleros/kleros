@@ -18,7 +18,7 @@ contract('KlerosGovernor', function(accounts) {
   const submitter2 = accounts[2]
   const submitter3 = accounts[3]
   const other = accounts[4]
-  const submissionDeposit = 1e18
+  const submissionBaseDeposit = 9e17
   const executionTimeout = 3000
   const submissionTimeout = 3600
   const withdrawTimeout = 100
@@ -26,6 +26,7 @@ contract('KlerosGovernor', function(accounts) {
   const winnerMultiplier = 2000
   const loserMultiplier = 7000
   const arbitrationFee = 1e17
+  const submissionDeposit = submissionBaseDeposit + arbitrationFee
   const arbitratorExtraData = 0x85
   const appealTimeout = 1200
   const MULTIPLIER_DIVISOR = 10000
@@ -51,7 +52,7 @@ contract('KlerosGovernor', function(accounts) {
     klerosgovernor = await KlerosGovernor.new(
       arbitrator.address,
       arbitratorExtraData,
-      submissionDeposit,
+      submissionBaseDeposit,
       submissionTimeout,
       executionTimeout,
       withdrawTimeout,
@@ -67,7 +68,6 @@ contract('KlerosGovernor', function(accounts) {
   it('Should set correct values in constructor', async () => {
     assert.equal(await klerosgovernor.arbitrator(), arbitrator.address)
     assert.equal(await klerosgovernor.arbitratorExtraData(), 0x85)
-    assert.equal((await klerosgovernor.submissionDeposit()).toNumber(), 1e18)
     assert.equal((await klerosgovernor.submissionTimeout()).toNumber(), 3600)
     assert.equal((await klerosgovernor.executionTimeout()).toNumber(), 3000)
     assert.equal((await klerosgovernor.withdrawTimeout()).toNumber(), 100)
@@ -75,6 +75,10 @@ contract('KlerosGovernor', function(accounts) {
     assert.equal((await klerosgovernor.winnerMultiplier()).toNumber(), 2000)
     assert.equal((await klerosgovernor.loserMultiplier()).toNumber(), 7000)
     assert.equal((await klerosgovernor.getCurrentSessionNumber()).toNumber(), 0)
+    assert.equal(
+      (await klerosgovernor.submissionBaseDeposit()).toNumber(),
+      9e17
+    )
   })
 
   it('Only governor should be allowed to change contract parameters', async () => {
