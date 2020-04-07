@@ -620,6 +620,9 @@ contract KlerosGovernor is Arbitrable {
         return session.rounds.length;
     }
 
+    /** @dev Gets the cost of the submission.
+     *  @return The cost of the submission.
+     */
     function getSubmissionCost() public view returns (uint) {
         return submissionBaseDeposit + arbitrator.arbitrationCost(arbitratorExtraData);
     }
