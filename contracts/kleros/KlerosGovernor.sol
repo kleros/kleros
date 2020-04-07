@@ -218,11 +218,12 @@ contract KlerosGovernor is Arbitrable {
     function submitList (address[] _target, uint[] _value, bytes _data, uint[] _dataSize, string _description) public payable duringSubmissionPeriod {
         require(_target.length == _value.length, "Incorrect input. Target and value arrays must be of the same length.");
         require(_target.length == _dataSize.length, "Incorrect input. Target and datasize arrays must be of the same length.");
-        require(msg.value >= getSubmissionCost(), "Submission deposit must be paid in full.");
         Session storage session = sessions[sessions.length - 1];
         Submission storage submission = submissions[submissions.length++];
         submission.submitter = msg.sender;
-        submission.deposit = getSubmissionCost();
+        // Do the assignment first to avoid creating a new variable and bypass a 'stack too deep' error.
+        submission.deposit = submissionBaseDeposit + arbitrator.arbitrationCost(arbitratorExtraData);
+        require(msg.value >= submission.deposit, "Submission deposit must be paid in full.");
         // Using an array to get around the stack limit.
         // 0 - List hash.
         // 1 - Previous transaction hash.
@@ -618,12 +619,5 @@ contract KlerosGovernor is Arbitrable {
     function getSessionRoundsNumber(uint _session) public view returns (uint) {
         Session storage session = sessions[_session];
         return session.rounds.length;
-    }
-
-    /** @dev Gets the cost of the submission.
-     *  @return The cost of the submission.
-     */
-    function getSubmissionCost() public view returns (uint) {
-        return submissionBaseDeposit + arbitrator.arbitrationCost(arbitratorExtraData);
     }
 }
