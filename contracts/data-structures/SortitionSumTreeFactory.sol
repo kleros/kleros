@@ -126,7 +126,9 @@ library SortitionSumTreeFactory {
      *  @param _key The key of the tree to get the leaves from.
      *  @param _cursor The pagination cursor.
      *  @param _count The number of items to return.
-     *  @return The index at which leaves start, the values of the returned leaves, and whether there are more for pagination.
+     *  @return startIndex The index at which leaves start.
+     *  @return values The values of the returned leaves.
+     *  @return hasMore Whether there are more for pagination.
      *  `O(n)` where
      *  `n` is the maximum number of nodes ever appended.
      */
@@ -165,7 +167,7 @@ library SortitionSumTreeFactory {
      *  @dev Draw an ID from a tree using a number. Note that this function reverts if the sum of all values in the tree is 0.
      *  @param _key The key of the tree.
      *  @param _drawnNumber The drawn number.
-     *  @return The drawn ID.
+     *  @return ID The drawn ID.
      *  `O(k * log_k(n))` where
      *  `k` is the maximum number of childs per node in the tree,
      *   and `n` is the maximum number of nodes ever appended.
@@ -193,7 +195,7 @@ library SortitionSumTreeFactory {
     /** @dev Gets a specified ID's associated value.
      *  @param _key The key of the tree.
      *  @param _ID The ID of the value.
-     *  @return The associated value.
+     *  @return value The associated value.
      */
     function stakeOf(SortitionSumTrees storage self, bytes32 _key, bytes32 _ID) public view returns(uint value) {
         SortitionSumTree storage tree = self.sortitionSumTrees[_key];
