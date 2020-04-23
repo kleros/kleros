@@ -186,7 +186,7 @@ library SortitionSumTreeFactory {
                     break;
                 }
             }
-        
+
         ID = tree.nodeIndexesToIDs[treeIndex];
     }
 
