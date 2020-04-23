@@ -1,8 +1,9 @@
 /**
- *  @reviewers: [@clesaege, @unknownunknown1, @ferittuncer]
+ *  @authors: [@epiqueras]
+ *  @reviewers: [@clesaege, @unknownunknown1, @ferittuncer, @remedcu]
  *  @auditors: []
- *  @bounties: [<14 days 10 ETH max payout>]
- *  @deployments: []
+ *  @bounties: []
+ *  @deployments: [ https://etherscan.io/address/0x180eba68d164c3f8c3f6dc354125ebccf4dfcb86 ]
  */
 
 pragma solidity ^0.4.24;
