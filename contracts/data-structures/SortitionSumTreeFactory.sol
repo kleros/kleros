@@ -1,8 +1,9 @@
 /**
- *  @reviewers: [@clesaege, @unknownunknown1, @ferittuncer]
+ *  @authors: [@epiqueras]
+ *  @reviewers: [@clesaege, @unknownunknown1, @ferittuncer, @remedcu]
  *  @auditors: []
- *  @bounties: [<14 days 10 ETH max payout>]
- *  @deployments: []
+ *  @bounties: [{ duration: 28 days, link: https://github.com/kleros/kleros/issues/115, maxPayout: 50 ETH }]
+ *  @deployments: [ https://etherscan.io/address/0x180eba68d164c3f8c3f6dc354125ebccf4dfcb86 ]
  */
 
 pragma solidity ^0.4.24;
@@ -126,7 +127,9 @@ library SortitionSumTreeFactory {
      *  @param _key The key of the tree to get the leaves from.
      *  @param _cursor The pagination cursor.
      *  @param _count The number of items to return.
-     *  @return The index at which leaves start, the values of the returned leaves, and whether there are more for pagination.
+     *  @return startIndex The index at which leaves start.
+     *  @return values The values of the returned leaves.
+     *  @return hasMore Whether there are more for pagination.
      *  `O(n)` where
      *  `n` is the maximum number of nodes ever appended.
      */
@@ -165,7 +168,7 @@ library SortitionSumTreeFactory {
      *  @dev Draw an ID from a tree using a number. Note that this function reverts if the sum of all values in the tree is 0.
      *  @param _key The key of the tree.
      *  @param _drawnNumber The drawn number.
-     *  @return The drawn ID.
+     *  @return ID The drawn ID.
      *  `O(k * log_k(n))` where
      *  `k` is the maximum number of childs per node in the tree,
      *   and `n` is the maximum number of nodes ever appended.
@@ -186,14 +189,14 @@ library SortitionSumTreeFactory {
                     break;
                 }
             }
-        
+
         ID = tree.nodeIndexesToIDs[treeIndex];
     }
 
     /** @dev Gets a specified ID's associated value.
      *  @param _key The key of the tree.
      *  @param _ID The ID of the value.
-     *  @return The associated value.
+     *  @return value The associated value.
      */
     function stakeOf(SortitionSumTrees storage self, bytes32 _key, bytes32 _ID) public view returns(uint value) {
         SortitionSumTree storage tree = self.sortitionSumTrees[_key];
