@@ -564,7 +564,8 @@ contract KlerosLiquid is TokenController, Arbitrator {
     /** @dev Computes the token and ETH rewards for a specified appeal in a specified dispute.
      *  @param _disputeID The ID of the dispute.
      *  @param _appeal The appeal.
-     *  @return The token and ETH rewards.
+     *  @return tokenReward The token reward.
+     *  @return ETHReward The ETH reward.
      */
     function computeTokenAndETHRewards(uint _disputeID, uint _appeal) private view returns(uint tokenReward, uint ETHReward) {
         Dispute storage dispute = disputes[_disputeID];
@@ -688,7 +689,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
     /** @dev Creates a dispute. Must be called by the arbitrable contract.
      *  @param _numberOfChoices Number of choices to choose from in the dispute to be created.
      *  @param _extraData Additional info about the dispute to be created. We use it to pass the ID of the subcourt to create the dispute in (first 32 bytes) and the minimum number of jurors required (next 32 bytes).
-     *  @return The ID of the created dispute.
+     *  @return disputeID The ID of the created dispute.
      */
     function createDispute(
         uint _numberOfChoices,
@@ -750,7 +751,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
 
     /** @dev Called when `_owner` sends ether to the MiniMe Token contract.
      *  @param _owner The address that sent the ether to create tokens.
-     *  @return Whether the operation should be allowed or not.
+     *  @return allowed Whether the operation should be allowed or not.
      */
     function proxyPayment(address _owner) public payable returns(bool allowed) { allowed = false; }
 
@@ -758,7 +759,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _from The origin of the transfer.
      *  @param _to The destination of the transfer.
      *  @param _amount The amount of the transfer.
-     *  @return Whether the operation should be allowed or not.
+     *  @return allowed Whether the operation should be allowed or not.
      */
     function onTransfer(address _from, address _to, uint _amount) public returns(bool allowed) {
         if (lockInsolventTransfers) { // Never block penalties or rewards.
@@ -772,7 +773,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _owner The address that calls `approve()`.
      *  @param _spender The spender in the `approve()` call.
      *  @param _amount The amount in the `approve()` call.
-     *  @return Whether the operation should be allowed or not.
+     *  @return allowed Whether the operation should be allowed or not.
      */
     function onApprove(address _owner, address _spender, uint _amount) public returns(bool allowed) { allowed = true; }
 
@@ -780,7 +781,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
 
     /** @dev Gets the cost of arbitration in a specified subcourt.
      *  @param _extraData Additional info about the dispute. We use it to pass the ID of the subcourt to create the dispute in (first 32 bytes) and the minimum number of jurors required (next 32 bytes).
-     *  @return The cost.
+     *  @return cost The cost.
      */
     function arbitrationCost(bytes _extraData) public view returns(uint cost) {
         (uint96 subcourtID, uint minJurors) = extraDataToSubcourtIDAndMinJurors(_extraData);
@@ -790,7 +791,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
     /** @dev Gets the cost of appealing a specified dispute.
      *  @param _disputeID The ID of the dispute.
      *  @param _extraData Additional info about the appeal. Not used by this contract.
-     *  @return The cost.
+     *  @return cost The cost.
      */
     function appealCost(uint _disputeID, bytes _extraData) public view returns(uint cost) {
         Dispute storage dispute = disputes[_disputeID];
@@ -806,7 +807,8 @@ contract KlerosLiquid is TokenController, Arbitrator {
 
     /** @dev Gets the start and end of a specified dispute's current appeal period.
      *  @param _disputeID The ID of the dispute.
-     *  @return The start and end of the appeal period.
+     *  @return start The start of the appeal period.
+     *  @return end The end of the appeal period.
      */
     function appealPeriod(uint _disputeID) public view returns(uint start, uint end) {
         Dispute storage dispute = disputes[_disputeID];
@@ -821,7 +823,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
 
     /** @dev Gets the status of a specified dispute.
      *  @param _disputeID The ID of the dispute.
-     *  @return The status.
+     *  @return status The status.
      */
     function disputeStatus(uint _disputeID) public view returns(DisputeStatus status) {
         Dispute storage dispute = disputes[_disputeID];
@@ -832,7 +834,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
 
     /** @dev Gets the current ruling of a specified dispute.
      *  @param _disputeID The ID of the dispute.
-     *  @return The current ruling.
+     *  @return ruling The current ruling.
      */
     function currentRuling(uint _disputeID) public view returns(uint ruling) {
         Dispute storage dispute = disputes[_disputeID];
@@ -851,7 +853,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _account The address of the juror.
      *  @param _subcourtID The ID of the subcourt.
      *  @param _stake The new stake.
-     *  @return True if the call succeeded, false otherwise.
+     *  @return succeeded True if the call succeeded, false otherwise.
      */
     function _setStake(address _account, uint96 _subcourtID, uint128 _stake) internal returns(bool succeeded) {
         if (!(_subcourtID < courts.length))
@@ -899,7 +901,8 @@ contract KlerosLiquid is TokenController, Arbitrator {
 
     /** @dev Gets a subcourt ID and the minimum number of jurors required from a specified extra data bytes array.
      *  @param _extraData The extra data bytes array. The first 32 bytes are the subcourt ID and the next 32 bytes are the minimum number of jurors.
-     *  @return The subcourt ID and the minimum number of jurors required.
+     *  @return subcourtID The subcourt ID.
+     *  @return minJurors The minimum number of jurors required.
      */
     function extraDataToSubcourtIDAndMinJurors(bytes _extraData) internal view returns (uint96 subcourtID, uint minJurors) {
         if (_extraData.length >= 64) {
@@ -918,7 +921,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
     /** @dev Packs an account and a subcourt ID into a stake path ID.
      *  @param _account The account to pack.
      *  @param _subcourtID The subcourt ID to pack.
-     *  @return The stake path ID.
+     *  @return stakePathID The stake path ID.
      */
     function accountAndSubcourtIDToStakePathID(address _account, uint96 _subcourtID) internal pure returns (bytes32 stakePathID) {
         assembly { // solium-disable-line security/no-inline-assembly
@@ -935,7 +938,8 @@ contract KlerosLiquid is TokenController, Arbitrator {
 
     /** @dev Unpacks a stake path ID into an account and a subcourt ID.
      *  @param _stakePathID The stake path ID to unpack.
-     *  @return The account and subcourt ID.
+     *  @return account The account.
+     *  @return subcourtID The subcourt ID.
      */
     function stakePathIDToAccountAndSubcourtID(bytes32 _stakePathID) internal pure returns (address account, uint96 subcourtID) {
         assembly { // solium-disable-line security/no-inline-assembly
@@ -952,7 +956,8 @@ contract KlerosLiquid is TokenController, Arbitrator {
 
     /** @dev Gets a specified subcourt's non primitive properties.
      *  @param _subcourtID The ID of the subcourt.
-     *  @return The subcourt's non primitive properties.
+     *  @return children The subcourt's child court list.
+     *  @return timesPerPeriod The subcourt's time per period.
      */
     function getSubcourt(uint96 _subcourtID) external view returns(
         uint[] children,
@@ -967,7 +972,10 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _disputeID The ID of the dispute.
      *  @param _appeal The appeal.
      *  @param _voteID The ID of the vote.
-     *  @return The vote.
+     *  @return account The account for vote.
+     *  @return commit  The commit for vote.
+     *  @return choice  The choice for vote.
+     *  @return voted True if the account voted, False otherwise.
      */
     function getVote(uint _disputeID, uint _appeal, uint _voteID) external view returns(
         address account,
@@ -986,7 +994,9 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  Note: This function is only to be used by the interface and it won't work if the number of choices is too high.
      *  @param _disputeID The ID of the dispute.
      *  @param _appeal The appeal.
-     *  @return The vote counter.
+     *  @return winningChoice The winning choice.
+     *  @return counts The count.
+     *  @return tied Whether the vote tied.
      *  `O(n)` where
      *  `n` is the number of choices of the dispute.
      */
@@ -1005,7 +1015,12 @@ contract KlerosLiquid is TokenController, Arbitrator {
 
     /** @dev Gets a specified dispute's non primitive properties.
      *  @param _disputeID The ID of the dispute.
-     *  @return The dispute's non primitive properties.
+     *  @return votesLengths The dispute's vote length.
+     *  @return tokensAtStakePerJuror The dispute's required tokens at stake per Juror.
+     *  @return totalFeesForJurors The dispute's total fees for Jurors.
+     *  @return votesInEachRound The dispute's counter of votes made in each round.
+     *  @return repartitionsInEachRound The dispute's counter of vote reward repartitions made in each round.
+     *  @return penaltiesInEachRound The dispute's amount of tokens collected from penalties in each round.
      *  `O(a)` where
      *  `a` is the number of appeals of the dispute.
      */
@@ -1029,7 +1044,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
 
     /** @dev Gets a specified juror's non primitive properties.
      *  @param _account The address of the juror.
-     *  @return The juror's non primitive properties.
+     *  @return subcourtIDs The juror's IDs of subcourts where the juror has stake path.
      */
     function getJuror(address _account) external view returns(
         uint96[] subcourtIDs
@@ -1041,7 +1056,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
     /** @dev Gets the stake of a specified juror in a specified subcourt.
      *  @param _account The address of the juror.
      *  @param _subcourtID The ID of the subcourt.
-     *  @return The stake.
+     *  @return stake The stake.
      */
     function stakeOf(address _account, uint96 _subcourtID) external view returns(uint stake) {
         return sortitionSumTrees.stakeOf(bytes32(_subcourtID), accountAndSubcourtIDToStakePathID(_account, _subcourtID));
