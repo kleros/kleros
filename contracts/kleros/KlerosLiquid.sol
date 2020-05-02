@@ -1,9 +1,10 @@
 /**
  *  https://contributing.kleros.io/smart-contract-workflow
- *  @reviewers: [@clesaege, @unknownunknown1, @ferittuncer]
+ *  @authors: [@epiqueras]
+ *  @reviewers: [@clesaege, @unknownunknown1, @ferittuncer, @remedcu]
  *  @auditors: []
  *  @bounties: [{ duration: 14 days, link: https://github.com/kleros/kleros/issues/117, maxPayout: 50 ETH }]
- *  @deployments: []
+ *  @deployments: [ https://etherscan.io/address/0x988b3a538b618c7a603e1c11ab82cd16dbe28069 ]
  */
 /* solium-disable error-reason */
 /* solium-disable security/no-block-members */
