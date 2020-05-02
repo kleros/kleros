@@ -398,7 +398,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
             require(RN != 0, "Random number is not ready yet.");
             phase = Phase.drawing;
         } else if (phase == Phase.drawing) {
-            require(disputesWithoutJurors == 0 || now - lastPhaseChange >= maxDrawingTime, "There are still disputes without jurors and the maximum drawing time has not passed yet.");
+            require(disputesWithoutJurors == 0 || now - lastPhaseChange >= maxDrawingTime, "There are still disputes without jurors or the maximum drawing time has not passed yet.");
             phase = Phase.staking;
         }
 
