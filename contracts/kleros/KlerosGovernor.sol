@@ -7,7 +7,7 @@
  */
 
 /* solium-disable security/no-block-members */
-/* solium-disable max-len*/
+/* solium-disable max-len */
 /* solium-disable security/no-send */
 
 pragma solidity ^0.4.26;
@@ -47,7 +47,7 @@ contract KlerosGovernor is Arbitrable {
         address submitter; // The one who submits the list.
         uint deposit; // Value of the deposit paid upon submission of the list.
         Transaction[] txs; // Transactions stored in the list. txs[_transactionIndex].
-        bytes32 listHash; // A hash chain of all transactions stored in the list. This is used to catch duplicates.
+        bytes32 listHash; // A hash chain of all transactions stored in the list. This is used as a unique identifier.
         uint submissionTime; // The time when the list was submitted.
         bool approved; // Whether the list was approved for execution or not.
         uint approvalTime; // The time when the list was approved.
@@ -271,7 +271,7 @@ contract KlerosGovernor is Arbitrable {
     function withdrawTransactionList(uint _submissionID, bytes32 _listHash) public {
         Session storage session = sessions[sessions.length - 1];
         Submission storage submission = submissions[session.submittedLists[_submissionID]];
-        require(now - lastApprovalTime <= submissionTimeout / 2, "Lists can be withdrawn only in the first half of the submission period.");
+        require(now - lastApprovalTime <= submissionTimeout / 2, "Lists can be withdrawn only in the first half of the initial submission period.");
         // This require statement is an extra check to prevent _submissionID linking to the wrong list because of index swap during withdrawal.
         require(submission.listHash == _listHash, "Provided hash doesn't correspond with submission ID.");
         require(submission.submitter == msg.sender, "Can't withdraw the list created by someone else.");
