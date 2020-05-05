@@ -1,13 +1,14 @@
 /**
  *  @authors: [@unknownunknown1]
- *  @reviewers: [@ferittuncer, @clesaege, @satello, @mtsalenc]
+ *  @reviewers: [@ferittuncer, @clesaege, @satello*, @mtsalenc*]
  *  @auditors: []
  *  @bounties: []
  *  @deployments: []
  */
 
 /* solium-disable security/no-block-members */
-/* solium-disable max-len*/
+/* solium-disable max-len */
+/* solium-disable security/no-send */
 
 pragma solidity ^0.4.26;
 
@@ -32,6 +33,7 @@ contract KlerosGovernor is Arbitrable {
         uint sumDeposit; // Sum of all submission deposits in a session (minus arbitration fees). This is used to calculate the reward.
         Status status; // Status of a session.
         mapping(bytes32 => bool) alreadySubmitted; // Indicates whether or not the transaction list was already submitted in order to catch duplicates. alreadySubmitted[listHash].
+        uint durationOffset; // Time in seconds that prolongs the submission period after the first submission, to give other submitters time to react.
     }
 
     struct Transaction {
@@ -45,9 +47,10 @@ contract KlerosGovernor is Arbitrable {
         address submitter; // The one who submits the list.
         uint deposit; // Value of the deposit paid upon submission of the list.
         Transaction[] txs; // Transactions stored in the list. txs[_transactionIndex].
-        bytes32 listHash; // A hash chain of all transactions stored in the list. This is used to catch duplicates.
+        bytes32 listHash; // A hash chain of all transactions stored in the list. This is used as a unique identifier.
         uint submissionTime; // The time when the list was submitted.
         bool approved; // Whether the list was approved for execution or not.
+        uint approvalTime; // The time when the list was approved.
     }
 
     struct Round {
@@ -64,8 +67,9 @@ contract KlerosGovernor is Arbitrable {
 
     uint public reservedETH; // Sum of contract's submission deposits and appeal fees. These funds are not to be used in the execution of transactions.
 
-    uint public submissionDeposit; // Value in wei that needs to be paid in order to submit the list. Note that this value should be higher than arbitration cost.
+    uint public submissionBaseDeposit; // The base deposit in wei that needs to be paid in order to submit the list.
     uint public submissionTimeout; // Time in seconds allowed for submitting the lists. Once it's passed the contract enters the approval period.
+    uint public executionTimeout; // Time in seconds allowed for the execution of approved lists.
     uint public withdrawTimeout; // Time in seconds allowed to withdraw a submitted list.
     uint public sharedMultiplier; // Multiplier for calculating the appeal fee that must be paid by each side in the case where there is no winner/loser (e.g. when the arbitrator ruled "refuse to arbitrate").
     uint public winnerMultiplier; // Multiplier for calculating the appeal fee of the party that won the previous round.
@@ -79,8 +83,16 @@ contract KlerosGovernor is Arbitrable {
     Session[] public sessions; // Stores all submitting sessions. sessions[_session].
 
     /* *** Modifiers *** */
-    modifier duringSubmissionPeriod() {require(now - lastApprovalTime <= submissionTimeout, "Submission time has ended."); _;}
-    modifier duringApprovalPeriod() {require(now - lastApprovalTime > submissionTimeout, "Approval time has not started yet."); _;}
+    modifier duringSubmissionPeriod() {
+        uint offset = sessions[sessions.length - 1].durationOffset;
+        require(now - lastApprovalTime <= submissionTimeout.addCap(offset), "Submission time has ended.");
+        _;
+    }
+    modifier duringApprovalPeriod() {
+        uint offset = sessions[sessions.length - 1].durationOffset;
+        require(now - lastApprovalTime > submissionTimeout.addCap(offset), "Approval time has not started yet.");
+        _;
+    }
     modifier onlyByGovernor() {require(address(this) == msg.sender, "Only the governor can execute this."); _;}
 
     /* *** Events *** */
@@ -96,8 +108,9 @@ contract KlerosGovernor is Arbitrable {
     /** @dev Constructor.
      *  @param _arbitrator The arbitrator of the contract. It should support appealPeriod.
      *  @param _extraData Extra data for the arbitrator.
-     *  @param _submissionDeposit The deposit required for submission.
+     *  @param _submissionBaseDeposit The base deposit required for submission.
      *  @param _submissionTimeout Time in seconds allocated for submitting transaction list.
+     *  @param _executionTimeout Time in seconds after approval that allows to execute transactions of the approved list.
      *  @param _withdrawTimeout Time in seconds after submission that allows to withdraw submitted list.
      *  @param _sharedMultiplier Multiplier of the appeal cost that submitters has to pay for a round when there is no winner/loser in the previous round. In basis points.
      *  @param _winnerMultiplier Multiplier of the appeal cost that the winner has to pay for a round. In basis points.
@@ -106,16 +119,18 @@ contract KlerosGovernor is Arbitrable {
     constructor (
         Arbitrator _arbitrator,
         bytes _extraData,
-        uint _submissionDeposit,
+        uint _submissionBaseDeposit,
         uint _submissionTimeout,
+        uint _executionTimeout,
         uint _withdrawTimeout,
         uint _sharedMultiplier,
         uint _winnerMultiplier,
         uint _loserMultiplier
-    ) public Arbitrable(_arbitrator, _extraData){
+    ) public Arbitrable(_arbitrator, _extraData) {
         lastApprovalTime = now;
-        submissionDeposit = _submissionDeposit;
+        submissionBaseDeposit = _submissionBaseDeposit;
         submissionTimeout = _submissionTimeout;
+        executionTimeout = _executionTimeout;
         withdrawTimeout = _withdrawTimeout;
         sharedMultiplier = _sharedMultiplier;
         winnerMultiplier = _winnerMultiplier;
@@ -134,11 +149,11 @@ contract KlerosGovernor is Arbitrable {
         emit MetaEvidence(0, _metaEvidence);
     }
 
-    /** @dev Changes the value of the deposit required for submitting a list.
-     *  @param _submissionDeposit The new value of the deposit, in wei. Note that this value should be higher than arbitration cost.
+    /** @dev Changes the value of the base deposit required for submitting a list.
+     *  @param _submissionBaseDeposit The new value of the base deposit, in wei.
      */
-    function changeSubmissionDeposit(uint _submissionDeposit) public onlyByGovernor {
-        submissionDeposit = _submissionDeposit;
+    function changeSubmissionDeposit(uint _submissionBaseDeposit) public onlyByGovernor {
+        submissionBaseDeposit = _submissionBaseDeposit;
     }
 
     /** @dev Changes the time allocated for submission.
@@ -146,6 +161,13 @@ contract KlerosGovernor is Arbitrable {
      */
     function changeSubmissionTimeout(uint _submissionTimeout) public onlyByGovernor duringSubmissionPeriod {
         submissionTimeout = _submissionTimeout;
+    }
+
+    /** @dev Changes the time allocated for list's execution.
+     *  @param _executionTimeout The new duration of the execution timeout, in seconds.
+     */
+    function changeExecutionTimeout(uint _executionTimeout) public onlyByGovernor {
+        executionTimeout = _executionTimeout;
     }
 
     /** @dev Changes the time allowed for list withdrawal.
@@ -193,42 +215,52 @@ contract KlerosGovernor is Arbitrable {
      *  @param _dataSize List of lengths in bytes required to split calldata for its respective targets.
      *  @param _description String in CSV format that describes list's transactions.
      */
-    function submitList(address[] _target, uint[] _value, bytes _data, uint[] _dataSize, string _description) public payable duringSubmissionPeriod {
+    function submitList (address[] _target, uint[] _value, bytes _data, uint[] _dataSize, string _description) public payable duringSubmissionPeriod {
         require(_target.length == _value.length, "Incorrect input. Target and value arrays must be of the same length.");
         require(_target.length == _dataSize.length, "Incorrect input. Target and datasize arrays must be of the same length.");
-        require(msg.value == submissionDeposit, "Submission deposit must be paid in exact amount.");
         Session storage session = sessions[sessions.length - 1];
         Submission storage submission = submissions[submissions.length++];
         submission.submitter = msg.sender;
-        submission.deposit = submissionDeposit;
-        bytes32 listHash;
-        bytes32 prevTxHash;
-        bytes32 currentTxHash;
+        // Do the assignment first to avoid creating a new variable and bypass a 'stack too deep' error.
+        submission.deposit = submissionBaseDeposit + arbitrator.arbitrationCost(arbitratorExtraData);
+        require(msg.value >= submission.deposit, "Submission deposit must be paid in full.");
+        // Using an array to get around the stack limit.
+        // 0 - List hash.
+        // 1 - Previous transaction hash.
+        // 2 - Current transaction hash.
+        bytes32[3] memory hashes;
         uint readingPosition;
-        for (uint i = 0; i < _target.length; i++){
+        for (uint i = 0; i < _target.length; i++) {
             bytes memory readData = new bytes(_dataSize[i]);
             Transaction storage transaction = submission.txs[submission.txs.length++];
             transaction.target = _target[i];
             transaction.value = _value[i];
-            for (uint j = 0; j < _dataSize[i]; j++){
+            for (uint j = 0; j < _dataSize[i]; j++) {
                 readData[j] = _data[readingPosition + j];
             }
             transaction.data = readData;
             readingPosition += _dataSize[i];
-            currentTxHash = keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data));
-            require(uint(currentTxHash) >= uint(prevTxHash), "The transactions are in incorrect order.");
-            listHash = keccak256(abi.encodePacked(currentTxHash, listHash));
-            prevTxHash = currentTxHash;
+            hashes[2] = keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data));
+            require(uint(hashes[2]) >= uint(hashes[1]), "The transactions are in incorrect order.");
+            hashes[0] = keccak256(abi.encodePacked(hashes[2], hashes[0]));
+            hashes[1] = hashes[2];
         }
-        require(!session.alreadySubmitted[listHash], "The same list was already submitted earlier.");
-        session.alreadySubmitted[listHash] = true;
-        submission.listHash = listHash;
+        require(!session.alreadySubmitted[hashes[0]], "The same list was already submitted earlier.");
+        session.alreadySubmitted[hashes[0]] = true;
+        submission.listHash = hashes[0];
         submission.submissionTime = now;
-        session.sumDeposit += submissionDeposit;
+        session.sumDeposit += submission.deposit;
         session.submittedLists.push(submissions.length - 1);
+        if (session.submittedLists.length == 1)
+            session.durationOffset = now.subCap(lastApprovalTime);
+
         emit ListSubmitted(submissions.length - 1, msg.sender, sessions.length - 1, _description);
 
-        reservedETH += submissionDeposit;
+        uint remainder = msg.value - submission.deposit;
+        if (remainder > 0)
+            msg.sender.send(remainder);
+
+        reservedETH += submission.deposit;
     }
 
     /** @dev Withdraws submitted transaction list. Reimburses submission deposit.
@@ -239,7 +271,7 @@ contract KlerosGovernor is Arbitrable {
     function withdrawTransactionList(uint _submissionID, bytes32 _listHash) public {
         Session storage session = sessions[sessions.length - 1];
         Submission storage submission = submissions[session.submittedLists[_submissionID]];
-        require(now - lastApprovalTime <= submissionTimeout / 2, "Lists can be withdrawn only in the first half of the submission period.");
+        require(now - lastApprovalTime <= submissionTimeout / 2, "Lists can be withdrawn only in the first half of the initial submission period.");
         // This require statement is an extra check to prevent _submissionID linking to the wrong list because of index swap during withdrawal.
         require(submission.listHash == _listHash, "Provided hash doesn't correspond with submission ID.");
         require(submission.submitter == msg.sender, "Can't withdraw the list created by someone else.");
@@ -259,13 +291,14 @@ contract KlerosGovernor is Arbitrable {
     function executeSubmissions() public duringApprovalPeriod {
         Session storage session = sessions[sessions.length - 1];
         require(session.status == Status.NoDispute, "Can't approve transaction list while dispute is active.");
-        if (session.submittedLists.length == 0){
+        if (session.submittedLists.length == 0) {
             lastApprovalTime = now;
             session.status = Status.Resolved;
             sessions.length++;
-        } else if (session.submittedLists.length == 1){
+        } else if (session.submittedLists.length == 1) {
             Submission storage submission = submissions[session.submittedLists[0]];
             submission.approved = true;
+            submission.approvalTime = now;
             uint sumDeposit = session.sumDeposit;
             session.sumDeposit = 0;
             submission.submitter.send(sumDeposit);
@@ -303,9 +336,9 @@ contract KlerosGovernor is Arbitrable {
         uint winner = arbitrator.currentRuling(session.disputeID);
         uint multiplier;
         // Unlike in submittedLists, in arbitrator "0" is reserved for "refuse to arbitrate" option. So we need to add 1 to map submission IDs with choices correctly.
-        if (winner == _submissionID + 1){
+        if (winner == _submissionID + 1) {
             multiplier = winnerMultiplier;
-        } else if (winner == 0){
+        } else if (winner == 0) {
             multiplier = sharedMultiplier;
         } else {
             require(now - appealPeriodStart < (appealPeriodEnd - appealPeriodStart)/2, "The loser must pay during the first half of the appeal period.");
@@ -324,7 +357,7 @@ contract KlerosGovernor is Arbitrable {
         round.contributions[msg.sender][_submissionID] += contribution;
         round.paidFees[_submissionID] += contribution;
         // Add contribution to reward when the fee funding is successful, otherwise it can be withdrawn later.
-        if (round.paidFees[_submissionID] >= totalCost){
+        if (round.paidFees[_submissionID] >= totalCost) {
             round.hasPaid[_submissionID] = true;
             if (shadowWinner == NO_SHADOW_WINNER)
                 shadowWinner = _submissionID;
@@ -337,7 +370,7 @@ contract KlerosGovernor is Arbitrable {
         msg.sender.send(remainingETH);
         reservedETH += contribution;
 
-        if (shadowWinner != NO_SHADOW_WINNER && shadowWinner != _submissionID && round.hasPaid[_submissionID]){
+        if (shadowWinner != NO_SHADOW_WINNER && shadowWinner != _submissionID && round.hasPaid[_submissionID]) {
             shadowWinner = NO_SHADOW_WINNER;
             arbitrator.appeal.value(appealCost)(session.disputeID, arbitratorExtraData);
             session.rounds.length++;
@@ -420,9 +453,10 @@ contract KlerosGovernor is Arbitrable {
      */
     function executeRuling(uint _disputeID, uint _ruling) internal {
         Session storage session = sessions[sessions.length - 1];
-        if (_ruling != 0){
+        if (_ruling != 0) {
             Submission storage submission = submissions[session.submittedLists[_ruling - 1]];
             submission.approved = true;
+            submission.approvalTime = now;
             submission.submitter.send(session.sumDeposit);
         }
         // If the ruiling is "0" the reserved funds of this session become expendable.
@@ -444,10 +478,11 @@ contract KlerosGovernor is Arbitrable {
     function executeTransactionList(uint _listID, uint _cursor, uint _count) public {
         Submission storage submission = submissions[_listID];
         require(submission.approved, "Can't execute list that wasn't approved.");
-        for (uint i = _cursor; i < submission.txs.length && (_count == 0 || i < _cursor + _count); i++){
+        require(now - submission.approvalTime <= executionTimeout, "Time to execute the transaction list has passed.");
+        for (uint i = _cursor; i < submission.txs.length && (_count == 0 || i < _cursor + _count); i++) {
             Transaction storage transaction = submission.txs[i];
             uint expendableFunds = getExpendableFunds();
-            if (!transaction.executed && transaction.value <= expendableFunds){
+            if (!transaction.executed && transaction.value <= expendableFunds) {
                 bool callResult = transaction.target.call.value(transaction.value)(transaction.data); // solium-disable-line security/no-call-value
                 // An extra check to prevent re-entrancy through target call.
                 if (callResult == true) {
@@ -559,7 +594,7 @@ contract KlerosGovernor is Arbitrable {
      *  @param _listID The index of the transaction list in the array of lists.
      *  @return txCount The number of transactions in the list.
      */
-    function getNumberOfTransactions(uint _listID) public view returns (uint txCount){
+    function getNumberOfTransactions(uint _listID) public view returns (uint txCount) {
         Submission storage submission = submissions[_listID];
         return submission.txs.length;
     }
@@ -567,21 +602,21 @@ contract KlerosGovernor is Arbitrable {
     /** @dev Gets the number of lists created in contract's lifetime.
      *  @return The number of created lists.
      */
-    function getNumberOfCreatedLists() public view returns (uint){
+    function getNumberOfCreatedLists() public view returns (uint) {
         return submissions.length;
     }
 
     /** @dev Gets the number of the ongoing session.
      *  @return The number of the ongoing session.
      */
-    function getCurrentSessionNumber() public view returns (uint){
+    function getCurrentSessionNumber() public view returns (uint) {
         return sessions.length - 1;
     }
 
     /** @dev Gets the number rounds in ongoing session.
      *  @return The number of rounds in session.
      */
-    function getSessionRoundsNumber(uint _session) public view returns (uint){
+    function getSessionRoundsNumber(uint _session) public view returns (uint) {
         Session storage session = sessions[_session];
         return session.rounds.length;
     }

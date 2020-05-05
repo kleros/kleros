@@ -18,13 +18,15 @@ contract('KlerosGovernor', function(accounts) {
   const submitter2 = accounts[2]
   const submitter3 = accounts[3]
   const other = accounts[4]
-  const submissionDeposit = 1e18
+  const submissionBaseDeposit = 9e17
+  const executionTimeout = 3000
   const submissionTimeout = 3600
   const withdrawTimeout = 100
   const sharedMultiplier = 5000
   const winnerMultiplier = 2000
   const loserMultiplier = 7000
   const arbitrationFee = 1e17
+  const submissionDeposit = submissionBaseDeposit + arbitrationFee
   const arbitratorExtraData = 0x85
   const appealTimeout = 1200
   const MULTIPLIER_DIVISOR = 10000
@@ -50,8 +52,9 @@ contract('KlerosGovernor', function(accounts) {
     klerosgovernor = await KlerosGovernor.new(
       arbitrator.address,
       arbitratorExtraData,
-      submissionDeposit,
+      submissionBaseDeposit,
       submissionTimeout,
+      executionTimeout,
       withdrawTimeout,
       sharedMultiplier,
       winnerMultiplier,
@@ -65,13 +68,17 @@ contract('KlerosGovernor', function(accounts) {
   it('Should set correct values in constructor', async () => {
     assert.equal(await klerosgovernor.arbitrator(), arbitrator.address)
     assert.equal(await klerosgovernor.arbitratorExtraData(), 0x85)
-    assert.equal((await klerosgovernor.submissionDeposit()).toNumber(), 1e18)
     assert.equal((await klerosgovernor.submissionTimeout()).toNumber(), 3600)
+    assert.equal((await klerosgovernor.executionTimeout()).toNumber(), 3000)
     assert.equal((await klerosgovernor.withdrawTimeout()).toNumber(), 100)
     assert.equal((await klerosgovernor.sharedMultiplier()).toNumber(), 5000)
     assert.equal((await klerosgovernor.winnerMultiplier()).toNumber(), 2000)
     assert.equal((await klerosgovernor.loserMultiplier()).toNumber(), 7000)
     assert.equal((await klerosgovernor.getCurrentSessionNumber()).toNumber(), 0)
+    assert.equal(
+      (await klerosgovernor.submissionBaseDeposit()).toNumber(),
+      9e17
+    )
   })
 
   it('Only governor should be allowed to change contract parameters', async () => {
@@ -80,6 +87,9 @@ contract('KlerosGovernor', function(accounts) {
     )
     await expectThrow(
       klerosgovernor.changeSubmissionTimeout(51, { from: submitter1 })
+    )
+    await expectThrow(
+      klerosgovernor.changeExecutionTimeout(5, { from: submitter1 })
     )
     await expectThrow(
       klerosgovernor.changeWithdrawTimeout(23, { from: submitter2 })
@@ -159,17 +169,6 @@ contract('KlerosGovernor', function(accounts) {
         { from: submitter1, value: submissionDeposit - 1000 }
       )
     )
-    // Should fail when submitting more
-    await expectThrow(
-      klerosgovernor.submitList(
-        [klerosgovernor.address],
-        [10],
-        '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
-        [36],
-        listDescription,
-        { from: submitter1, value: submissionDeposit + 1000 }
-      )
-    )
 
     const addresses = [klerosgovernor.address, arbitrator.address]
     const values = [10, 1e17]
@@ -209,7 +208,7 @@ contract('KlerosGovernor', function(accounts) {
       dataString,
       [data[index1], data[index2]],
       listDescription,
-      { from: submitter1, value: submissionDeposit }
+      { from: submitter1, value: submissionDeposit + 1000 }
     )
 
     const submission = await klerosgovernor.submissions(0)
@@ -1552,6 +1551,28 @@ contract('KlerosGovernor', function(accounts) {
       expendableFunds,
       2.9e18,
       'Incorrect expendable funds value after execution'
+    )
+  })
+
+  it('Should not be possible to execute transaction list after the execution timeout', async () => {
+    await klerosgovernor.submitList(
+      [klerosgovernor.address],
+      [0],
+      '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
+      [36],
+      listDescription,
+      { from: submitter1, value: submissionDeposit }
+    )
+
+    await increaseTime(submissionTimeout + 1)
+
+    await klerosgovernor.executeSubmissions({ from: general })
+
+    await klerosgovernor.sendTransaction({ from: other, value: 3e18 })
+
+    await increaseTime(executionTimeout + 1)
+    await expectThrow(
+      klerosgovernor.executeTransactionList(0, 0, 0, { from: general })
     )
   })
 })
