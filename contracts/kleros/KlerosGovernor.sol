@@ -4,6 +4,7 @@
  *  @auditors: []
  *  @bounties: []
  *  @deployments: []
+ *  @tools: [MythX]
  */
 
 /* solium-disable security/no-block-members */
