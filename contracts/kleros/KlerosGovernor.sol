@@ -272,7 +272,7 @@ contract KlerosGovernor is Arbitrable {
     function withdrawTransactionList(uint _submissionID, bytes32 _listHash) public {
         Session storage session = sessions[sessions.length - 1];
         Submission storage submission = submissions[session.submittedLists[_submissionID]];
-        require(now - lastApprovalTime <= submissionTimeout / 2, "Lists can be withdrawn only in the first half of the initial submission period.");
+        require(now - lastApprovalTime <= submissionTimeout / 2, "Lists can be withdrawn only in the first half of the period.");
         // This require statement is an extra check to prevent _submissionID linking to the wrong list because of index swap during withdrawal.
         require(submission.listHash == _listHash, "Provided hash doesn't correspond with submission ID.");
         require(submission.submitter == msg.sender, "Can't withdraw the list created by someone else.");
