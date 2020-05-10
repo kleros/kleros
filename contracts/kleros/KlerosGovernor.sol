@@ -1,8 +1,8 @@
 /**
  *  @authors: [@unknownunknown1]
- *  @reviewers: [@ferittuncer, @clesaege, @satello*, @mtsalenc*]
+ *  @reviewers: [@ferittuncer, @clesaege, @satello*, @mtsalenc*, @remedcu]
  *  @auditors: []
- *  @bounties: []
+ *  @bounties: [{ link: https://github.com/kleros/kleros/issues/155, maxPayout: 100 ETH }]
  *  @deployments: []
  *  @tools: [MythX]
  */
@@ -47,7 +47,7 @@ contract KlerosGovernor is Arbitrable {
     struct Submission {
         address submitter; // The one who submits the list.
         uint deposit; // Value of the deposit paid upon submission of the list.
-        Transaction[] txs; // Transactions stored in the list. txs[_transactionIndex].
+        Transaction[] txs; // Transactions stored in the list in the form txs[_transactionIndex].
         bytes32 listHash; // A hash chain of all transactions stored in the list. This is used as a unique identifier.
         uint submissionTime; // The time when the list was submitted.
         bool approved; // Whether the list was approved for execution or not.
@@ -55,10 +55,10 @@ contract KlerosGovernor is Arbitrable {
     }
 
     struct Round {
-        mapping (uint => uint) paidFees; // Tracks the fees paid by each side in this round. paidFees[submissionID].
-        mapping (uint => bool) hasPaid; // True when the side has fully paid its fees, false otherwise. hasPaid[submissionID].
+        mapping (uint => uint) paidFees; // Tracks the fees paid by each side in this round in the form paidFees[submissionID].
+        mapping (uint => bool) hasPaid; // True when the side has fully paid its fees, false otherwise in the form hasPaid[submissionID].
         uint feeRewards; // Sum of reimbursable fees and stake rewards available to the parties that made contributions to the side that ultimately wins a dispute.
-        mapping(address => mapping (uint => uint)) contributions; // Maps contributors to their contributions for each side. contributions[address][submissionID].
+        mapping(address => mapping (uint => uint)) contributions; // Maps contributors to their contributions for each side in the form contributions[address][submissionID].
         uint successfullyPaid; // Sum of all successfully paid fees paid by all sides.
     }
 
