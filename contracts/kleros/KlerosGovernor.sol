@@ -265,7 +265,7 @@ contract KlerosGovernor is Arbitrable {
     }
 
     /** @dev Withdraws submitted transaction list. Reimburses submission deposit.
-     *  Withdrawal is only possible during the first half of the submission period and during withdrawPeriod seconds after the submission is made.
+     *  Withdrawal is only possible during the first half of the submission period and during withdrawTimeout seconds after the submission is made.
      *  @param _submissionID Submission's index in the array of submitted lists of the current sesssion.
      *  @param _listHash Hash of a withdrawing list.
      */
