@@ -4,7 +4,7 @@
  *  @reviewers: [@clesaege, @ferittuncer]
  *  @auditors: []
  *  @bounties: [none, currently]
- *  @deployments: [Used for https://github.com/kleros/kleros/blob/master/contracts/kleros/KlerosLiquid.sol]
+ *  @deployments: []
  */
 pragma solidity ^0.4.24;
 
