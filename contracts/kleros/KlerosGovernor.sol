@@ -1,6 +1,6 @@
 /**
  *  @authors: [@unknownunknown1]
- *  @reviewers: [@ferittuncer, @clesaege, @satello*, @mtsalenc*, @remedcu]
+ *  @reviewers: [@ferittuncer, @clesaege, @satello*, @mtsalenc, @remedcu]
  *  @auditors: []
  *  @bounties: [{ link: https://github.com/kleros/kleros/issues/155, maxPayout: 100 ETH }]
  *  @deployments: []
@@ -24,7 +24,7 @@ contract KlerosGovernor is Arbitrable {
     using CappedMath for uint;
 
     /* *** Contract variables *** */
-    enum Status {NoDispute, DisputeCreated, Resolved}
+    enum Status { NoDispute, DisputeCreated, Resolved }
 
     struct Session {
         Round[] rounds; // Tracks each appeal round of the dispute in the session in the form rounds[appeal].
@@ -104,16 +104,16 @@ contract KlerosGovernor is Arbitrable {
      *  @param _description The string in CSV format that contains labels of list's transactions.
      *  Note that the submitter may give bad descriptions of correct actions, but this is to be seen as UI enhancement, not a critical feature and that would play against him in case of dispute.
      */
-    event ListSubmitted(uint indexed _listID, address indexed _submitter, uint _session, string _description);
+    event ListSubmitted(uint indexed _listID, address indexed _submitter, uint indexed _session, string _description);
 
     /** @dev Constructor.
-     *  @param _arbitrator The arbitrator of the contract. It should support appealPeriod.
+     *  @param _arbitrator The arbitrator of the contract. It must support appealPeriod.
      *  @param _extraData Extra data for the arbitrator.
      *  @param _submissionBaseDeposit The base deposit required for submission.
      *  @param _submissionTimeout Time in seconds allocated for submitting transaction list.
      *  @param _executionTimeout Time in seconds after approval that allows to execute transactions of the approved list.
      *  @param _withdrawTimeout Time in seconds after submission that allows to withdraw submitted list.
-     *  @param _sharedMultiplier Multiplier of the appeal cost that submitters has to pay for a round when there is no winner/loser in the previous round. In basis points.
+     *  @param _sharedMultiplier Multiplier of the appeal cost that submitters has to pay for a round when there is no winner/loser in the previous round (e.g. when there isn't a previous round). In basis points.
      *  @param _winnerMultiplier Multiplier of the appeal cost that the winner has to pay for a round. In basis points.
      *  @param _loserMultiplier Multiplier of the appeal cost that the loser has to pay for a round. In basis points.
      */
@@ -171,7 +171,7 @@ contract KlerosGovernor is Arbitrable {
         executionTimeout = _executionTimeout;
     }
 
-    /** @dev Changes the time allowed for list withdrawal.
+    /** @dev Changes list withdrawal timeout. Note that the withdrawal period is the intersecion between the withdraw timeout and the first half of the submission period.
      *  @param _withdrawTimeout The new duration of withdraw period, in seconds.
      */
     function changeWithdrawTimeout(uint _withdrawTimeout) public onlyByGovernor {
