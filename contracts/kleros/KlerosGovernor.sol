@@ -113,7 +113,7 @@ contract KlerosGovernor is Arbitrable {
      *  @param _submissionTimeout Time in seconds allocated for submitting transaction list.
      *  @param _executionTimeout Time in seconds after approval that allows to execute transactions of the approved list.
      *  @param _withdrawTimeout Time in seconds after submission that allows to withdraw submitted list.
-     *  @param _sharedMultiplier Multiplier of the appeal cost that submitters has to pay for a round when there is no winner/loser in the previous round (e.g. when there isn't a previous round). In basis points.
+     *  @param _sharedMultiplier Multiplier of the appeal cost that submitters has to pay for a round when there is no winner/loser in the previous round (e.g. when it's the very first round). In basis points.
      *  @param _winnerMultiplier Multiplier of the appeal cost that the winner has to pay for a round. In basis points.
      *  @param _loserMultiplier Multiplier of the appeal cost that the loser has to pay for a round. In basis points.
      */
@@ -171,7 +171,7 @@ contract KlerosGovernor is Arbitrable {
         executionTimeout = _executionTimeout;
     }
 
-    /** @dev Changes list withdrawal timeout. Note that the withdrawal period is the intersecion between the withdraw timeout and the first half of the submission period.
+    /** @dev Changes list withdrawal timeout. Note that withdrawals are only possible in the first half of the submission period.
      *  @param _withdrawTimeout The new duration of withdraw period, in seconds.
      */
     function changeWithdrawTimeout(uint _withdrawTimeout) public onlyByGovernor {
