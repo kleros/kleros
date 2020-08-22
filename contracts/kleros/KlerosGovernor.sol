@@ -461,7 +461,7 @@ contract KlerosGovernor is Arbitrable {
             submission.approvalTime = now;
             submission.submitter.send(session.sumDeposit);
         }
-        // If the ruiling is "0" the reserved funds of this session become expendable.
+        // If the ruling is "0" the reserved funds of this session become expendable.
         reservedETH = reservedETH.subCap(session.sumDeposit);
 
         session.sumDeposit = 0;
