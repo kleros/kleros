@@ -2,7 +2,7 @@
  *  @authors: [@unknownunknown1]
  *  @reviewers: [@ferittuncer, @clesaege, @satello*, @mtsalenc, @remedcu]
  *  @auditors: []
- *  @bounties: [{ link: https://github.com/kleros/kleros/issues/155, maxPayout: 100 ETH }]
+ *  @bounties: [{ link: https://github.com/kleros/kleros/issues/155, maxPayout: 200 ETH }]
  *  @deployments: []
  *  @tools: [MythX]
  */
