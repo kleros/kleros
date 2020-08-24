@@ -442,10 +442,13 @@ contract KlerosGovernor is Arbitrable {
         require(session.status == Status.DisputeCreated, "The dispute has already been resolved.");
         require(_ruling <= session.submittedLists.length, "Ruling is out of bounds.");
 
-        if (shadowWinner != NO_SHADOW_WINNER)
+        if (shadowWinner != NO_SHADOW_WINNER) {
+            emit Ruling(Arbitrator(msg.sender), _disputeID, shadowWinner + 1);
             executeRuling(_disputeID, shadowWinner + 1);
-        else
+        } else {
+            emit Ruling(Arbitrator(msg.sender), _disputeID, _ruling);
             executeRuling(_disputeID, _ruling);
+        }
     }
 
     /** @dev Executes a ruling of a dispute.
