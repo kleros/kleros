@@ -48,7 +48,7 @@ contract KlerosGovernor is Arbitrable {
         address submitter; // The one who submits the list.
         uint deposit; // Value of the deposit paid upon submission of the list.
         Transaction[] txs; // Transactions stored in the list in the form txs[_transactionIndex].
-        bytes32 listHash; // A hash chain of all transactions stored in the list. This is used as a unique identifier.
+        bytes32 listHash; // A hash chain of all transactions stored in the list. This is used as a unique identifier within a session.
         uint submissionTime; // The time when the list was submitted.
         bool approved; // Whether the list was approved for execution or not.
         uint approvalTime; // The time when the list was approved.
