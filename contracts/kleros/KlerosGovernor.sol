@@ -142,6 +142,7 @@ contract KlerosGovernor is Arbitrable {
     }
 
     /** @dev Sets the meta evidence. Can only be called once.
+     *  Convenience function that removes the need to precompute the deployed contract address for the metaevidence data.
      *  @param _metaEvidence The URI of the meta evidence file.
      */
     function setMetaEvidence(string _metaEvidence) external {
