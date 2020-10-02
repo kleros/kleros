@@ -149,7 +149,7 @@ contract KlerosGovernor is Arbitrable {
     function setMetaEvidence(string _metaEvidence) external {
         require(msg.sender == deployer, "Can only be called once by the deployer of the contract.");
         deployer = address(0);
-        emit MetaEvidence(0, _metaEvidence);
+        emit MetaEvidence(metaEvidenceUpdates, _metaEvidence);
     }
 
     /** @dev Changes the value of the base deposit required for submitting a list.
@@ -214,6 +214,7 @@ contract KlerosGovernor is Arbitrable {
      *  @param _metaEvidence URI to the new meta evidence file.
      */
     function changeMetaEvidence(string _metaEvidence) public onlyByGovernor {
+        require(deployer == address(0), "Metaevidence was not set.");
         metaEvidenceUpdates++;
         emit MetaEvidence(metaEvidenceUpdates, _metaEvidence);
     }
@@ -326,7 +327,7 @@ contract KlerosGovernor is Arbitrable {
             session.sumDeposit = session.sumDeposit.subCap(arbitrationCost);
 
             reservedETH = reservedETH.subCap(arbitrationCost);
-            emit Dispute(arbitrator, session.disputeID, 0, sessions.length - 1);
+            emit Dispute(arbitrator, session.disputeID, metaEvidenceUpdates, sessions.length - 1);
         }
     }
 
