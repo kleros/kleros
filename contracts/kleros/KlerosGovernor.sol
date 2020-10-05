@@ -79,6 +79,7 @@ contract KlerosGovernor is Arbitrable {
 
     uint public lastApprovalTime; // The time of the last approval of a transaction list.
     uint public shadowWinner; // Submission index of the first list that paid appeal fees. If it stays the only list that paid appeal fees, it will win regardless of the final ruling.
+    uint public metaEvidenceUpdates; // The number of times the meta evidence has been updated. Used to track the latest meta evidence ID.
 
     Submission[] public submissions; // Stores all created transaction lists. submissions[_listID].
     Session[] public sessions; // Stores all submitting sessions. sessions[_session].
@@ -148,7 +149,7 @@ contract KlerosGovernor is Arbitrable {
     function setMetaEvidence(string _metaEvidence) external {
         require(msg.sender == deployer, "Can only be called once by the deployer of the contract.");
         deployer = address(0);
-        emit MetaEvidence(0, _metaEvidence);
+        emit MetaEvidence(metaEvidenceUpdates, _metaEvidence);
     }
 
     /** @dev Changes the value of the base deposit required for submitting a list.
@@ -207,6 +208,15 @@ contract KlerosGovernor is Arbitrable {
     function changeArbitrator(Arbitrator _arbitrator, bytes _arbitratorExtraData) public onlyByGovernor duringSubmissionPeriod {
         arbitrator = _arbitrator;
         arbitratorExtraData = _arbitratorExtraData;
+    }
+
+    /** @dev Update the meta evidence used for disputes.
+     *  @param _metaEvidence URI to the new meta evidence file.
+     */
+    function changeMetaEvidence(string _metaEvidence) public onlyByGovernor {
+        require(deployer == address(0), "Metaevidence was not set.");
+        metaEvidenceUpdates++;
+        emit MetaEvidence(metaEvidenceUpdates, _metaEvidence);
     }
 
     /** @dev Creates transaction list based on input parameters and submits it for potential approval and execution.
@@ -317,7 +327,7 @@ contract KlerosGovernor is Arbitrable {
             session.sumDeposit = session.sumDeposit.subCap(arbitrationCost);
 
             reservedETH = reservedETH.subCap(arbitrationCost);
-            emit Dispute(arbitrator, session.disputeID, 0, sessions.length - 1);
+            emit Dispute(arbitrator, session.disputeID, metaEvidenceUpdates, sessions.length - 1);
         }
     }
 
