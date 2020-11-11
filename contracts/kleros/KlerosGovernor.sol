@@ -462,6 +462,14 @@ contract KlerosGovernor is Arbitrable {
         }
     }
 
+    /** @dev Allows to submit evidence for a current session.
+     *  @param _evidenceURI Link to evidence.
+     */
+    function submitEvidence(string _evidenceURI) public {
+        if (bytes(_evidenceURI).length > 0)
+            emit Evidence(arbitrator, sessions.length - 1, msg.sender, _evidenceURI);
+    }
+
     /** @dev Executes a ruling of a dispute.
      *  @param _disputeID ID of the dispute in the Arbitrator contract.
      *  @param _ruling Ruling given by the arbitrator. Note that 0 is reserved for "Refuse to arbitrate".
