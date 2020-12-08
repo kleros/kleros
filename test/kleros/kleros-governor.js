@@ -18,23 +18,21 @@ contract('KlerosGovernor', function(accounts) {
   const submitter2 = accounts[2]
   const submitter3 = accounts[3]
   const other = accounts[4]
-  const submissionBaseDeposit = 9e17
-  const executionTimeout = 3000
-  const submissionTimeout = 3600
-  const withdrawTimeout = 100
-  const sharedMultiplier = 5000
-  const winnerMultiplier = 2000
-  const loserMultiplier = 7000
-  const arbitrationFee = 1e17
-  const submissionDeposit = submissionBaseDeposit + arbitrationFee
+  const submissionBaseDeposit = 9e17 // 0.9 ETH
+  const executionTimeout = 3000 // 50 min
+  const submissionTimeout = 3600 // 1 hour
+  const withdrawTimeout = 100 // 1 min 40 sec
+  const sharedMultiplier = 5000 // 50%
+  const winnerMultiplier = 2000 // 20%
+  const loserMultiplier = 7000 // 70%
+  const arbitrationFee = 1e17 // 0.1 ETH
+  const submissionDeposit = 1e18 // 1 ETH, submissionBaseDeposit + arbitrationFee
   const arbitratorExtraData = 0x85
-  const appealTimeout = 1200
-  const MULTIPLIER_DIVISOR = 10000
+  const appealTimeout = 1200 // 20 min
+  const MULTIPLIER_DIVISOR = 10000 // 100%
   const metaEvidenceURI = 'https://metaevidence.io'
-  // Though this description is for the list with 3 transactions, for test purposes an actual length of a submitted list is irrelevant.
-  const listDescription = 'tx1, tx2, tx3'
 
-  const gasPrice = 5000000000
+  const gasPrice = 5000000000 // 5 Gwei
 
   let arbitrator
   let klerosgovernor
@@ -122,10 +120,6 @@ contract('KlerosGovernor', function(accounts) {
   })
 
   it('Should set correct values in a newly submitted list and fire the event', async () => {
-    let index1
-    let index2
-    let dataString
-
     // Should fail if arrays are not the same length. We check between arrays having 0 and 1 length so we don't have to deal with tx order requirement.
     await expectThrow(
       klerosgovernor.submitList(
@@ -133,8 +127,8 @@ contract('KlerosGovernor', function(accounts) {
         [],
         '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
         [36],
-        listDescription,
-        { from: submitter1, value: submissionDeposit }
+        'Value array',
+        { from: submitter1, value: 1e18 }
       )
     )
     await expectThrow(
@@ -143,8 +137,8 @@ contract('KlerosGovernor', function(accounts) {
         [1e17],
         '0x246c76df0000000000000000000000000000000000000000000000000000000000000014953d6651000000000000000000000000000000000000000000000000000000000000fb',
         [71],
-        listDescription,
-        { from: submitter1, value: submissionDeposit }
+        'Target array',
+        { from: submitter1, value: 1e18 }
       )
     )
     await expectThrow(
@@ -153,8 +147,8 @@ contract('KlerosGovernor', function(accounts) {
         [10],
         '0x246c76df0000000000000000000000000000000000000000000000000000000000000014953d6651000000000000000000000000000000000000000000000000000000000000fb',
         [],
-        listDescription,
-        { from: submitter1, value: submissionDeposit }
+        'Data length array',
+        { from: submitter1, value: 1e18 }
       )
     )
 
@@ -165,50 +159,20 @@ contract('KlerosGovernor', function(accounts) {
         [10],
         '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
         [36],
-        listDescription,
-        { from: submitter1, value: submissionDeposit - 1000 }
+        'Transaction value too small',
+        { from: submitter1, value: '999999999999999999' } // 1 ETH - 1 wei
       )
     )
 
-    const addresses = [klerosgovernor.address, arbitrator.address]
-    const values = [10, 1e17]
-    const data = [36, 35]
-    const txHash1 = parseInt(
-      soliditySha3(
-        klerosgovernor.address,
-        10,
-        '0x246c76df0000000000000000000000000000000000000000000000000000000000000014'
-      ),
-      16
-    )
-    const txHash2 = parseInt(
-      soliditySha3(
-        arbitrator.address,
-        1e17,
-        '0x953d6651000000000000000000000000000000000000000000000000000000000000fb'
-      ),
-      16
-    )
-
-    if (txHash1 < txHash2) {
-      index1 = 0
-      index2 = 1
-      dataString =
-        '0x246c76df0000000000000000000000000000000000000000000000000000000000000014953d6651000000000000000000000000000000000000000000000000000000000000fb'
-    } else {
-      index1 = 1
-      index2 = 0
-      dataString =
-        '0x953d6651000000000000000000000000000000000000000000000000000000000000fb246c76df0000000000000000000000000000000000000000000000000000000000000014'
-    }
+    const addresses = ['0x0123456789abcdef0123456789abcdef02468ace', '0xeca86420fedcba9876543210fedcba9876543210']
 
     const submissionTx = await klerosgovernor.submitList(
-      [addresses[index1], addresses[index2]],
-      [values[index1], values[index2]],
-      dataString,
-      [data[index1], data[index2]],
-      listDescription,
-      { from: submitter1, value: submissionDeposit + 1000 }
+      [addresses[0], addresses[1]],
+      [10, 0.1e18],
+      '0x246c76df0000000000000000000000000000000000000000000000000000000000000014953d6651000000000000000000000000000000000000000000000000000000000000fb',
+      [36, 35],
+      'Normal submission',
+      { from: submitter1, value: 1.1e18 } // Overdeposit to test refund
     )
 
     const submission = await klerosgovernor.submissions(0)
@@ -230,7 +194,7 @@ contract('KlerosGovernor', function(accounts) {
     )
     assert.equal(
       submissionTx.logs[0].args._description,
-      listDescription,
+      'Normal submission',
       'The event has wrong list description'
     )
     assert.equal(
@@ -255,10 +219,10 @@ contract('KlerosGovernor', function(accounts) {
       'The number of transactions is incorrect'
     )
 
-    const tx1 = await klerosgovernor.getTransactionInfo(0, index1)
+    const tx1 = await klerosgovernor.getTransactionInfo(0, 0)
     assert.equal(
       tx1[0],
-      klerosgovernor.address,
+      addresses[0],
       'The target of the first transaction is incorrect'
     )
     assert.equal(
@@ -272,10 +236,10 @@ contract('KlerosGovernor', function(accounts) {
       'The data of the first transaction is incorrect'
     )
 
-    const tx2 = await klerosgovernor.getTransactionInfo(0, index2)
+    const tx2 = await klerosgovernor.getTransactionInfo(0, 1)
     assert.equal(
       tx2[0],
-      arbitrator.address,
+      addresses[1],
       'The target of the second transaction is incorrect'
     )
     assert.equal(
@@ -289,17 +253,10 @@ contract('KlerosGovernor', function(accounts) {
       'The data of the second transaction is incorrect'
     )
 
-    let hash1
-    let hash2
-    // Swap indexes if txs order is reversed.
-    if (txHash1 < txHash2) {
-      hash1 = soliditySha3(soliditySha3(tx1[0], tx1[1], tx1[2]), 0)
-      hash2 = soliditySha3(tx2[0], tx2[1], tx2[2])
-    } else {
-      hash1 = soliditySha3(soliditySha3(tx2[0], tx2[1], tx2[2]), 0)
-      hash2 = soliditySha3(tx1[0], tx1[1], tx1[2])
-    }
+    const hash1 = soliditySha3(soliditySha3(addresses[0], 10, '0x246c76df0000000000000000000000000000000000000000000000000000000000000014'), 0)
+    const hash2 = soliditySha3(addresses[1], 0.1e18, '0x953d6651000000000000000000000000000000000000000000000000000000000000fb')
     const listHash = soliditySha3(hash2, hash1)
+
     assert.equal(submission[2], listHash, 'The list hash is incorrect')
 
     await increaseTime(submissionTimeout + 1)
@@ -310,8 +267,23 @@ contract('KlerosGovernor', function(accounts) {
         [180],
         '0xfdea',
         [2],
-        listDescription,
-        { from: submitter2, value: submissionDeposit }
+        'Submission timeout',
+        { from: submitter2, value: 1e18 }
+      )
+    )
+  })
+
+  it('Should not allow to submit a list in the wrong order', async () => {
+    const addresses = ['0x0123456789abcdef0123456789abcdef02468ace', '0xeca86420fedcba9876543210fedcba9876543210']
+
+    await expectThrow(
+      klerosgovernor.submitList(
+        [addresses[1], addresses[0]],
+        [0.1e18, 10],
+        '0x953d6651000000000000000000000000000000000000000000000000000000000000fb246c76df0000000000000000000000000000000000000000000000000000000000000014',
+        [35, 36],
+        'Wrong order submission',
+        { from: submitter1, value: 1.1e18 } // Overdeposit to test refund
       )
     )
   })
@@ -322,8 +294,8 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
-      listDescription,
-      { from: submitter1, value: submissionDeposit }
+      'Original list',
+      { from: submitter1, value: 1e18 }
     )
     // Check the case with the same and with different submitters.
     await expectThrow(
@@ -332,8 +304,8 @@ contract('KlerosGovernor', function(accounts) {
         [10],
         '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
         [36],
-        listDescription,
-        { from: submitter1, value: submissionDeposit }
+        'Duplicate list with same submitter',
+        { from: submitter1, value: 1e18 }
       )
     )
 
@@ -343,8 +315,8 @@ contract('KlerosGovernor', function(accounts) {
         [10],
         '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
         [36],
-        listDescription,
-        { from: submitter2, value: submissionDeposit }
+        'Duplicate list with different submitter',
+        { from: submitter2, value: 1e18 }
       )
     )
   })
@@ -355,8 +327,8 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0xfdea',
       [2],
-      listDescription,
-      { from: submitter1, value: submissionDeposit }
+      'List 1',
+      { from: submitter1, value: 1e18 }
     )
 
     await klerosgovernor.submitList(
@@ -364,8 +336,8 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
-      listDescription,
-      { from: submitter2, value: submissionDeposit }
+      'List 2',
+      { from: submitter2, value: 1e18 }
     )
 
     let submittedLists = await klerosgovernor.getSubmittedLists(0)
@@ -423,19 +395,22 @@ contract('KlerosGovernor', function(accounts) {
   })
 
   it('Should not be possible to withdraw in the 2nd half of the submission period', async () => {
+    // Submission timeout is 3600 and withdraw timeout is 100.
+    assert.equal(await klerosgovernor.submissionTimeout(), 3600, 'Submission timeout is incorrect')
+    assert.equal(await klerosgovernor.withdrawTimeout(), 100, 'Withdraw timeout is incorrect')
+
     // Increase time in such way to check that the call throws because of the submission timeout, and not because of withdraw timeout.
-    // Submission timeout is 3600 and withdraw timeout is 60.
     await increaseTime(1790)
     await klerosgovernor.submitList(
       [klerosgovernor.address],
       [10],
       '0xfdea',
       [2],
-      listDescription,
-      { from: submitter1, value: submissionDeposit }
+      'Normal submission',
+      { from: submitter1, value: 1e18 }
     )
 
-    await increaseTime(11)
+    await increaseTime(11) // Go to 2nd half of the submission period
     const listInfo = await klerosgovernor.submissions(0)
     const listHash = await listInfo[2]
     await expectThrow(
@@ -444,10 +419,13 @@ contract('KlerosGovernor', function(accounts) {
   })
 
   it('Should switch to approval period if no lists were submitted', async () => {
+    // Submission timeout is 3600.
+    assert.equal(await klerosgovernor.submissionTimeout(), 3600, 'Submission timeout is incorrect')
+
     // Shouldn't be possible to switch to approval period before timeout
     await expectThrow(klerosgovernor.executeSubmissions({ from: general }))
 
-    await increaseTime(submissionTimeout + 1)
+    await increaseTime(3601) // After submission timeout
     await klerosgovernor.executeSubmissions({ from: general })
 
     assert.equal((await klerosgovernor.getCurrentSessionNumber()).toNumber(), 1)
@@ -457,8 +435,8 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0xfdea',
       [2],
-      listDescription,
-      { from: submitter1, value: submissionDeposit }
+      'New session\'s list',
+      { from: submitter1, value: 1e18 }
     )
 
     const submittedLists = await klerosgovernor.getSubmittedLists(1)
@@ -477,16 +455,19 @@ contract('KlerosGovernor', function(accounts) {
   })
 
   it('Should approve a list if there is only one submission and change period', async () => {
+    // Submission timeout is 3600.
+    assert.equal(await klerosgovernor.submissionTimeout(), 3600, 'Submission timeout is incorrect')
+
     await klerosgovernor.submitList(
       [klerosgovernor.address],
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
-      listDescription,
-      { from: submitter1, value: submissionDeposit }
+      'Only submission',
+      { from: submitter1, value: 1e18 }
     )
 
-    await increaseTime(submissionTimeout + 1)
+    await increaseTime(3601) // After submission timeout
     const oldBalance = await web3.eth.getBalance(submitter1)
 
     await klerosgovernor.executeSubmissions({ from: general })
@@ -515,9 +496,9 @@ contract('KlerosGovernor', function(accounts) {
     )
 
     // Check that submissions are working in the new submitting session
-    await klerosgovernor.submitList([], [], '', [], listDescription, {
+    await klerosgovernor.submitList([], [], '', [], 'New sessions\'s list', {
       from: submitter2,
-      value: submissionDeposit
+      value: 1e18
     })
 
     submittedLists = await klerosgovernor.getSubmittedLists(1)
@@ -550,13 +531,17 @@ contract('KlerosGovernor', function(accounts) {
   })
 
   it('Should create a dispute in arbitrator contract if more than one list was submitted', async () => {
+    // Submission timeout is 3600 and arbitration fee is 0.1 ETH.
+    assert.equal(await klerosgovernor.submissionTimeout(), 3600, 'Submission timeout is incorrect')
+    assert.equal(await arbitrator.arbitrationCost(0x85), 0.1e18, 'Arbitration fee is incorrect')
+
     await klerosgovernor.submitList(
       [klerosgovernor.address],
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
-      listDescription,
-      { from: submitter1, value: submissionDeposit }
+      'List 1',
+      { from: submitter1, value: 1e18 }
     )
 
     await klerosgovernor.submitList(
@@ -564,19 +549,20 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0x2462',
       [2],
-      listDescription,
-      {
-        from: submitter2,
-        value: submissionDeposit
-      }
+      'List 2',
+      { from: submitter2, value: 1e18 }
     )
 
-    await klerosgovernor.submitList([], [], '0x24621111', [], listDescription, {
-      from: submitter3,
-      value: submissionDeposit
-    })
+    await klerosgovernor.submitList(
+      [],
+      [],
+      '0x24621111',
+      [],
+      'List 3',
+      { from: submitter3, value: 1e18 }
+    )
 
-    await increaseTime(submissionTimeout + 1)
+    await increaseTime(3601)
     let sessionInfo = await klerosgovernor.sessions(0)
     const oldSumDeposit = await sessionInfo[2]
 
@@ -612,7 +598,7 @@ contract('KlerosGovernor', function(accounts) {
     const newSumDeposit = await sessionInfo[2]
 
     assert.equal(
-      oldSumDeposit.toNumber() - 1e17,
+      oldSumDeposit.minus(0.1e18).toNumber(),
       newSumDeposit.toNumber(),
       'The sum of the deposits after dispute creation is incorrect'
     )
@@ -636,7 +622,7 @@ contract('KlerosGovernor', function(accounts) {
     )
     assert.equal(
       dispute[2].toNumber(),
-      1e17,
+      0.1e18,
       'Arbitration fee not set up properly'
     )
 
@@ -645,13 +631,17 @@ contract('KlerosGovernor', function(accounts) {
   })
 
   it('Should enforce a correct ruling to the dispute with no appeals', async () => {
+    // Submission timeout is 3600 and appeal timeout is 1200.
+    assert.equal(await klerosgovernor.submissionTimeout(), 3600, 'Submission timeout is incorrect')
+    assert.equal(await arbitrator.timeOut(), 1200, 'Appeal timeout is incorrect')
+
     await klerosgovernor.submitList(
       [klerosgovernor.address],
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
-      listDescription,
-      { from: submitter1, value: submissionDeposit }
+      'List 1',
+      { from: submitter1, value: 1e18 }
     )
 
     await klerosgovernor.submitList(
@@ -659,26 +649,27 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0x2462',
       [2],
-      listDescription,
-      {
-        from: submitter2,
-        value: submissionDeposit
-      }
+      'List 2',
+      { from: submitter2, value: 1e18 }
     )
 
-    await klerosgovernor.submitList([], [], '0x24621111', [], listDescription, {
-      from: submitter3,
-      value: submissionDeposit
-    })
+    await klerosgovernor.submitList(
+      [],
+      [],
+      '0x24621111',
+      [],
+      'List 3',
+      { from: submitter3, value: 1e18 }
+    )
 
-    await increaseTime(submissionTimeout + 1)
+    await increaseTime(3601)
 
     await klerosgovernor.executeSubmissions({ from: general })
 
     let sessionInfo = await klerosgovernor.sessions(0)
 
     await arbitrator.giveRuling(0, 1)
-    await increaseTime(appealTimeout + 1)
+    await increaseTime(1201)
 
     const oldBalance1 = await web3.eth.getBalance(submitter1)
     const oldBalance2 = await web3.eth.getBalance(submitter2)
@@ -743,13 +734,18 @@ contract('KlerosGovernor', function(accounts) {
   })
 
   it('Should enforce a correct ruling to the dispute after appeal', async () => {
+    // Submission timeout is 3600, appeal timeout is 1200 and arbitration fee is 0.1 ETH.
+    assert.equal(await klerosgovernor.submissionTimeout(), 3600, 'Submission timeout is incorrect')
+    assert.equal(await arbitrator.timeOut(), 1200, 'Appeal timeout is incorrect')
+    assert.equal(await arbitrator.arbitrationCost(0x85), 0.1e18, 'Arbitration fee is incorrect')
+
     await klerosgovernor.submitList(
       [klerosgovernor.address],
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
-      listDescription,
-      { from: submitter1, value: submissionDeposit }
+      'List 1',
+      { from: submitter1, value: 1e18 }
     )
 
     await klerosgovernor.submitList(
@@ -757,38 +753,39 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0x2462',
       [2],
-      listDescription,
-      {
-        from: submitter2,
-        value: submissionDeposit
-      }
+      'List 2',
+      { from: submitter2, value: 1e18 }
     )
 
-    await klerosgovernor.submitList([], [], '0x24621111', [], listDescription, {
-      from: submitter3,
-      value: submissionDeposit
-    })
+    await klerosgovernor.submitList(
+      [],
+      [],
+      '0x24621111',
+      [],
+      'List 3',
+      { from: submitter3, value: 1e18 }
+    )
 
-    await increaseTime(submissionTimeout + 1)
+    await increaseTime(3601)
 
     await klerosgovernor.executeSubmissions({ from: general })
 
     // Ruling 1 is equal to 0 submission index (submitter1)
     await arbitrator.giveRuling(0, 1)
     // Appeal fee is the same as arbitration fee for this arbitrator
-    const loserAppealFee =
-      arbitrationFee + (arbitrationFee * loserMultiplier) / MULTIPLIER_DIVISOR
+    // loserAppealFee = 0.17e18 = 0.17 ETH = 0.1 + 70% * 0.1 ETH
+    // = arbitrationFee + (arbitrationFee * loserMultiplier) / MULTIPLIER_DIVISOR
 
     await klerosgovernor.fundAppeal(1, {
       from: submitter2,
-      value: loserAppealFee
+      value: 0.17e18
     })
 
     // Check that it's not possible to pay appeal fee twice
     await expectThrow(
       klerosgovernor.fundAppeal(1, {
         from: submitter2,
-        value: loserAppealFee
+        value: 0.17e18
       })
     )
 
@@ -800,22 +797,22 @@ contract('KlerosGovernor', function(accounts) {
       })
     )
 
-    await increaseTime(appealTimeout / 2 + 1)
+    await increaseTime(601)
 
     // Check that the 2nd loser can't pay in 2nd half
     await expectThrow(
       klerosgovernor.fundAppeal(2, {
         from: submitter3,
-        value: loserAppealFee
+        value: 0.17e18
       })
     )
 
-    const winnerAppealFee =
-      arbitrationFee + (arbitrationFee * winnerMultiplier) / MULTIPLIER_DIVISOR
+    // winnerAppealFee = 0.12e18 = 0.12 ETH = 0.1 + 20% * 0.1 ETH
+    // = arbitrationFee + (arbitrationFee * winnerMultiplier) / MULTIPLIER_DIVISOR
 
     await klerosgovernor.fundAppeal(0, {
       from: submitter1,
-      value: winnerAppealFee
+      value: 0.12e18
     })
 
     const oldBalance1 = await web3.eth.getBalance(submitter1)
@@ -824,7 +821,7 @@ contract('KlerosGovernor', function(accounts) {
 
     // Change the ruling to submitter2.
     await arbitrator.giveRuling(1, 2)
-    await increaseTime(appealTimeout + 1)
+    await increaseTime(1201)
     await arbitrator.giveRuling(1, 2)
 
     const newBalance1 = await web3.eth.getBalance(submitter1)
@@ -858,13 +855,16 @@ contract('KlerosGovernor', function(accounts) {
   })
 
   it('Should change the ruling if loser paid appeal fees while the winner did not', async () => {
+    assert.equal(await klerosgovernor.submissionTimeout(), 3600, 'Submission timeout is incorrect')
+    assert.equal(await arbitrator.timeOut(), 1200, 'Appeal timeout is incorrect')
+
     await klerosgovernor.submitList(
       [klerosgovernor.address],
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
-      listDescription,
-      { from: submitter1, value: submissionDeposit }
+      'List 1',
+      { from: submitter1, value: 1e18 }
     )
 
     await klerosgovernor.submitList(
@@ -872,26 +872,20 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0x2462',
       [2],
-      listDescription,
-      {
-        from: submitter2,
-        value: submissionDeposit
-      }
+      'List 2',
+      { from: submitter2, value: 1e18 }
     )
 
-    await increaseTime(submissionTimeout + 1)
+    await increaseTime(3601)
 
     await klerosgovernor.executeSubmissions({ from: general })
     // Ruling 1 means arbitrator ruled in favor of submitter1
     await arbitrator.giveRuling(0, 1)
 
-    const loserAppealFee =
-      arbitrationFee + (arbitrationFee * loserMultiplier) / MULTIPLIER_DIVISOR
+    // loserAppealFee = 0.17e18 = 0.17 ETH = 0.1 + 70% * 0.1 ETH
+    // arbitrationFee + (arbitrationFee * loserMultiplier) / MULTIPLIER_DIVISOR
 
-    await klerosgovernor.fundAppeal(1, {
-      from: submitter2,
-      value: loserAppealFee
-    })
+    await klerosgovernor.fundAppeal(1, { from: submitter2, value: 0.17e18 })
 
     const shadowWinner = await klerosgovernor.shadowWinner()
     assert.equal(
@@ -900,7 +894,7 @@ contract('KlerosGovernor', function(accounts) {
       'The shadow winner was not tracked correctly by the contract'
     )
 
-    await increaseTime(appealTimeout + 1)
+    await increaseTime(1201)
     await arbitrator.giveRuling(0, 1)
 
     const losingList = await klerosgovernor.submissions(0)
@@ -917,6 +911,9 @@ contract('KlerosGovernor', function(accounts) {
   })
 
   it('Should correctly execute transactions in the approved list (atomic execution)', async () => {
+    assert.equal(await klerosgovernor.submissionTimeout(), 3600, 'Submission timeout is incorrect')
+    assert.equal(await arbitrator.arbitrationCost(0x85), 0.1e18, 'Arbitration fee is incorrect')
+
     // The first transaction creates a dispute with 11 choices in arbitrator contract.
     // The second one changes withdraw timeout in governor contract to 20.
     // Txs order can be reversed because of hash order requirement.
@@ -961,8 +958,8 @@ contract('KlerosGovernor', function(accounts) {
       [values[index1], values[index2]],
       dataString,
       [data[index1], data[index2]],
-      listDescription,
-      { from: submitter1, value: submissionDeposit }
+      'Normal submission',
+      { from: submitter1, value: 1e18 }
     )
 
     // The transaction should not be executed if list is not approved
@@ -970,7 +967,7 @@ contract('KlerosGovernor', function(accounts) {
       klerosgovernor.executeTransactionList(0, 0, 1, { from: general })
     )
 
-    await increaseTime(submissionTimeout + 1)
+    await increaseTime(3601)
 
     await klerosgovernor.executeSubmissions({ from: general })
 
@@ -1029,6 +1026,9 @@ contract('KlerosGovernor', function(accounts) {
   })
 
   it('Should correctly execute transactions in the approved list (batch execution)', async () => {
+    assert.equal(await klerosgovernor.submissionTimeout(), 3600, 'Submission timeout is incorrect')
+    assert.equal(await arbitrator.arbitrationCost(0x85), 0.1e18, 'Arbitration fee is incorrect')
+
     // The first transaction creates a dispute with 11 choices in arbitrator contract.
     // The second one changes withdraw timeout in governor contract to 20.
     // Txs order can be reversed because of hash order requirement.
@@ -1073,11 +1073,11 @@ contract('KlerosGovernor', function(accounts) {
       [values[index1], values[index2]],
       dataString,
       [data[index1], data[index2]],
-      listDescription,
-      { from: submitter1, value: submissionDeposit }
+      'Normal submission',
+      { from: submitter1, value: 1e18 }
     )
 
-    await increaseTime(submissionTimeout + 1)
+    await increaseTime(3601)
 
     await klerosgovernor.executeSubmissions({ from: general })
 
@@ -1125,13 +1125,17 @@ contract('KlerosGovernor', function(accounts) {
   })
 
   it('Should register payments correctly and withdraw correct fees if dispute had winner/loser', async () => {
+    assert.equal(await klerosgovernor.submissionTimeout(), 3600, 'Submission timeout is incorrect')
+    assert.equal(await arbitrator.timeOut(), 1200, 'Appeal timeout is incorrect')
+    assert.equal(await arbitrator.arbitrationCost(0x85), 0.1e18, 'Arbitration fee is incorrect')
+
     await klerosgovernor.submitList(
       [klerosgovernor.address],
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
-      listDescription,
-      { from: submitter1, value: submissionDeposit }
+      'List 1',
+      { from: submitter1, value: 1e18 }
     )
 
     await klerosgovernor.submitList(
@@ -1139,50 +1143,50 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0x2462',
       [2],
-      listDescription,
-      {
-        from: submitter2,
-        value: submissionDeposit
-      }
+      'List 2',
+      { from: submitter2, value: 1e18 }
     )
 
-    await klerosgovernor.submitList([], [], '0x24621111', [], listDescription, {
-      from: submitter3,
-      value: submissionDeposit
-    })
+    await klerosgovernor.submitList(
+      [],
+      [],
+      '0x24621111',
+      [],
+      'List 3',
+      { from: submitter3, value: 1e18 }
+    )
 
-    await increaseTime(submissionTimeout + 1)
+    await increaseTime(3601)
 
     await klerosgovernor.executeSubmissions({ from: general })
 
     await arbitrator.giveRuling(0, 3)
 
-    const loserAppealFee =
-      arbitrationFee + (arbitrationFee * loserMultiplier) / MULTIPLIER_DIVISOR
-
-    const winnerAppealFee =
-      arbitrationFee + (arbitrationFee * winnerMultiplier) / MULTIPLIER_DIVISOR
+    // loserAppealFee = 0.17e18 = 0.17 ETH = 0.1 + 70% * 0.1 ETH
+    // arbitrationFee + (arbitrationFee * loserMultiplier) / MULTIPLIER_DIVISOR
+    // winnerAppealFee = 0.12e18 = 0.12 ETH = 0.1 + 20% * 0.1 ETH
+    // arbitrationFee + (arbitrationFee * winnerMultiplier) / MULTIPLIER_DIVISOR
 
     await klerosgovernor.fundAppeal(0, {
       from: submitter1,
-      value: loserAppealFee
+      value: 0.17e18
     })
 
     // Deliberately underpay with 2nd loser to check correct fee distribution.
     await klerosgovernor.fundAppeal(1, {
       from: submitter2,
-      value: arbitrationFee
+      value: 0.1e18
     })
 
     // Winner's fee is crowdfunded.
     await klerosgovernor.fundAppeal(2, {
       from: other,
-      value: winnerAppealFee * 0.75
+      value: 0.09e18 // 75%
     })
 
     await klerosgovernor.fundAppeal(2, {
       from: submitter3,
-      value: 1e18
+      value: 1e18 // > 100%
     })
 
     // Check that it's not possible to withdraw fees if dispute is unresolved.
@@ -1196,7 +1200,7 @@ contract('KlerosGovernor', function(accounts) {
     const roundInfo = await klerosgovernor.getRoundInfo(0, 0)
     assert.equal(
       roundInfo[0][0].toNumber(),
-      loserAppealFee,
+      0.17e18,
       'Registered fee of the first loser is incorrect'
     )
     assert.equal(
@@ -1206,7 +1210,7 @@ contract('KlerosGovernor', function(accounts) {
     )
     assert.equal(
       roundInfo[0][1].toNumber(),
-      arbitrationFee,
+      0.1e18,
       'Registered fee of the second loser is incorrect'
     )
     assert.equal(
@@ -1216,7 +1220,7 @@ contract('KlerosGovernor', function(accounts) {
     )
     assert.equal(
       roundInfo[0][2].toNumber(),
-      winnerAppealFee,
+      0.12e18,
       'Registered fee of the winner is incorrect'
     )
     assert.equal(
@@ -1226,12 +1230,12 @@ contract('KlerosGovernor', function(accounts) {
     )
     assert.equal(
       roundInfo[2].toNumber(),
-      winnerAppealFee + loserAppealFee - arbitrationFee,
+      0.19e18, // winnerAppealFee + loserAppealFee - arbitrationFee
       'Incorrect fee rewards value'
     )
     assert.equal(
       roundInfo[3].toNumber(),
-      winnerAppealFee + loserAppealFee,
+      0.29e18, // winnerAppealFee + loserAppealFee
       'Incorrect successfully paid fees value'
     )
 
@@ -1240,10 +1244,10 @@ contract('KlerosGovernor', function(accounts) {
     // 2nd loser underpays again in the last round.
     await klerosgovernor.fundAppeal(1, {
       from: submitter2,
-      value: loserAppealFee - 1000
+      value: 0.16e18
     })
 
-    await increaseTime(appealTimeout + 1)
+    await increaseTime(1201)
     await arbitrator.giveRuling(1, 3)
 
     const oldBalance1 = await web3.eth.getBalance(submitter1)
@@ -1263,7 +1267,7 @@ contract('KlerosGovernor', function(accounts) {
     let newBalance2 = await web3.eth.getBalance(submitter2)
     assert.equal(
       newBalance2.toString(),
-      oldBalance2.plus(arbitrationFee).toString(),
+      oldBalance2.plus(0.1e18).toString(),
       'Second loser should be reimbursed what he paid in the first round'
     )
 
@@ -1275,8 +1279,7 @@ contract('KlerosGovernor', function(accounts) {
     assert.equal(
       newBalance2.toString(),
       oldBalance2
-        .plus(loserAppealFee)
-        .minus(1000)
+        .plus(0.16e18)
         .toString(),
       'Second loser should be reimbursed what he paid in the last round'
     )
@@ -1288,7 +1291,7 @@ contract('KlerosGovernor', function(accounts) {
     const newBalance3 = await web3.eth.getBalance(submitter3) // winner
     assert.equal(
       newBalance3.toString(),
-      oldBalance3.plus(0.25 * roundInfo[2]).toString(),
+      oldBalance3.plus(0.0475e18).toString(), // 25% * 0.19 ETH
       'Incorrect balance of the first crowdfunder after funding winning list'
     )
     const oldBalance4 = await web3.eth.getBalance(other)
@@ -1298,19 +1301,23 @@ contract('KlerosGovernor', function(accounts) {
     const newBalance4 = await web3.eth.getBalance(other)
     assert.equal(
       newBalance4.toString(),
-      oldBalance4.plus(0.75 * roundInfo[2]).toString(),
+      oldBalance4.plus(0.1425e18).toString(), // 75% * 0.19 ETH
       'Incorrect balance of the second crowdfunder after funding winning list'
     )
   })
 
   it('Should withdraw correct fees if arbitrator refused to arbitrate', async () => {
+    assert.equal(await klerosgovernor.submissionTimeout(), 3600, 'Submission timeout is incorrect')
+    assert.equal(await arbitrator.timeOut(), 1200, 'Appeal timeout is incorrect')
+    assert.equal(await arbitrator.arbitrationCost(0x85), 0.1e18, 'Arbitration fee is incorrect')
+
     await klerosgovernor.submitList(
       [klerosgovernor.address],
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
-      listDescription,
-      { from: submitter1, value: submissionDeposit }
+      'List 1',
+      { from: submitter1, value: 1e18 }
     )
 
     await klerosgovernor.submitList(
@@ -1318,57 +1325,57 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0x2462',
       [2],
-      listDescription,
-      {
-        from: submitter2,
-        value: submissionDeposit
-      }
+      'List 2',
+      { from: submitter2, value: 1e18 }
     )
 
-    await klerosgovernor.submitList([], [], '0x24621111', [], listDescription, {
-      from: submitter3,
-      value: submissionDeposit
-    })
+    await klerosgovernor.submitList(
+      [],
+      [],
+      '0x24621111',
+      [],
+      'List 3',
+      { from: submitter3, value: 1e18 })
 
-    await increaseTime(submissionTimeout + 1)
+    await increaseTime(3601)
 
     await klerosgovernor.executeSubmissions({ from: general })
 
     await arbitrator.giveRuling(0, 0)
 
-    const sharedAppealFee =
-      arbitrationFee + (arbitrationFee * sharedMultiplier) / MULTIPLIER_DIVISOR
-
-    await klerosgovernor.fundAppeal(0, {
-      from: other,
-      value: sharedAppealFee * 0.2
-    })
-
-    await klerosgovernor.fundAppeal(0, {
-      from: submitter1,
-      value: 5e18
-    })
+    // sharedAppealFee = 0.15e18 = 0.15 ETH = 0.1 + 50% * 0.1 ETH
+    // = arbitrationFee + (arbitrationFee * sharedMultiplier) / MULTIPLIER_DIVISOR
 
     // Deliberately underpay with 3rd submitter.
     await klerosgovernor.fundAppeal(2, {
       from: submitter3,
-      value: sharedAppealFee * 0.3
+      value: 0.045e18 // 30%
+    })
+
+    await klerosgovernor.fundAppeal(0, {
+      from: other,
+      value: 0.03e18 // 20%
+    })
+
+    await klerosgovernor.fundAppeal(0, {
+      from: submitter1,
+      value: 1e18 // > 100%
     })
 
     await klerosgovernor.fundAppeal(1, {
       from: other,
-      value: sharedAppealFee * 0.4
+      value: 0.06e18 // 40%
     })
 
     await klerosgovernor.fundAppeal(1, {
       from: submitter2,
-      value: 2e18
+      value: 1e18 // > 100%
     })
 
     const roundInfo = await klerosgovernor.getRoundInfo(0, 0)
 
     await arbitrator.giveRuling(1, 0)
-    await increaseTime(appealTimeout + 1)
+    await increaseTime(1201)
     await arbitrator.giveRuling(1, 0)
 
     const oldBalance1 = await web3.eth.getBalance(submitter1)
@@ -1378,7 +1385,7 @@ contract('KlerosGovernor', function(accounts) {
     const newBalance1 = await web3.eth.getBalance(submitter1)
     assert.equal(
       newBalance1.toString(),
-      oldBalance1.plus(0.4 * roundInfo[2]).toString(),
+      oldBalance1.plus(0.08e18).toString(), // 80%/2 * (2 * sharedAppealFee - arbitrationFee)
       'Incorrect balance of the first submitter'
     )
     const oldBalance2 = await web3.eth.getBalance(submitter2)
@@ -1388,7 +1395,7 @@ contract('KlerosGovernor', function(accounts) {
     const newBalance2 = await web3.eth.getBalance(submitter2)
     assert.equal(
       newBalance2.toString(),
-      oldBalance2.plus(0.3 * roundInfo[2]).toString(),
+      oldBalance2.plus(0.06e18).toString(), // 60%/2 * (2 * sharedAppealFee - arbitrationFee)
       'Incorrect balance of the second submitter'
     )
 
@@ -1399,8 +1406,8 @@ contract('KlerosGovernor', function(accounts) {
     const newBalance3 = await web3.eth.getBalance(submitter3)
     assert.equal(
       newBalance3.toString(),
-      oldBalance3.plus(0.3 * sharedAppealFee).toString(),
-      'Incorrect balance of the 3rd submitter'
+      oldBalance3.plus(0.045e18).toString(), // 30% * sharedAppealFee
+      'Incorrect balance of the third submitter'
     )
     const oldBalance4 = await web3.eth.getBalance(other)
     await klerosgovernor.withdrawFeesAndRewards(other, 0, 0, 0, {
@@ -1412,12 +1419,16 @@ contract('KlerosGovernor', function(accounts) {
     const newBalance4 = await web3.eth.getBalance(other)
     assert.equal(
       newBalance4.toString(),
-      oldBalance4.plus(0.3 * roundInfo[2]).toString(),
+      oldBalance4.plus(0.06e18).toString(), // 30% * (2 * sharedAppealFee - arbitrationFee)
       'Incorrect balance of the crowdfunder'
     )
   })
 
   it('Check that funds are tracked correctly', async () => {
+    assert.equal(await klerosgovernor.submissionTimeout(), 3600, 'Submission timeout is incorrect')
+    assert.equal(await klerosgovernor.executionTimeout(), 3000, 'Submission timeout is incorrect')
+    assert.equal(await arbitrator.timeOut(), 1200, 'Appeal timeout is incorrect')
+
     let reservedETH
     let expendableFunds
 
@@ -1426,8 +1437,8 @@ contract('KlerosGovernor', function(accounts) {
       ['100000000000000000'],
       '0xc13517e1000000000000000000000000000000000000000000000000000000000000000b00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000001fa',
       [101],
-      listDescription,
-      { from: submitter1, value: submissionDeposit }
+      'List 1',
+      { from: submitter1, value: 1e18 }
     )
 
     await klerosgovernor.submitList(
@@ -1435,8 +1446,8 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
-      listDescription,
-      { from: submitter2, value: submissionDeposit }
+      'List 2',
+      { from: submitter2, value: 1e18 }
     )
 
     reservedETH = (await klerosgovernor.reservedETH()).toNumber()
@@ -1462,8 +1473,8 @@ contract('KlerosGovernor', function(accounts) {
       [10],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
-      listDescription,
-      { from: submitter2, value: submissionDeposit }
+      'Dispute list',
+      { from: submitter2, value: 1e18 }
     )
 
     await increaseTime(submissionTimeout + 1)
@@ -1479,15 +1490,14 @@ contract('KlerosGovernor', function(accounts) {
 
     await arbitrator.giveRuling(0, 2)
 
-    const loserAppealFee =
-      arbitrationFee + (arbitrationFee * loserMultiplier) / MULTIPLIER_DIVISOR
-
-    const winnerAppealFee =
-      arbitrationFee + (arbitrationFee * winnerMultiplier) / MULTIPLIER_DIVISOR
+    // loserAppealFee = 0.17e18 = 0.17 ETH = 0.1 + 70% * 0.1 ETH
+    // arbitrationFee + (arbitrationFee * loserMultiplier) / MULTIPLIER_DIVISOR
+    // winnerAppealFee = 0.12e18 = 0.12 ETH = 0.1 + 20% * 0.1 ETH
+    // arbitrationFee + (arbitrationFee * winnerMultiplier) / MULTIPLIER_DIVISOR
 
     await klerosgovernor.fundAppeal(0, {
       from: submitter1,
-      value: loserAppealFee
+      value: 0.17e18
     })
 
     reservedETH = (await klerosgovernor.reservedETH()).toNumber()
@@ -1499,7 +1509,7 @@ contract('KlerosGovernor', function(accounts) {
 
     await klerosgovernor.fundAppeal(1, {
       from: other,
-      value: winnerAppealFee
+      value: 0.12e18
     })
 
     reservedETH = (await klerosgovernor.reservedETH()).toNumber()
@@ -1510,7 +1520,7 @@ contract('KlerosGovernor', function(accounts) {
     )
 
     await arbitrator.giveRuling(1, 1)
-    await increaseTime(appealTimeout + 1)
+    await increaseTime(1201)
     await arbitrator.giveRuling(1, 1)
 
     // SumDeposit value (1.9e18) should be subtracted.
@@ -1545,13 +1555,34 @@ contract('KlerosGovernor', function(accounts) {
       'Incorrect expendable funds value after funding'
     )
 
-    await klerosgovernor.executeTransactionList(0, 0, 0, { from: general })
+    await klerosgovernor.executeTransactionList(0, 0, 0, { from: general }) // Changes withdraw timeout to 20
     expendableFunds = (await klerosgovernor.getExpendableFunds()).toNumber()
     assert.equal(
       expendableFunds,
       2.9e18,
       'Incorrect expendable funds value after execution'
     )
+
+    // Check that the transaction was correctly executed
+    const dispute = await arbitrator.disputes(2)
+    assert.equal(
+      dispute[0],
+      klerosgovernor.address,
+      'Incorrect arbitrable. First transaction was not executed correctly'
+    )
+    assert.equal(
+      dispute[1].toNumber(),
+      11,
+      'Incorrect number of choices. First transaction was not executed correctly'
+    )
+    assert.equal(
+      dispute[2].toNumber(),
+      1e17,
+      'Incorrect fee. First transaction was not executed correctly'
+    )
+
+    const newWithdrawTimeout = await klerosgovernor.withdrawTimeout()
+    assert.notEqual(newWithdrawTimeout, 20, 'The rejected transaction was executed')
   })
 
   it('Should not be possible to execute transaction list after the execution timeout', async () => {
@@ -1560,17 +1591,17 @@ contract('KlerosGovernor', function(accounts) {
       [0],
       '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
       [36],
-      listDescription,
-      { from: submitter1, value: submissionDeposit }
+      'After execution timeout',
+      { from: submitter1, value: 1e18 }
     )
 
-    await increaseTime(submissionTimeout + 1)
+    await increaseTime(3601)
 
     await klerosgovernor.executeSubmissions({ from: general })
 
     await klerosgovernor.sendTransaction({ from: other, value: 3e18 })
 
-    await increaseTime(executionTimeout + 1)
+    await increaseTime(3001)
     await expectThrow(
       klerosgovernor.executeTransactionList(0, 0, 0, { from: general })
     )
