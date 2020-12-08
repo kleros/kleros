@@ -25,7 +25,7 @@ contract('PolicyRegistry', accounts =>
           .PolicyUpdate({ _subcourtID: subcourtID }, { fromBlock: 0 })
           .get((err, logs) => (err ? reject(err) : resolve(logs)))
       )).map(e => e.args._policy)
-    ).to.deep.equal(['', ...policies.slice(0, policies.length - 1)])
+    ).to.deep.equal(policies)
 
     // Verify the last policy is set.
     const lastPolicy = policies[policies.length - 1]
