@@ -107,8 +107,8 @@ contract('KlerosLiquid', accounts => {
     randomNumber = 10
     RNG = await ConstantNG.new(randomNumber)
     governor = accounts[0]
-    minStakingTime = 1
-    maxDrawingTime = 1
+    minStakingTime = 15
+    maxDrawingTime = 30
     const {
       subcourtMap: _subcourtMap,
       subcourtTree: _subcourtTree
@@ -503,6 +503,7 @@ contract('KlerosLiquid', accounts => {
         }
 
         // Continue
+        await increaseTime(maxDrawingTime)
         await klerosLiquid.passPhase()
       }
     }
