@@ -31,19 +31,19 @@
     ]
   },
   "devDependencies": {
-    "@kleros/kathari": "^0.23.0",
-    "coveralls": "^3.0.2",
-    "ganache-cli": "^6.3.0",
-    "husky": "^3.0.9",
+    "@kleros/kathari": "^0.25.0",
+    "coveralls": "^3.1.0",
+    "ganache-cli": "^6.12.1",
+    "husky": "^4.3.5",
     "npm-run-all": "^4.1.5",
-    "openzeppelin-solidity": "^1.12.0",
-    "solidity-coverage": "^0.5.11",
-    "standard-version": "^4.4.0",
-    "truffle": "^4.1.14",
-    "web3-utils": "^1.0.0-beta.36"
+    "openzeppelin-solidity": "^3.3.0",
+    "solidity-coverage": "^0.7.13",
+    "standard-version": "^9.0.0",
+    "truffle": "^5.1.56",
+    "web3-utils": "^1.3.0"
   },
   "dependencies": {
-    "@kleros/kleros-interaction": "^0.9.0",
+    "@kleros/kleros-interaction": "^0.10.0",
     "minimetoken": "^0.2.0"
   },
   "files": [
