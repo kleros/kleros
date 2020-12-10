@@ -19,13 +19,11 @@ contract('PolicyRegistry', accounts =>
       await policyRegistry.setPolicy(subcourtID, policy)
 
     // Verify policy update events were emitted.
-    expect(
-      (await new Promise((resolve, reject) =>
-        policyRegistry
-          .PolicyUpdate({ _subcourtID: subcourtID }, { fromBlock: 0 })
-          .get((err, logs) => (err ? reject(err) : resolve(logs)))
-      )).map(e => e.args._policy)
-    ).to.deep.equal(policies)
+    const events = await policyRegistry.getPastEvents('PolicyUpdate', {
+      filter: { _subcourtID: subcourtID },
+      fromBlock: 0
+    })
+    expect(events.map(e => e.args._policy)).to.deep.equal(policies)
 
     // Verify the last policy is set.
     const lastPolicy = policies[policies.length - 1]

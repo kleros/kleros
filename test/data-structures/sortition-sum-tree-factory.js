@@ -91,6 +91,6 @@ contract('SortitionSumTreeFactory', () =>
     for (const candidate of Object.values(candidates))
       expect(
         await sortitionSumTreeFactory._stakeOf(tree.key, candidate.ID)
-      ).to.deep.equal(web3.toBigNumber(candidate.value))
+      ).to.deep.equal(web3.utils.toBN(candidate.value))
   })
 )
