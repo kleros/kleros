@@ -1,6 +1,6 @@
 /**
  *  @authors: [@epiqueras]
- *  @reviewers: [@clesaege, @unknownunknown1, @ferittuncer, @remedcu]
+ *  @reviewers: [@clesaege, @unknownunknown1, @ferittuncer, @remedcu, @shalzz]
  *  @auditors: []
  *  @bounties: [{ duration: 28 days, link: https://github.com/kleros/kleros/issues/115, maxPayout: 50 ETH }]
  *  @deployments: [ https://etherscan.io/address/0x180eba68d164c3f8c3f6dc354125ebccf4dfcb86 ]
