@@ -1,8 +1,9 @@
 /**
  *  https://contributing.kleros.io/smart-contract-workflow
- *  @reviewers: []
+ *  @authors: [@epiqueras]
+ *  @reviewers: [@clesaege, @ferittuncer]
  *  @auditors: []
- *  @bounties: []
+ *  @bounties: [none, currently]
  *  @deployments: []
  */
 pragma solidity ^0.4.24;
