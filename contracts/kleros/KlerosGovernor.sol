@@ -1,6 +1,6 @@
 /**
  *  @authors: [@unknownunknown1]
- *  @reviewers: [@ferittuncer, @clesaege, @satello*, @mtsalenc, @remedcu, @nix1g, @fnanni-0]
+ *  @reviewers: [@ferittuncer, @clesaege, @satello*, @mtsalenc, @remedcu, @nix1g, @fnanni-0, @MerlinEgalite]
  *  @auditors: []
  *  @bounties: [{ link: https://github.com/kleros/kleros/issues/155, maxPayout: 200 ETH }]
  *  @deployments: []

@@ -1,7 +1,7 @@
 /**
  *  https://contributing.kleros.io/smart-contract-workflow
  *  @authors: [@epiqueras]
- *  @reviewers: [@clesaege, @unknownunknown1, @ferittuncer, @remedcu, @satello, @fnanni-0, @shalzz]
+ *  @reviewers: [@clesaege, @unknownunknown1, @ferittuncer, @remedcu, @satello, @fnanni-0, @shalzz, @MerlinEgalite]
  *  @auditors: []
  *  @bounties: [{ duration: 14 days, link: https://github.com/kleros/kleros/issues/117, maxPayout: 50 ETH }]
  *  @deployments: [ https://etherscan.io/address/0x988b3a538b618c7a603e1c11ab82cd16dbe28069 ]
