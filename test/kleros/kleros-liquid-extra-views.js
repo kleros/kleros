@@ -195,7 +195,7 @@ contract('xKlerosLiquid', accounts => {
     await klerosLiquid.passPhase()
 
     // Stake not high enough.
-    klerosLiquid.setStake(subcourtTree.ID, subcourtTree.minStake - 1)
+    await klerosLiquid.setStake(subcourtTree.ID, subcourtTree.minStake - 1)
     const stake0 = await extraViews.stakeOf(governor, subcourtTree.ID)
     expect(stake0).to.eql(web3.toBigNumber(0))
 
@@ -213,7 +213,7 @@ contract('xKlerosLiquid', accounts => {
       subcourtTree.children[0].children[0].ID,
       subcourtTree.children[0].children[0].minStake
     )
-    klerosLiquid.setStake(
+    await klerosLiquid.setStake(
       subcourtTree.children[0].children[1].ID,
       subcourtTree.children[0].children[1].minStake
     )
