@@ -99,7 +99,7 @@ contract KlerosLiquidExtraViews {
                 }
 
                 if (
-                    index != NOT_FOUND && 
+                    index != NOT_FOUND &&
                     klerosLiquid.pinakion().balanceOf(_account) >= stakedTokens - subcourtStakes[index] + stake
                 ) {
                     subcourtIDs[index] = subcourtID + 1;
