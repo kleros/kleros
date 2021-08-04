@@ -1,4 +1,15 @@
 module.exports = {
+  compilers: {
+    solc: {
+      settings: {
+        optimizer: {
+          enabled: true,
+          runs: 1
+        }
+      },
+      version: '0.4.26'
+    }
+  },
   coverage: {
     gas: 17592186044415,
     gasPrice: 0x01,
@@ -12,12 +23,6 @@ module.exports = {
       host: 'localhost',
       network_id: '*',
       port: 8545
-    }
-  },
-  solc: {
-    optimizer: {
-      enabled: true,
-      runs: 1
     }
   }
 }

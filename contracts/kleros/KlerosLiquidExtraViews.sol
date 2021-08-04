@@ -1,5 +1,6 @@
 /**
  *  https://contributing.kleros.io/smart-contract-workflow
+ *  @authors: [@fnanni-0]
  *  @reviewers: []
  *  @auditors: []
  *  @bounties: []
@@ -11,13 +12,13 @@ import { KlerosLiquid } from "./KlerosLiquid.sol";
 
 /**
  *  @title KlerosLiquidExtraViews
- *  @author Enrique Piqueras - <epiquerass@gmail.com>
  *  @dev Extra view functions for KlerosLiquid. Not part of bug bounty.
  */
 contract KlerosLiquidExtraViews {
     /* Storage */
 
     KlerosLiquid public klerosLiquid;
+    uint private constant NOT_FOUND = uint(-1);
 
     /* Constructor */
 
@@ -73,35 +74,37 @@ contract KlerosLiquidExtraViews {
 
         for (i = klerosLiquid.nextDelayedSetStake(); i <= klerosLiquid.lastDelayedSetStake(); i++) {
             (address account, uint96 subcourtID, uint128 stake) = klerosLiquid.delayedSetStakes(i);
-            if (_account == account) {
-                if (stake == 0) {
-                    for (uint j = 0; j < subcourtIDs.length; j++) {
-                        if (subcourtID == subcourtIDs[j]) {
-                            subcourtIDs[j] = 0;
-                            subcourtStakes[j] = 0;
-                            break;
-                        }
+            if (_account != account) continue;
+
+            (,, uint courtMinStake,,,) = klerosLiquid.courts(subcourtID);
+
+            if (stake == 0) {
+                for (uint j = 0; j < subcourtIDs.length; j++) {
+                    if (subcourtID + 1 == subcourtIDs[j]) {
+                        stakedTokens = stakedTokens - subcourtStakes[j];
+                        subcourtIDs[j] = 0;
+                        subcourtStakes[j] = 0;
+                        break;
                     }
-                } else {
-                    for (j = 0; j < subcourtIDs.length * 2; j++) {
-                        if ((j < subcourtIDs.length && subcourtID + 1 == subcourtIDs[j]) || (j >= subcourtIDs.length && subcourtIDs[j % subcourtIDs.length] == 0)) {
-                            (
-                                ,
-                                ,
-                                uint courtMinStake,
-                                ,
-                                ,
-                            ) = klerosLiquid.courts(j % subcourtIDs.length);
-                            if (
-                                courtMinStake <= stake &&
-                                klerosLiquid.pinakion().balanceOf(_account) >= stakedTokens - subcourtStakes[j % subcourtIDs.length] + stake
-                            ) {
-                                subcourtIDs[j % subcourtIDs.length] = subcourtID + 1;
-                                stakedTokens = stakedTokens - subcourtStakes[j % subcourtIDs.length] + stake;
-                                subcourtStakes[j % subcourtIDs.length] = stake;
-                            }
-                        }
+                }
+            } else if (stake >= courtMinStake) {
+                uint index = NOT_FOUND;
+                for (j = 0; j < subcourtIDs.length; j++) {
+                    if (subcourtIDs[j] == 0 && index == NOT_FOUND) {
+                        index = j; // Save the first empty index, but keep looking for the subcourt.
+                    } else if (subcourtID + 1 == subcourtIDs[j]) {
+                        index = j; // Juror is already active in this subcourt. Save and update.
+                        break;
                     }
+                }
+
+                if (
+                    index != NOT_FOUND &&
+                    klerosLiquid.pinakion().balanceOf(_account) >= stakedTokens - subcourtStakes[index] + stake
+                ) {
+                    subcourtIDs[index] = subcourtID + 1;
+                    stakedTokens = stakedTokens - subcourtStakes[index] + stake;
+                    subcourtStakes[index] = stake;
                 }
             }
         }
