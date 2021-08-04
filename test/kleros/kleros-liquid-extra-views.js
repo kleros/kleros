@@ -130,12 +130,7 @@ contract('xKlerosLiquid', accounts => {
       subcourtTree.sortitionSumTreeK
     )
 
-    const extraData = `0x${(0).toString(16).padStart(64, '0')}${(1)
-      .toString(16)
-      .padStart(64, '0')}`
-    await klerosLiquid.createDispute(2, extraData, {
-      value: await klerosLiquid.arbitrationCost(extraData)
-    })
+    await createDispute({ minJurors: 1, subcourtID: 0 })
     await increaseTime(minStakingTime)
     await klerosLiquid.passPhase()
 
@@ -185,12 +180,7 @@ contract('xKlerosLiquid', accounts => {
     )
 
     // Pass phase.
-    const extraData = `0x${(0).toString(16).padStart(64, '0')}${(1)
-      .toString(16)
-      .padStart(64, '0')}`
-    await klerosLiquid.createDispute(2, extraData, {
-      value: await klerosLiquid.arbitrationCost(extraData)
-    })
+    await createDispute({ minJurors: 1, subcourtID: 0 })
     await increaseTime(minStakingTime)
     await klerosLiquid.passPhase()
 
@@ -259,4 +249,18 @@ contract('xKlerosLiquid', accounts => {
       web3.toBigNumber(subcourtTree.children[0].children[0].minStake)
     ])
   })
+
+  /**
+   * Creates a dispute.
+   * @param {number} subcourtID Id of the subcourt.
+   * @param {number} minJurors Jurors to be drawn in the first round.
+   */
+  async function createDispute(subcourtID = 0, minJurors = 0) {
+    subcourtID = subcourtID.toString(16).padStart(64, '0')
+    minJurors = minJurors.toString(16).padStart(64, '0')
+    const extraData = `0x${subcourtID}${minJurors}`
+    await klerosLiquid.createDispute(2, extraData, {
+      value: await klerosLiquid.arbitrationCost(extraData)
+    })
+  }
 })
