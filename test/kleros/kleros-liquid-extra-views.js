@@ -64,7 +64,7 @@ const asyncForEach = async (method, iterable) => {
   for (const item of array) await method(item)
 }
 
-contract('xKlerosLiquid', accounts => {
+contract('KlerosLiquidExtraViews', accounts => {
   let pinakion
   let RNG
   let governor
@@ -170,101 +170,121 @@ contract('xKlerosLiquid', accounts => {
     ])
   })
 
-  it('Should ignore invalid delayed stakes.', async () => {
-    await asyncForEach(
-      subcourt =>
-        klerosLiquid.createSubcourt(
-          subcourt.parent,
-          subcourt.hiddenVotes,
-          subcourt.minStake,
-          subcourt.alpha,
-          subcourt.jurorFee,
-          subcourt.jurorsForJump,
-          subcourt.timesPerPeriod,
-          subcourt.sortitionSumTreeK
-        ),
-      subcourtMap
-    )
-
-    // Pass phase.
+  it('Should ignore delayed stakes below the min court stake.', async () => {
     await createDispute({ minJurors: 1, subcourtID: 0 })
     await increaseTime(minStakingTime)
     await klerosLiquid.passPhase()
 
     // Stake not high enough.
-    await klerosLiquid.setStake(subcourtTree.ID, subcourtTree.minStake - 1)
+    await klerosLiquid.setStake(0, subcourtTree.minStake - 1)
     const stake0 = await extraViews.stakeOf(governor, subcourtTree.ID)
     expect(stake0).to.eql(web3.toBigNumber(0))
+  })
 
-    // Can only stake in 4 paths.
-    await klerosLiquid.setStake(subcourtTree.ID, subcourtTree.minStake)
-    await klerosLiquid.setStake(
-      subcourtTree.children[0].ID,
-      subcourtTree.children[0].minStake
-    )
-    await klerosLiquid.setStake(
-      subcourtTree.children[1].ID,
-      subcourtTree.children[1].minStake
-    )
-    await klerosLiquid.setStake(
-      subcourtTree.children[0].children[0].ID,
-      subcourtTree.children[0].children[0].minStake
-    )
-    await klerosLiquid.setStake(
-      subcourtTree.children[0].children[1].ID,
-      subcourtTree.children[0].children[1].minStake
-    )
+  describe('When there are delayed stakes', () => {
+    beforeEach('Setup delayed stakes', async () => {
+      await asyncForEach(
+        subcourt =>
+          klerosLiquid.createSubcourt(
+            subcourt.parent,
+            subcourt.hiddenVotes,
+            subcourt.minStake,
+            subcourt.alpha,
+            subcourt.jurorFee,
+            subcourt.jurorsForJump,
+            subcourt.timesPerPeriod,
+            subcourt.sortitionSumTreeK
+          ),
+        subcourtMap
+      )
 
-    let totalStaked =
-      subcourtTree.minStake +
-      subcourtTree.children[0].minStake +
-      subcourtTree.children[1].minStake +
-      subcourtTree.children[0].children[0].minStake
+      // Pass phase.
+      await createDispute({ minJurors: 1, subcourtID: 0 })
+      await increaseTime(minStakingTime)
+      await klerosLiquid.passPhase()
 
-    let [
-      jurorSubcourtIDs,
-      jurorStakedTokens,
-      jurorLockedTokens,
-      jurorSubcourtStakes
-    ] = await extraViews.getJuror(governor)
-    expect(jurorSubcourtIDs).to.deep.equal([
-      web3.toBigNumber(subcourtTree.ID + 1),
-      web3.toBigNumber(subcourtTree.children[0].ID + 1),
-      web3.toBigNumber(subcourtTree.children[1].ID + 1),
-      web3.toBigNumber(subcourtTree.children[0].children[0].ID + 1)
-    ])
-    expect(jurorStakedTokens).to.eql(web3.toBigNumber(totalStaked))
-    expect(jurorLockedTokens).to.eql(web3.toBigNumber(0))
-    expect(jurorSubcourtStakes).to.deep.equal([
-      web3.toBigNumber(subcourtTree.minStake),
-      web3.toBigNumber(subcourtTree.children[0].minStake),
-      web3.toBigNumber(subcourtTree.children[1].minStake),
-      web3.toBigNumber(subcourtTree.children[0].children[0].minStake)
-    ])
+      // Set delayed stakes in 4 paths.
+      await klerosLiquid.setStake(subcourtTree.ID, subcourtTree.minStake)
+      await klerosLiquid.setStake(
+        subcourtTree.children[0].ID,
+        subcourtTree.children[0].minStake
+      )
+      await klerosLiquid.setStake(
+        subcourtTree.children[1].ID,
+        subcourtTree.children[1].minStake
+      )
+      await klerosLiquid.setStake(
+        subcourtTree.children[0].children[0].ID,
+        subcourtTree.children[0].children[0].minStake
+      )
+    })
 
-    // Unstake
-    await klerosLiquid.setStake(subcourtTree.children[0].ID, 0)
-    totalStaked -= subcourtTree.children[0].minStake
-    ;[
-      jurorSubcourtIDs,
-      jurorStakedTokens,
-      jurorLockedTokens,
-      jurorSubcourtStakes
-    ] = await extraViews.getJuror(governor)
-    expect(jurorSubcourtIDs).to.deep.equal([
-      web3.toBigNumber(subcourtTree.ID + 1),
-      web3.toBigNumber(0),
-      web3.toBigNumber(subcourtTree.children[1].ID + 1),
-      web3.toBigNumber(subcourtTree.children[0].children[0].ID + 1)
-    ])
-    expect(jurorStakedTokens).to.eql(web3.toBigNumber(totalStaked))
-    expect(jurorLockedTokens).to.eql(web3.toBigNumber(0))
-    expect(jurorSubcourtStakes).to.deep.equal([
-      web3.toBigNumber(subcourtTree.minStake),
-      web3.toBigNumber(0),
-      web3.toBigNumber(subcourtTree.children[1].minStake),
-      web3.toBigNumber(subcourtTree.children[0].children[0].minStake)
-    ])
+    it('Should ignore delayed stakes in a fifth subcourt path.', async () => {
+      // Staking into a fifth subcourt path is not possible.
+      await klerosLiquid.setStake(
+        subcourtTree.children[0].children[1].ID,
+        subcourtTree.children[0].children[1].minStake
+      )
+
+      const totalStaked =
+        subcourtTree.minStake +
+        subcourtTree.children[0].minStake +
+        subcourtTree.children[1].minStake +
+        subcourtTree.children[0].children[0].minStake
+
+      const [
+        jurorSubcourtIDs,
+        jurorStakedTokens,
+        jurorLockedTokens,
+        jurorSubcourtStakes
+      ] = await extraViews.getJuror(governor)
+      expect(jurorSubcourtIDs).to.deep.equal([
+        web3.toBigNumber(subcourtTree.ID + 1),
+        web3.toBigNumber(subcourtTree.children[0].ID + 1),
+        web3.toBigNumber(subcourtTree.children[1].ID + 1),
+        web3.toBigNumber(subcourtTree.children[0].children[0].ID + 1)
+      ])
+      expect(jurorStakedTokens).to.eql(web3.toBigNumber(totalStaked))
+      expect(jurorLockedTokens).to.eql(web3.toBigNumber(0))
+      expect(jurorSubcourtStakes).to.deep.equal([
+        web3.toBigNumber(subcourtTree.minStake),
+        web3.toBigNumber(subcourtTree.children[0].minStake),
+        web3.toBigNumber(subcourtTree.children[1].minStake),
+        web3.toBigNumber(subcourtTree.children[0].children[0].minStake)
+      ])
+    })
+
+    it('Should get the proper juror stats when unstaking from a court is requested.', async () => {
+      let totalStaked =
+        subcourtTree.minStake +
+        subcourtTree.children[0].minStake +
+        subcourtTree.children[1].minStake +
+        subcourtTree.children[0].children[0].minStake
+
+      // Unstake
+      await klerosLiquid.setStake(subcourtTree.children[0].ID, 0)
+      totalStaked -= subcourtTree.children[0].minStake
+      const [
+        jurorSubcourtIDs,
+        jurorStakedTokens,
+        jurorLockedTokens,
+        jurorSubcourtStakes
+      ] = await extraViews.getJuror(governor)
+      expect(jurorSubcourtIDs).to.deep.equal([
+        web3.toBigNumber(subcourtTree.ID + 1),
+        web3.toBigNumber(0),
+        web3.toBigNumber(subcourtTree.children[1].ID + 1),
+        web3.toBigNumber(subcourtTree.children[0].children[0].ID + 1)
+      ])
+      expect(jurorStakedTokens).to.eql(web3.toBigNumber(totalStaked))
+      expect(jurorLockedTokens).to.eql(web3.toBigNumber(0))
+      expect(jurorSubcourtStakes).to.deep.equal([
+        web3.toBigNumber(subcourtTree.minStake),
+        web3.toBigNumber(0),
+        web3.toBigNumber(subcourtTree.children[1].minStake),
+        web3.toBigNumber(subcourtTree.children[0].children[0].minStake)
+      ])
+    })
   })
 
   /**
