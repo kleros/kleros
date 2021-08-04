@@ -146,16 +146,23 @@ contract('xKlerosLiquid', accounts => {
     expect(stake0).to.eql(web3.toBigNumber(subcourtTree.minStake))
     expect(stake1).to.eql(web3.toBigNumber(subcourtTree.minStake + 1))
 
-    const jurorData = await extraViews.getJuror(governor)
-    expect(jurorData[0]).to.deep.equal([
+    const [
+      jurorSubcourtIDs,
+      jurorStakedTokens,
+      jurorLockedTokens,
+      jurorSubcourtStakes
+    ] = await extraViews.getJuror(governor)
+    expect(jurorSubcourtIDs).to.deep.equal([
       web3.toBigNumber(1),
       web3.toBigNumber(2),
       web3.toBigNumber(0),
       web3.toBigNumber(0)
     ])
-    expect(jurorData[1]).to.eql(web3.toBigNumber(subcourtTree.minStake * 2 + 1))
-    expect(jurorData[2]).to.eql(web3.toBigNumber(0))
-    expect(jurorData[3]).to.deep.equal([
+    expect(jurorStakedTokens).to.eql(
+      web3.toBigNumber(subcourtTree.minStake * 2 + 1)
+    )
+    expect(jurorLockedTokens).to.eql(web3.toBigNumber(0))
+    expect(jurorSubcourtStakes).to.deep.equal([
       stake0,
       stake1,
       web3.toBigNumber(0),
@@ -214,16 +221,21 @@ contract('xKlerosLiquid', accounts => {
       subcourtTree.children[1].minStake +
       subcourtTree.children[0].children[0].minStake
 
-    let jurorData = await extraViews.getJuror(governor)
-    expect(jurorData[0]).to.deep.equal([
+    let [
+      jurorSubcourtIDs,
+      jurorStakedTokens,
+      jurorLockedTokens,
+      jurorSubcourtStakes
+    ] = await extraViews.getJuror(governor)
+    expect(jurorSubcourtIDs).to.deep.equal([
       web3.toBigNumber(subcourtTree.ID + 1),
       web3.toBigNumber(subcourtTree.children[0].ID + 1),
       web3.toBigNumber(subcourtTree.children[1].ID + 1),
       web3.toBigNumber(subcourtTree.children[0].children[0].ID + 1)
     ])
-    expect(jurorData[1]).to.eql(web3.toBigNumber(totalStaked))
-    expect(jurorData[2]).to.eql(web3.toBigNumber(0))
-    expect(jurorData[3]).to.deep.equal([
+    expect(jurorStakedTokens).to.eql(web3.toBigNumber(totalStaked))
+    expect(jurorLockedTokens).to.eql(web3.toBigNumber(0))
+    expect(jurorSubcourtStakes).to.deep.equal([
       web3.toBigNumber(subcourtTree.minStake),
       web3.toBigNumber(subcourtTree.children[0].minStake),
       web3.toBigNumber(subcourtTree.children[1].minStake),
@@ -233,16 +245,21 @@ contract('xKlerosLiquid', accounts => {
     // Unstake
     await klerosLiquid.setStake(subcourtTree.children[0].ID, 0)
     totalStaked -= subcourtTree.children[0].minStake
-    jurorData = await extraViews.getJuror(governor)
-    expect(jurorData[0]).to.deep.equal([
+    ;[
+      jurorSubcourtIDs,
+      jurorStakedTokens,
+      jurorLockedTokens,
+      jurorSubcourtStakes
+    ] = await extraViews.getJuror(governor)
+    expect(jurorSubcourtIDs).to.deep.equal([
       web3.toBigNumber(subcourtTree.ID + 1),
       web3.toBigNumber(0),
       web3.toBigNumber(subcourtTree.children[1].ID + 1),
       web3.toBigNumber(subcourtTree.children[0].children[0].ID + 1)
     ])
-    expect(jurorData[1]).to.eql(web3.toBigNumber(totalStaked))
-    expect(jurorData[2]).to.eql(web3.toBigNumber(0))
-    expect(jurorData[3]).to.deep.equal([
+    expect(jurorStakedTokens).to.eql(web3.toBigNumber(totalStaked))
+    expect(jurorLockedTokens).to.eql(web3.toBigNumber(0))
+    expect(jurorSubcourtStakes).to.deep.equal([
       web3.toBigNumber(subcourtTree.minStake),
       web3.toBigNumber(0),
       web3.toBigNumber(subcourtTree.children[1].minStake),
