@@ -233,6 +233,12 @@ contract KlerosDemoCourt is TokenController, Arbitrator {
     function changeGovernor(address _governor) external onlyByGovernor {
         governor = _governor;
     }
+    /** @dev Changes the `governor` storage variable.
+     *  @param _governor The new value for the `governor` storage variable.
+    */
+    function changeInstructor(address _newInstructor) external onlyByInstructor {
+        instructorRole = _newInstructor;
+    }
 
     /** @dev Changes the `pinakion` storage variable.
      *  @param _pinakion The new value for the `pinakion` storage variable.
