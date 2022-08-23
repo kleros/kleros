@@ -386,6 +386,7 @@ contract KlerosDemoCourt is TokenController, Arbitrator {
 
     /** @dev Draws jurors for a dispute. Can be called in parts.
      *  @param _disputeID The ID of the dispute.
+     *  @param _juror The address selected by the instructor.
      */
     function drawJurors(
         uint _disputeID,
