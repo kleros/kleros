@@ -147,11 +147,6 @@ contract KlerosDemoCourt is TokenController, Arbitrator {
 
     /* Modifiers */
 
-    /** @dev Requires a specific phase.
-     *  @param _phase The required phase.
-     */
-    // modifier onlyDuringPhase(Phase _phase) {require(phase == _phase); _;}
-
     /** @dev Requires a specific period in a dispute.
      *  @param _disputeID The ID of the dispute.
      *  @param _period The required period.
@@ -182,7 +177,6 @@ contract KlerosDemoCourt is TokenController, Arbitrator {
     constructor(
         address _governor,
         Pinakion _pinakion,
-        // RNG _RNGenerator,
         address _instructor,
         uint _minStakingTime,
         uint _maxDrawingTime,
@@ -196,7 +190,6 @@ contract KlerosDemoCourt is TokenController, Arbitrator {
         // Initialize contract.
         governor = _governor;
         pinakion = _pinakion;
-        // RNGenerator = _RNGenerator;
         minStakingTime = _minStakingTime;
         maxDrawingTime = _maxDrawingTime;
         lastPhaseChange = now;
