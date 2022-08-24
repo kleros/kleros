@@ -165,8 +165,6 @@ contract KlerosDemoCourt is TokenController, Arbitrator {
      *  @param _governor The governor's address.
      *  @param _pinakion The address of the token contract.
      *  @param _instructor The address of the instructor.
-     *  @param _minStakingTime The minimum time that the staking phase should last.
-     *  @param _maxDrawingTime The maximum time that the drawing phase should last.
      *  @param _hiddenVotes The `hiddenVotes` property value of the general court.
      *  @param _minStake The `minStake` property value of the general court.
      *  @param _alpha The `alpha` property value of the general court.
@@ -178,8 +176,6 @@ contract KlerosDemoCourt is TokenController, Arbitrator {
         address _governor,
         Pinakion _pinakion,
         address _instructor,
-        uint _minStakingTime,
-        uint _maxDrawingTime,
         bool _hiddenVotes,
         uint _minStake,
         uint _alpha,
@@ -190,8 +186,6 @@ contract KlerosDemoCourt is TokenController, Arbitrator {
         // Initialize contract.
         governor = _governor;
         pinakion = _pinakion;
-        minStakingTime = _minStakingTime;
-        maxDrawingTime = _maxDrawingTime;
         lastPhaseChange = now;
         instructorRole = _instructor;
 
@@ -237,21 +231,6 @@ contract KlerosDemoCourt is TokenController, Arbitrator {
      */
     function changePinakion(Pinakion _pinakion) external onlyByGovernor {
         pinakion = _pinakion;
-    }
-
-
-    /** @dev Changes the `minStakingTime` storage variable.
-     *  @param _minStakingTime The new value for the `minStakingTime` storage variable.
-     */
-    function changeMinStakingTime(uint _minStakingTime) external onlyByGovernor {
-        minStakingTime = _minStakingTime;
-    }
-
-    /** @dev Changes the `maxDrawingTime` storage variable.
-     *  @param _maxDrawingTime The new value for the `maxDrawingTime` storage variable.
-     */
-    function changeMaxDrawingTime(uint _maxDrawingTime) external onlyByGovernor {
-        maxDrawingTime = _maxDrawingTime;
     }
 
     /** @dev Creates a subcourt under a specified parent court.
