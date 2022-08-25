@@ -25,10 +25,12 @@
         "ganache-cli": "^6.3.0",
         "openzeppelin-solidity": "^1.12.0",
         "truffle": "^4.1.14",
+        "truffle-plugin-verify": "^0.5.28",
         "web3-utils": "^1.0.0-beta.36"
     },
     "dependencies": {
         "@kleros/kleros-interaction": "^0.9.0",
+        "dotenv": "^16.0.1",
         "minimetoken": "^0.2.0"
     },
     "files": [
