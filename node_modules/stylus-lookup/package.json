@@ -1,0 +1,43 @@
+{
+  "name": "stylus-lookup",
+  "version": "3.0.2",
+  "description": "Get the file associated with an imported/required Stylus partial",
+  "main": "index.js",
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "bin": {
+    "stylus-lookup": "bin/cli.js"
+  },
+  "scripts": {
+    "test": "jscs -p google test index.js bin && mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mrjoelkemp/node-stylus-lookup.git"
+  },
+  "keywords": [
+    "stylus",
+    "lookup",
+    "dependency",
+    "partial"
+  ],
+  "author": "Joel Kemp <joel@mrjoelkemp.com> (http://www.mrjoelkemp.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mrjoelkemp/node-stylus-lookup/issues"
+  },
+  "homepage": "https://github.com/mrjoelkemp/node-stylus-lookup",
+  "devDependencies": {
+    "jscs": "^3.0.7",
+    "mocha": "^5.2.0",
+    "mock-fs": "^4.4.2"
+  },
+  "dependencies": {
+    "commander": "^2.8.1",
+    "debug": "^4.1.0"
+  }
+}

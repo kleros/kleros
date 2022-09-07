@@ -1,0 +1,33 @@
+{
+  "name": "is-relative-path",
+  "version": "1.0.2",
+  "description": "Whether or not a given path is relative",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "jscs test index.js && mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mrjoelkemp/is-relative-path.git"
+  },
+  "keywords": [
+    "relative",
+    "path"
+  ],
+  "author": "Joel Kemp <joel@mrjoelkemp.com> (http://www.mrjoelkemp.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mrjoelkemp/is-relative-path/issues"
+  },
+  "homepage": "https://github.com/mrjoelkemp/is-relative-path",
+  "devDependencies": {
+    "jscs": "~3.0.3",
+    "mocha": "~2.4.5"
+  },
+  "jscsConfig": {
+    "preset": "airbnb"
+  }
+}

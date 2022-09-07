@@ -1,0 +1,45 @@
+{
+  "name": "detective-less",
+  "version": "1.0.2",
+  "description": "Find the dependencies of a less file",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test/test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mike-Dax/node-detective-less.git"
+  },
+  "keywords": [
+    "detective",
+    "less",
+    "ast",
+    "dependencies"
+  ],
+  "contributors": [
+    {
+      "name": "Joel Kemp",
+      "email": "joel@mrjoelkemp.com"
+    },
+    {
+      "name": "Michael Orenstein",
+      "email": "michael@whiteshadows.me"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Mike-Dax/node-detective-less/issues"
+  },
+  "homepage": "https://github.com/Mike-Dax/node-detective-less",
+  "engines": {
+    "node": ">= 6.0"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0"
+  },
+  "dependencies": {
+    "debug": "^4.0.0",
+    "gonzales-pe": "^4.2.3",
+    "node-source-walk": "^4.0.0"
+  }
+}

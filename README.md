@@ -35,4 +35,4 @@ Kleros core smart contracts.
 
 See CONTRIBUTING.md.
 
-Learn how to develop arbitrable and arbitrator contracts [here](https://erc-792.readthedocs.io/en/latest/).
+Learn how to develop arbitrable and arbitrator contracts [here](https://developer.kleros.io/en/latest/).

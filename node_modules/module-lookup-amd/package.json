@@ -1,0 +1,44 @@
+{
+  "name": "module-lookup-amd",
+  "version": "7.0.1",
+  "description": "Resolve aliased dependency paths using a RequireJS config",
+  "main": "index.js",
+  "scripts": {
+    "test": "jscs index.js test bin && mocha test/test.js"
+  },
+  "bin": {
+    "lookup-amd": "bin/cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mrjoelkemp/node-module-lookup-amd.git"
+  },
+  "keywords": [
+    "amd",
+    "module",
+    "lookup",
+    "alias"
+  ],
+  "author": "Joel Kemp <joel@mrjoelkemp.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mrjoelkemp/node-module-lookup-amd/issues"
+  },
+  "homepage": "https://github.com/mrjoelkemp/node-module-lookup-amd",
+  "engines": {
+    "node": ">=10.13.0"
+  },
+  "dependencies": {
+    "commander": "^2.8.1",
+    "debug": "^4.1.0",
+    "glob": "^7.1.6",
+    "requirejs": "^2.3.5",
+    "requirejs-config-file": "^4.0.0"
+  },
+  "devDependencies": {
+    "jscs": "^3.0.7",
+    "jscs-preset-mrjoelkemp": "^2.0.0",
+    "mocha": "^8.2.1",
+    "sinon": "^9.2.1"
+  }
+}
