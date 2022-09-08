@@ -5,7 +5,7 @@ pragma solidity ^0.4.24;
  *  @author Enrique Piqueras - <epiquerass@gmail.com>
  *  @dev A contract to maintain a policy for each subcourt.
  */
-contract PolicyRegistry {
+contract DemoPolicyRegistry {
     /* Events */
 
     /** @dev Emitted when a policy is updated.
