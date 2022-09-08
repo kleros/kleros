@@ -1,37 +1,14 @@
-/**
- *  https://contributing.kleros.io/smart-contract-workflow
- *  @authors: [@epiqueras]
- *  @reviewers: [@clesaege, @unknownunknown1, @ferittuncer, @remedcu, @satello, @fnanni-0, @shalzz, @MerlinEgalite]
- *  @auditors: []
- *  @bounties: [{ duration: 14 days, link: https://github.com/kleros/kleros/issues/117, maxPayout: 50 ETH }]
- *  @deployments: [ https://etherscan.io/address/0x988b3a538b618c7a603e1c11ab82cd16dbe28069 ]
- */
 /* solium-disable error-reason */
 /* solium-disable security/no-block-members */
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.4.24;
 
 import { TokenController } from "minimetoken/contracts/TokenController.sol";
 import { Arbitrator, Arbitrable } from "@kleros/kleros-interaction/contracts/standard/arbitration/Arbitrator.sol";
 import { MiniMeTokenERC20 as Pinakion } from "@kleros/kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol";
-import { RNG } from "@kleros/kleros-interaction/contracts/standard/rng/RNG.sol";
 
-import { SortitionSumTreeFactory } from "../data-structures/SortitionSumTreeFactory.sol";
-
-/**
- *  @title KlerosLiquid
- *  @author Enrique Piqueras - <epiquerass@gmail.com>
- *  @dev The main Kleros contract with dispute resolution logic for the Athena release.
- *  This is the contract currently used on mainnet.
- */
-contract KlerosLiquid is TokenController, Arbitrator {
+contract KlerosDemoCourt is TokenController, Arbitrator {
     /* Enums */
-
-    // General
-    enum Phase {
-      staking, // Stake sum trees can be updated. Pass after `minStakingTime` passes and there is at least one dispute without jurors.
-      generating, // Waiting for a random number. Pass as soon as it is ready.
-      drawing // Jurors can be drawn. Pass after all disputes have jurors or `maxDrawingTime` passes.
-    }
 
     // Dispute
     enum Period {
@@ -55,11 +32,6 @@ contract KlerosLiquid is TokenController, Arbitrator {
         // The appeal after the one that reaches this number of jurors will go to the parent court if any, otherwise, no more appeals are possible.
         uint jurorsForCourtJump;
         uint[4] timesPerPeriod; // The time allotted to each dispute period in the form `timesPerPeriod[period]`.
-    }
-    struct DelayedSetStake {
-        address account; // The address of the juror.
-        uint96 subcourtID; // The ID of the subcourt.
-        uint128 stake; // The new stake.
     }
 
     // Dispute
@@ -87,9 +59,9 @@ contract KlerosLiquid is TokenController, Arbitrator {
         VoteCounter[] voteCounters; // The vote counters in the form `voteCounters[appeal]`.
         uint[] tokensAtStakePerJuror; // The amount of tokens at stake for each juror in the form `tokensAtStakePerJuror[appeal]`.
         uint[] totalFeesForJurors; // The total juror fees paid in the form `totalFeesForJurors[appeal]`.
-        uint drawsInRound; // A counter of draws made in the current round.
         uint commitsInRound; // A counter of commits made in the current round.
         uint[] votesInEachRound; // A counter of votes made in each round in the form `votesInEachRound[appeal]`.
+        uint drawsInRound; // A counter of draws made in the current round.
         // A counter of vote reward repartitions made in each round in the form `repartitionsInEachRound[appeal]`.
         uint[] repartitionsInEachRound;
         uint[] penaltiesInEachRound; // The amount of tokens collected from penalties in each round in the form `penaltiesInEachRound[appeal]`.
@@ -105,11 +77,6 @@ contract KlerosLiquid is TokenController, Arbitrator {
     }
 
     /* Events */
-
-    /** @dev Emitted when we pass to a new phase.
-     *  @param _phase The new phase.
-     */
-    event NewPhase(Phase _phase);
 
     /** @dev Emitted when a dispute passes to a new period.
      *  @param _disputeID The ID of the dispute.
@@ -151,40 +118,34 @@ contract KlerosLiquid is TokenController, Arbitrator {
     // General Contracts
     address public governor; // The governor of the contract.
     Pinakion public pinakion; // The Pinakion token contract.
-    RNG public RNGenerator; // The random number generator contract.
+    // RNG public RNGenerator; // The random number generator contract.
     // General Dynamic
-    Phase public phase; // The current phase.
     uint public lastPhaseChange; // The last time the phase was changed.
     uint public disputesWithoutJurors; // The number of disputes that have not finished drawing jurors.
     // The block number to get the next random number from. Used so there is at least a 1 block difference from the staking phase.
-    uint public RNBlock;
-    uint public RN; // The current random number.
+    // uint public RNBlock;
+    // uint public RN; // The current random number.
     uint public minStakingTime; // The minimum staking time.
     uint public maxDrawingTime; // The maximum drawing time.
     // True if insolvent (`balance < stakedTokens || balance < lockedTokens`) token transfers should be blocked. Used to avoid blocking penalties.
     bool public lockInsolventTransfers = true;
     // General Storage
     Court[] public courts; // The subcourts.
-    using SortitionSumTreeFactory for SortitionSumTreeFactory.SortitionSumTrees; // Use library functions for sortition sum trees.
-    SortitionSumTreeFactory.SortitionSumTrees internal sortitionSumTrees; // The sortition sum trees.
     // The delayed calls to `_setStake`. Used to schedule `_setStake`s when not in the staking phase.
-    mapping(uint => DelayedSetStake) public delayedSetStakes;
     // The index of the next `delayedSetStakes` item to execute. Starts at 1 because `lastDelayedSetStake` starts at 0.
     uint public nextDelayedSetStake = 1;
     uint public lastDelayedSetStake; // The index of the last `delayedSetStakes` item. 0 is skipped because it is the initial value.
+
+    /** @dev instructor initialised in constructor */
+    address public instructorRole;
 
     // Dispute
     Dispute[] public disputes; // The disputes.
 
     // Juror
-    mapping(address => Juror) public jurors; // The jurors.
+    mapping(address => Juror) public jurors; // The jurors. 
 
     /* Modifiers */
-
-    /** @dev Requires a specific phase.
-     *  @param _phase The required phase.
-     */
-    modifier onlyDuringPhase(Phase _phase) {require(phase == _phase); _;}
 
     /** @dev Requires a specific period in a dispute.
      *  @param _disputeID The ID of the dispute.
@@ -195,43 +156,38 @@ contract KlerosLiquid is TokenController, Arbitrator {
     /** @dev Requires that the sender is the governor. Note that the governor is expected to not be malicious. */
     modifier onlyByGovernor() {require(governor == msg.sender); _;}
 
+    /** @dev Requires that the sender is the instructor. Note that the instructor is expected to not be malicious. */
+    modifier onlyByInstructor() {require(instructorRole == msg.sender); _;}
+
     /* Constructor */
 
     /** @dev Constructs the KlerosLiquid contract.
      *  @param _governor The governor's address.
      *  @param _pinakion The address of the token contract.
-     *  @param _RNGenerator The address of the RNG contract.
-     *  @param _minStakingTime The minimum time that the staking phase should last.
-     *  @param _maxDrawingTime The maximum time that the drawing phase should last.
+     *  @param _instructor The address of the instructor.
      *  @param _hiddenVotes The `hiddenVotes` property value of the general court.
      *  @param _minStake The `minStake` property value of the general court.
      *  @param _alpha The `alpha` property value of the general court.
      *  @param _feeForJuror The `feeForJuror` property value of the general court.
      *  @param _jurorsForCourtJump The `jurorsForCourtJump` property value of the general court.
      *  @param _timesPerPeriod The `timesPerPeriod` property value of the general court.
-     *  @param _sortitionSumTreeK The number of children per node of the general court's sortition sum tree.
      */
     constructor(
         address _governor,
         Pinakion _pinakion,
-        RNG _RNGenerator,
-        uint _minStakingTime,
-        uint _maxDrawingTime,
+        address _instructor,
         bool _hiddenVotes,
         uint _minStake,
         uint _alpha,
         uint _feeForJuror,
         uint _jurorsForCourtJump,
-        uint[4] _timesPerPeriod,
-        uint _sortitionSumTreeK
+        uint[4] _timesPerPeriod
     ) public {
         // Initialize contract.
         governor = _governor;
         pinakion = _pinakion;
-        RNGenerator = _RNGenerator;
-        minStakingTime = _minStakingTime;
-        maxDrawingTime = _maxDrawingTime;
         lastPhaseChange = now;
+        instructorRole = _instructor;
 
         // Create the general court.
         courts.push(Court({
@@ -244,7 +200,6 @@ contract KlerosLiquid is TokenController, Arbitrator {
             jurorsForCourtJump: _jurorsForCourtJump,
             timesPerPeriod: _timesPerPeriod
         }));
-        sortitionSumTrees.createTree(bytes32(0), _sortitionSumTreeK);
     }
 
     /* External */
@@ -264,37 +219,18 @@ contract KlerosLiquid is TokenController, Arbitrator {
     function changeGovernor(address _governor) external onlyByGovernor {
         governor = _governor;
     }
+    /** @dev Changes the `instructorRole` storage variable.
+     *  @param _newInstructor The new value for the `instructorRole` storage variable.
+    */
+    function changeInstructor(address _newInstructor) external onlyByInstructor {
+        instructorRole = _newInstructor;
+    }
 
     /** @dev Changes the `pinakion` storage variable.
      *  @param _pinakion The new value for the `pinakion` storage variable.
      */
     function changePinakion(Pinakion _pinakion) external onlyByGovernor {
         pinakion = _pinakion;
-    }
-
-    /** @dev Changes the `RNGenerator` storage variable.
-     *  @param _RNGenerator The new value for the `RNGenerator` storage variable.
-     */
-    function changeRNGenerator(RNG _RNGenerator) external onlyByGovernor {
-        RNGenerator = _RNGenerator;
-        if (phase == Phase.generating) {
-            RNBlock = block.number + 1;
-            RNGenerator.requestRN(RNBlock);
-        }
-    }
-
-    /** @dev Changes the `minStakingTime` storage variable.
-     *  @param _minStakingTime The new value for the `minStakingTime` storage variable.
-     */
-    function changeMinStakingTime(uint _minStakingTime) external onlyByGovernor {
-        minStakingTime = _minStakingTime;
-    }
-
-    /** @dev Changes the `maxDrawingTime` storage variable.
-     *  @param _maxDrawingTime The new value for the `maxDrawingTime` storage variable.
-     */
-    function changeMaxDrawingTime(uint _maxDrawingTime) external onlyByGovernor {
-        maxDrawingTime = _maxDrawingTime;
     }
 
     /** @dev Creates a subcourt under a specified parent court.
@@ -305,7 +241,6 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @param _feeForJuror The `feeForJuror` property value of the subcourt.
      *  @param _jurorsForCourtJump The `jurorsForCourtJump` property value of the subcourt.
      *  @param _timesPerPeriod The `timesPerPeriod` property value of the subcourt.
-     *  @param _sortitionSumTreeK The number of children per node of the subcourt's sortition sum tree.
      */
     function createSubcourt(
         uint96 _parent,
@@ -314,8 +249,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
         uint _alpha,
         uint _feeForJuror,
         uint _jurorsForCourtJump,
-        uint[4] _timesPerPeriod,
-        uint _sortitionSumTreeK
+        uint[4] _timesPerPeriod
     ) external onlyByGovernor {
         require(courts[_parent].minStake <= _minStake, "A subcourt cannot be a child of a subcourt with a higher minimum stake.");
 
@@ -332,7 +266,6 @@ contract KlerosLiquid is TokenController, Arbitrator {
                 timesPerPeriod: _timesPerPeriod
             })) - 1
         );
-        sortitionSumTrees.createTree(bytes32(subcourtID), _sortitionSumTreeK);
 
         // Update the parent.
         courts[_parent].children.push(subcourtID);
@@ -386,27 +319,6 @@ contract KlerosLiquid is TokenController, Arbitrator {
         courts[_subcourtID].timesPerPeriod = _timesPerPeriod;
     }
 
-    /** @dev Passes the phase. TRUSTED */
-    function passPhase() external {
-        if (phase == Phase.staking) {
-            require(now - lastPhaseChange >= minStakingTime, "The minimum staking time has not passed yet.");
-            require(disputesWithoutJurors > 0, "There are no disputes that need jurors.");
-            RNBlock = block.number + 1;
-            RNGenerator.requestRN(RNBlock);
-            phase = Phase.generating;
-        } else if (phase == Phase.generating) {
-            RN = RNGenerator.getUncorrelatedRN(RNBlock);
-            require(RN != 0, "Random number is not ready yet.");
-            phase = Phase.drawing;
-        } else if (phase == Phase.drawing) {
-            require(disputesWithoutJurors == 0 || now - lastPhaseChange >= maxDrawingTime, "There are still disputes without jurors and the maximum drawing time has not passed yet.");
-            phase = Phase.staking;
-        }
-
-        lastPhaseChange = now;
-        emit NewPhase(phase);
-    }
-
     /** @dev Passes the period of a specified dispute.
      *  @param _disputeID The ID of the dispute.
      */
@@ -451,56 +363,26 @@ contract KlerosLiquid is TokenController, Arbitrator {
         require(_setStake(msg.sender, _subcourtID, _stake));
     }
 
-    /** @dev Executes the next delayed set stakes.
-     *  @param _iterations The number of delayed set stakes to execute.
-     */
-    function executeDelayedSetStakes(uint _iterations) external onlyDuringPhase(Phase.staking) {
-        uint actualIterations = (nextDelayedSetStake + _iterations) - 1 > lastDelayedSetStake ?
-            (lastDelayedSetStake - nextDelayedSetStake) + 1 : _iterations;
-        uint newNextDelayedSetStake = nextDelayedSetStake + actualIterations;
-        require(newNextDelayedSetStake >= nextDelayedSetStake);
-        for (uint i = nextDelayedSetStake; i < newNextDelayedSetStake; i++) {
-            DelayedSetStake storage delayedSetStake = delayedSetStakes[i];
-            _setStake(delayedSetStake.account, delayedSetStake.subcourtID, delayedSetStake.stake);
-            delete delayedSetStakes[i];
-        }
-        nextDelayedSetStake = newNextDelayedSetStake;
-    }
-
     /** @dev Draws jurors for a dispute. Can be called in parts.
-     *  `O(n * k * log_k(j))` where
-     *  `n` is the number of iterations to run,
-     *  `k` is the number of children per node of the dispute's court's sortition sum tree,
-     *  and `j` is the maximum number of jurors that ever staked in it simultaneously.
      *  @param _disputeID The ID of the dispute.
-     *  @param _iterations The number of iterations to run.
+     *  @param _juror The address selected by the instructor.
      */
     function drawJurors(
         uint _disputeID,
-        uint _iterations
-    ) external onlyDuringPhase(Phase.drawing) onlyDuringPeriod(_disputeID, Period.evidence) {
+        address _juror
+    ) external onlyByInstructor() onlyDuringPeriod(_disputeID, Period.evidence) {
         Dispute storage dispute = disputes[_disputeID];
-        uint endIndex = dispute.drawsInRound + _iterations;
-        require(endIndex >= dispute.drawsInRound);
 
-        // Avoid going out of range.
-        if (endIndex > dispute.votes[dispute.votes.length - 1].length) endIndex = dispute.votes[dispute.votes.length - 1].length;
-        for (uint i = dispute.drawsInRound; i < endIndex; i++) {
-            // Draw from sortition tree.
-            (
-                address drawnAddress,
-                uint subcourtID
-            ) = stakePathIDToAccountAndSubcourtID(sortitionSumTrees.draw(bytes32(dispute.subcourtID), uint(keccak256(RN, _disputeID, i))));
+        address drawnAddress = _juror;
+        uint subcourtID = 0;
+        uint i = dispute.drawsInRound;
 
-            // Save the vote.
-            dispute.votes[dispute.votes.length - 1][i].account = drawnAddress;
-            jurors[drawnAddress].lockedTokens += dispute.tokensAtStakePerJuror[dispute.tokensAtStakePerJuror.length - 1];
-            emit Draw(drawnAddress, _disputeID, dispute.votes.length - 1, i);
+        // Save the vote.
+        dispute.votes[dispute.votes.length - 1][i].account = drawnAddress;
+        jurors[drawnAddress].lockedTokens += dispute.tokensAtStakePerJuror[dispute.tokensAtStakePerJuror.length - 1];
+        emit Draw(drawnAddress, _disputeID, dispute.votes.length - 1, i);
 
-            // If dispute is fully drawn.
-            if (i == dispute.votes[dispute.votes.length - 1].length - 1) disputesWithoutJurors--;
-        }
-        dispute.drawsInRound = endIndex;
+        dispute.drawsInRound++;
     }
 
     /** @dev Sets the caller's commit for the specified votes.
@@ -860,19 +742,10 @@ contract KlerosLiquid is TokenController, Arbitrator {
         if (!(_subcourtID < courts.length))
             return false;
 
-        // Delayed action logic.
-        if (phase != Phase.staking) {
-            delayedSetStakes[++lastDelayedSetStake] = DelayedSetStake({ account: _account, subcourtID: _subcourtID, stake: _stake });
-            return true;
-        }
-
         if (!(_stake == 0 || courts[_subcourtID].minStake <= _stake))
             return false; // The juror's stake cannot be lower than the minimum stake for the subcourt.
         Juror storage juror = jurors[_account];
-        bytes32 stakePathID = accountAndSubcourtIDToStakePathID(_account, _subcourtID);
-        uint currentStake = sortitionSumTrees.stakeOf(bytes32(_subcourtID), stakePathID);
-        if (!(_stake == 0 || currentStake > 0 || juror.subcourtIDs.length < MAX_STAKE_PATHS))
-            return false; // Maximum stake paths reached.
+        uint currentStake = jurors[_account].stakedTokens;
         uint newTotalStake = juror.stakedTokens - currentStake + _stake; // Can't overflow because _stake is a uint128.
         if (!(_stake == 0 || pinakion.balanceOf(_account) >= newTotalStake))
             return false; // The juror's total amount of staked tokens cannot be higher than the juror's balance.
@@ -888,14 +761,6 @@ contract KlerosLiquid is TokenController, Arbitrator {
                 }
         } else if (currentStake == 0) juror.subcourtIDs.push(_subcourtID);
 
-        // Update subcourt parents.
-        bool finished = false;
-        uint currentSubcourtID = _subcourtID;
-        while (!finished) {
-            sortitionSumTrees.set(bytes32(currentSubcourtID), _stake, stakePathID);
-            if (currentSubcourtID == 0) finished = true;
-            else currentSubcourtID = courts[currentSubcourtID].parent;
-        }
         emit StakeSet(_account, _subcourtID, _stake, newTotalStake);
         return true;
     }
@@ -1060,6 +925,7 @@ contract KlerosLiquid is TokenController, Arbitrator {
      *  @return stake The stake.
      */
     function stakeOf(address _account, uint96 _subcourtID) external view returns(uint stake) {
-        return sortitionSumTrees.stakeOf(bytes32(_subcourtID), accountAndSubcourtIDToStakePathID(_account, _subcourtID));
+        return jurors[_account].stakedTokens;
     }
 }
+
