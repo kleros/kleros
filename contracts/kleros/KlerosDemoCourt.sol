@@ -107,6 +107,19 @@ contract KlerosDemoCourt is TokenController, Arbitrator {
      *  @param _ETHAmount The amount of ETH won or lost.
      */
     event TokenAndETHShift(address indexed _address, uint indexed _disputeID, int _tokenAmount, int _ETHAmount);
+    
+    /** @dev Emitted when a juror votes.
+     *  @param _disputeID The ID of the dispute.
+     *  @param _juror The juror that voted.
+     *  @param _choice The choice for the vote.
+     *  @param _justification Justification provided for the vote.
+     */
+    event Justification(
+        uint256 indexed _disputeID,
+        address indexed _juror,
+        uint256 indexed _choice,
+        string _justification
+    );
 
     /* Storage */
 
@@ -411,7 +424,7 @@ contract KlerosDemoCourt is TokenController, Arbitrator {
      *  @param _choice The choice.
      *  @param _salt The salt for the commit if the votes were hidden.
      */
-    function castVote(uint _disputeID, uint[] _voteIDs, uint _choice, uint _salt) external onlyDuringPeriod(_disputeID, Period.vote) {
+    function castVote(uint _disputeID, uint[] _voteIDs, uint _choice, uint _salt, string _justification) external onlyDuringPeriod(_disputeID, Period.vote) {
         Dispute storage dispute = disputes[_disputeID];
         require(_voteIDs.length > 0);
         require(_choice <= dispute.numberOfChoices, "The choice has to be less than or equal to the number of choices for the dispute.");
@@ -442,6 +455,7 @@ contract KlerosDemoCourt is TokenController, Arbitrator {
                 voteCounter.tied = false;
             }
         }
+        emit Justification(_disputeID, msg.sender, _choice, _justification);
     }
 
     /** @dev Computes the token and ETH rewards for a specified appeal in a specified dispute.
