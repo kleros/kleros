@@ -12,7 +12,6 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 10
     labels:
-      - "Type: Security Patch"
       - "dependencies"
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -20,13 +19,11 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 10
     labels:
-      - "Type: Security Patch"
       - "dependencies"
   - package-ecosystem: "docker"
     directory: "/bots"
     schedule:
       interval: "daily"
     labels:
-      - "Type: Security Patch"
       - "dependencies"
     
