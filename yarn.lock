@@ -273,10 +273,10 @@
   resolved "https://registry.yarnpkg.com/@hutson/parse-repository-url/-/parse-repository-url-3.0.2.tgz#98c23c950a3d9b6c8f0daed06da6c3af06981340"
   integrity sha512-H9XAx3hc0BQHY6l+IFSWHDySypcXsvsuLhgYLUGywmJ5pswRVQJUHpOsobnLYp2ZUaUlKiKDrgWWhosOwAEM8Q==
 
-"@kleros/kathari@^0.23.0":
-  version "0.23.0"
-  resolved "https://registry.yarnpkg.com/@kleros/kathari/-/kathari-0.23.0.tgz#8694d3b04d68caaaf4e67fb3351d422bd2f1d69e"
-  integrity sha512-NBr0LWKeto6C1VKjG32fwh33zV+taWQlJ8DbkIpJ+VLPBUem147DU1TWbODmYr2Z9jME1sUYa1aGI3xPAWMGbw==
+"@kleros/kathari@^0.25.0":
+  version "0.25.0"
+  resolved "https://registry.yarnpkg.com/@kleros/kathari/-/kathari-0.25.0.tgz#68daad259dcb845f65aead92a1a5d355b4e1579c"
+  integrity sha512-JCOemp5z7ecQRLEEjVJOhXCe+AsFkw41DNOoc0NaVeB5sHCV7gFcI7joJdFdiizMDS73GFBtgJy9/uG7w2JOEw==
   dependencies:
     "@commitlint/cli" "^7.2.1"
     "@commitlint/config-conventional" "^7.1.2"
@@ -301,9 +301,9 @@
     eslint-plugin-standard "^4.0.0"
     eslint-plugin-unicorn "^6.0.1"
     eslint-plugin-wyze "^3.4.0"
+    ethlint "^1.2.4"
     lint-staged "^8.0.4"
     prettier "^1.16.4"
-    solium "^1.1.8"
     stylelint "^9.8.0"
     stylelint-config-recommended "^2.1.0"
     stylelint-config-standard "^18.0.0"
@@ -2411,6 +2411,25 @@ ethjs-util@0.1.6:
   dependencies:
     is-hex-prefixed "1.0.0"
     strip-hex-prefix "1.0.0"
+
+ethlint@^1.2.4:
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/ethlint/-/ethlint-1.2.5.tgz#375b77d1e5971e7c574037e07ff7ddad8e17858f"
+  integrity sha512-x2nKK98zmd72SFWL3Ul1S6scWYf5QqG221N6/mFNMO661g7ASvTRINGIWVvHzsvflW6y4tvgMSjnTN5RCTuZug==
+  dependencies:
+    ajv "^5.2.2"
+    chokidar "^1.6.0"
+    colors "^1.1.2"
+    commander "^2.9.0"
+    diff "^3.5.0"
+    eol "^0.9.1"
+    js-string-escape "^1.0.1"
+    lodash "^4.14.2"
+    sol-digger "0.0.2"
+    sol-explore "1.6.1"
+    solium-plugin-security "0.1.1"
+    solparse "2.2.8"
+    text-table "^0.2.0"
 
 eventemitter3@3.1.2:
   version "3.1.2"
@@ -6516,25 +6535,6 @@ solium-plugin-security@0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/solium-plugin-security/-/solium-plugin-security-0.1.1.tgz#2a87bcf8f8c3abf7d198e292e4ac080284e3f3f6"
   integrity sha512-kpLirBwIq4mhxk0Y/nn5cQ6qdJTI+U1LO3gpoNIcqNaW+sI058moXBe2UiHs+9wvF9IzYD49jcKhFTxcR9u9SQ==
-
-solium@^1.1.8:
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/solium/-/solium-1.2.5.tgz#d036c30e2901e22137bbf342f106b17529ff22a8"
-  integrity sha512-NuNrm7fp8JcDN/P+SAdM5TVa4wYDtwVtLY/rG4eBOZrC5qItsUhmQKR/YhjszaEW4c8tNUYhkhQcwOsS25znpw==
-  dependencies:
-    ajv "^5.2.2"
-    chokidar "^1.6.0"
-    colors "^1.1.2"
-    commander "^2.9.0"
-    diff "^3.5.0"
-    eol "^0.9.1"
-    js-string-escape "^1.0.1"
-    lodash "^4.14.2"
-    sol-digger "0.0.2"
-    sol-explore "1.6.1"
-    solium-plugin-security "0.1.1"
-    solparse "2.2.8"
-    text-table "^0.2.0"
 
 solparse@2.2.8:
   version "2.2.8"
