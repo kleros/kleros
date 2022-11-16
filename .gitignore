@@ -1,7 +1,23 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
+# Hardhat files
+cache
+artifacts
+coverage.json
+
+## Hardhat typechain bindings/types
+typechain
+typechain/**
+typechain-types
+typechain-types/**
+
+# Hardhat deploy files
+deployments/localhost
+deployments/hardhat
+deployments/*/solcInputs/
+
 # Dependencies
-/node_modules/
+node_modules/
 
 # Testing
 /coverage.json
@@ -13,6 +29,9 @@
 # Logs
 /yarn-debug.log*
 /yarn-error.log*
+
+# dotenv environment variables file
+.env
 
 # Editors
 /.vscode/
