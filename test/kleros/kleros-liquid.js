@@ -3,9 +3,8 @@ const { soliditySha3 } = require('web3-utils')
 const {
   expectThrow
 } = require('openzeppelin-solidity/test/helpers/expectThrow')
-const {
-  increaseTime
-} = require('openzeppelin-solidity/test/helpers/increaseTime')
+
+const { increaseTime } = require('../../utils/test-helpers')
 
 const Pinakion = artifacts.require(
   '@kleros/kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol'
@@ -35,15 +34,15 @@ const generateSubcourts = (
     children:
       depth > 1
         ? [...new Array(K)].map(
-            (_, i) =>
-              generateSubcourts(
-                K,
-                depth - 1,
-                K * ID + i + 1,
-                newMinStake,
-                subcourtMap
-              ).subcourtTree
-          )
+          (_, i) =>
+            generateSubcourts(
+              K,
+              depth - 1,
+              K * ID + i + 1,
+              newMinStake,
+              subcourtMap
+            ).subcourtTree
+        )
         : undefined,
     hiddenVotes: ID % 2 === 0,
     jurorFee: randomInt(100),
@@ -274,8 +273,8 @@ contract('KlerosLiquid', accounts => {
       const extraData = `0x${dispute.subcourtID
         .toString(16)
         .padStart(64, '0')}${dispute.numberOfJurors
-        .toString(16)
-        .padStart(64, '0')}`
+          .toString(16)
+          .padStart(64, '0')}`
       await klerosLiquid.createDispute(2, extraData, {
         value: await klerosLiquid.arbitrationCost(extraData)
       })
@@ -422,7 +421,7 @@ contract('KlerosLiquid', accounts => {
           if (
             dispute.subcourtID === 0 &&
             numberOfDraws[numberOfDraws.length - 1] >=
-              subcourtTree.jurorsForJump
+            subcourtTree.jurorsForJump
           ) {
             let error = null
             try {
@@ -690,8 +689,8 @@ contract('KlerosLiquid', accounts => {
       klerosLiquid.setStake(
         subcourtTree.children[0].children[0].ID,
         subcourtTree.children[0].children[0].minStake +
-          subcourtTree.children[0].children[1].minStake +
-          1
+        subcourtTree.children[0].children[1].minStake +
+        1
       )
     )
     await klerosLiquid.setStake(subcourtTree.children[0].children[0].ID, 0)

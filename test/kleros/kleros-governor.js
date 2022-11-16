@@ -3,16 +3,15 @@ const { soliditySha3 } = require('web3-utils')
 const {
   expectThrow
 } = require('openzeppelin-solidity/test/helpers/expectThrow')
-const {
-  increaseTime
-} = require('openzeppelin-solidity/test/helpers/increaseTime')
+
+const { increaseTime } = require('../../utils/test-helpers')
 
 const KlerosGovernor = artifacts.require('KlerosGovernor')
 const Arbitrator = artifacts.require(
   '@kleros/kleros-interaction/contracts/standard/arbitration/EnhancedAppealableArbitrator.sol'
 )
 
-contract('KlerosGovernor', function(accounts) {
+contract('KlerosGovernor', function (accounts) {
   const general = accounts[0]
   const submitter1 = accounts[1]
   const submitter2 = accounts[2]
@@ -38,7 +37,7 @@ contract('KlerosGovernor', function(accounts) {
 
   let arbitrator
   let klerosgovernor
-  beforeEach('initialize the contract', async function() {
+  beforeEach('initialize the contract', async function () {
     arbitrator = await Arbitrator.new(
       arbitrationFee,
       general,

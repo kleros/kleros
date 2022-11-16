@@ -1,7 +1,6 @@
 /* globals artifacts, contract, expect, web3 */
-const {
-  increaseTime
-} = require('openzeppelin-solidity/test/helpers/increaseTime')
+
+const { increaseTime } = require('../../utils/test-helpers')
 
 const Pinakion = artifacts.require(
   '@kleros/kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol'
@@ -31,15 +30,15 @@ const generateSubcourts = (
     children:
       depth > 1
         ? [...new Array(K)].map(
-            (_, i) =>
-              generateSubcourts(
-                K,
-                depth - 1,
-                K * ID + i + 1,
-                newMinStake,
-                subcourtMap
-              ).subcourtTree
-          )
+          (_, i) =>
+            generateSubcourts(
+              K,
+              depth - 1,
+              K * ID + i + 1,
+              newMinStake,
+              subcourtMap
+            ).subcourtTree
+        )
         : undefined,
     hiddenVotes: ID % 2 === 0,
     jurorFee: randomInt(100),
