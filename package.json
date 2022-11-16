@@ -18,10 +18,11 @@
     "lint:sol": "kathari lint:sol",
     "lint:js": "kathari lint:js",
     "lint": "yarn run lint:sol && yarn run lint:js",
-    "test": "solidity-coverage",
+    "test": "hardhat test",
+    "build": "hardhat compile",
+    "build:clean": "hardhat clean && hardhat compile",
     "test:coveralls": "coveralls --verbose < ./coverage/lcov.info",
-    "cz": "kathari cz",
-    "build": "truffle compile"
+    "cz": "kathari cz"
   },
   "commitlint": {
     "extends": [
