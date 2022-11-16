@@ -31,6 +31,7 @@
   "devDependencies": {
     "@kleros/kathari": "^0.23.0",
     "coveralls": "^3.0.2",
+    "hardhat": "^2.12.2",
     "husky": "^3.0.9",
     "npm-run-all": "^4.1.5",
     "openzeppelin-solidity": "^1.12.0",
@@ -48,8 +49,7 @@
   ],
   "husky": {
     "hooks": {
-      "commit-msg": "kathari commitmsg",
-      "pre-commit": "yarn run lint"
+      "commit-msg": "kathari commitmsg"
     }
   }
 }
