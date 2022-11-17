@@ -1,7 +1,10 @@
+import * as dotenv from 'dotenv';
 import { HardhatUserConfig } from 'hardhat/types';
 import 'hardhat-deploy';
 import 'hardhat-deploy-ethers';
 import '@typechain/hardhat';
+
+dotenv.config();
 
 const config: HardhatUserConfig = {
   solidity: {
