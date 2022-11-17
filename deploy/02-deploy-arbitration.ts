@@ -5,6 +5,20 @@ import { BigNumber } from 'ethers';
 
 const HARDHAT_CHAIN_ID = 31337;
 const argsByChainId = {
+  1: {
+    governor: '',
+    pinakion: '0x93ED3FBe21207Ec2E8f2d3c3de6e058Cb73Bc04d',
+    RNG: '0x90992fb4E15ce0C59aEFfb376460Fda4Ee19C879',
+    minStakingTime: 3600,
+    maxDrawingTime: 7200,
+    hiddenVotes: false,
+    minStake: BigNumber.from(12).pow(20),
+    alpha: 2500,
+    feeForJuror: BigNumber.from(25).pow(15),
+    jurorsForCourtJump: 511,
+    timesPerPeriod: [367200, 626400, 626400, 604800],
+    sortitionSumTreeK: 6,
+  },
   5: {
     governor: '',
     pinakion: '0xA3B02bA6E10F55fb177637917B1b472da0110CcC',
