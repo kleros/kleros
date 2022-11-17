@@ -32,5 +32,13 @@ const config: HardhatUserConfig = {
   paths: {
     sources: 'src',
   },
+  networks: {
+    hardhat: {
+      live: false,
+      saveDeployments: true,
+      allowUnlimitedContractSize: true,
+      tags: ['test', 'local'],
+    },
+  },
 };
 export default config;
