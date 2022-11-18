@@ -57,6 +57,15 @@ const config: HardhatUserConfig = {
       saveDeployments: true,
       tags: ['staging'],
     },
+    mainnet: {
+      chainId: 1,
+      url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      live: true,
+      saveDeployments: true,
+      tags: ['production'],
+    },
   },
 };
 export default config;
