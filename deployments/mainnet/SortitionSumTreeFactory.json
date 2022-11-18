@@ -1,0 +1,91 @@
+{
+  "address": "0x180EBA68D164C3F8c3f6Dc354125EBccf4dfcB86",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "self",
+          "type": "SortitionSumTreeFactory.SortitionSumTrees storage"
+        },
+        { "name": "_key", "type": "bytes32" },
+        { "name": "_value", "type": "uint256" },
+        { "name": "_ID", "type": "bytes32" }
+      ],
+      "name": "set",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "self",
+          "type": "SortitionSumTreeFactory.SortitionSumTrees storage"
+        },
+        { "name": "_key", "type": "bytes32" },
+        { "name": "_cursor", "type": "uint256" },
+        { "name": "_count", "type": "uint256" }
+      ],
+      "name": "queryLeafs",
+      "outputs": [
+        { "name": "startIndex", "type": "uint256" },
+        { "name": "values", "type": "uint256[]" },
+        { "name": "hasMore", "type": "bool" }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "self",
+          "type": "SortitionSumTreeFactory.SortitionSumTrees storage"
+        },
+        { "name": "_key", "type": "bytes32" },
+        { "name": "_ID", "type": "bytes32" }
+      ],
+      "name": "stakeOf",
+      "outputs": [{ "name": "value", "type": "uint256" }],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "self",
+          "type": "SortitionSumTreeFactory.SortitionSumTrees storage"
+        },
+        { "name": "_key", "type": "bytes32" },
+        { "name": "_drawnNumber", "type": "uint256" }
+      ],
+      "name": "draw",
+      "outputs": [{ "name": "ID", "type": "bytes32" }],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "self",
+          "type": "SortitionSumTreeFactory.SortitionSumTrees storage"
+        },
+        { "name": "_key", "type": "bytes32" },
+        { "name": "_K", "type": "uint256" }
+      ],
+      "name": "createTree",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ]
+}
