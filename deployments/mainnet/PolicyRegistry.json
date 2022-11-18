@@ -1,0 +1,59 @@
+{
+  "address": "0xCf1f07713d5193FaE5c1653C9f61953D048BECe4",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "governor",
+      "outputs": [{ "name": "", "type": "address" }],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [{ "name": "", "type": "uint256" }],
+      "name": "policies",
+      "outputs": [{ "name": "", "type": "string" }],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [{ "name": "_governor", "type": "address" }],
+      "name": "changeGovernor",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        { "name": "_subcourtID", "type": "uint256" },
+        { "name": "_policy", "type": "string" }
+      ],
+      "name": "setPolicy",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [{ "name": "_governor", "type": "address" }],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        { "indexed": true, "name": "_subcourtID", "type": "uint256" },
+        { "indexed": false, "name": "_policy", "type": "string" }
+      ],
+      "name": "PolicyUpdate",
+      "type": "event"
+    }
+  ]
+}
