@@ -1,0 +1,46 @@
+{
+  "address": "0xDa47f3252Bb03C5c7950d7Bb2Fd32637fC5Ad943",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "klerosLiquid",
+      "outputs": [{ "name": "", "type": "address" }],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        { "name": "_account", "type": "address" },
+        { "name": "_subcourtID", "type": "uint96" }
+      ],
+      "name": "stakeOf",
+      "outputs": [{ "name": "stake", "type": "uint256" }],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [{ "name": "_account", "type": "address" }],
+      "name": "getJuror",
+      "outputs": [
+        { "name": "subcourtIDs", "type": "uint96[]" },
+        { "name": "stakedTokens", "type": "uint256" },
+        { "name": "lockedTokens", "type": "uint256" },
+        { "name": "subcourtStakes", "type": "uint256[]" }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [{ "name": "_klerosLiquid", "type": "address" }],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    }
+  ]
+}
