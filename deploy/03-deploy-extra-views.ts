@@ -8,9 +8,7 @@ const deployKlerosLiquidExtraViews: DeployFunction = async function(
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  const KlerosLiquid = await deployments.get(
-    'KlerosLiquid'
-  );
+  const KlerosLiquid = await deployments.get('KlerosLiquid');
 
   await deploy('KlerosLiquidExtraViews', {
     from: deployer,
