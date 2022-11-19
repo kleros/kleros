@@ -1,7 +1,8 @@
 import * as dotenv from 'dotenv';
 import { HardhatUserConfig } from 'hardhat/types';
 import 'hardhat-deploy';
-import 'hardhat-deploy-ethers';
+import '@nomiclabs/hardhat-ethers';
+import '@nomicfoundation/hardhat-chai-matchers';
 import '@typechain/hardhat';
 
 dotenv.config();
