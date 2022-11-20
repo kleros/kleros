@@ -5,7 +5,7 @@ import {
 } from '../typechain-types';
 import { increaseTime } from './test-helpers';
 
-export const useSetupFixture = deployments.createFixture(async ({ ethers }) => {
+export const useInitialSetup = deployments.createFixture(async ({ ethers }) => {
   const [
     deployer,
     submitter1,
@@ -66,8 +66,8 @@ export const useSetupFixture = deployments.createFixture(async ({ ethers }) => {
   };
 });
 
-export const useListSubmissionFixture = deployments.createFixture(async () => {
-  const { governor, appeableArbitrator, args, users } = await useSetupFixture();
+export const useListSubmissionSetup = deployments.createFixture(async () => {
+  const { governor, appeableArbitrator, args, users } = await useInitialSetup();
   const listDescription = 'tx1, tx2, tx3';
 
   await governor
@@ -79,8 +79,8 @@ export const useListSubmissionFixture = deployments.createFixture(async () => {
   return { governor, appeableArbitrator, users, args };
 });
 
-export const useRulingSetupFixture = deployments.createFixture(async () => {
-  const { governor, appeableArbitrator, args, users } = await useSetupFixture();
+export const useRulingSetup = deployments.createFixture(async () => {
+  const { governor, appeableArbitrator, args, users } = await useInitialSetup();
   const listDescription = 'tx1, tx2, tx3';
 
   await governor
