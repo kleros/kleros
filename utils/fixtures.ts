@@ -16,10 +16,10 @@ export const useSetupFixture = deployments.createFixture(async ({ ethers }) => {
   ] = await ethers.getSigners();
 
   const args = {
-    arbitrationFee: ethers.BigNumber.from(1).pow(17),
+    arbitrationFee: ethers.utils.parseEther('0.1'),
     arbitratorExtraData: '0x85',
     appealTimeout: 1200,
-    submissionBaseDeposit: ethers.BigNumber.from(9).pow(17),
+    submissionBaseDeposit: ethers.utils.parseEther('0.9'),
     submissionTimeout: 3600,
     executionTimeout: 3000,
     withdrawTimeout: 100,
