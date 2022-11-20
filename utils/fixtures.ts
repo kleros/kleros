@@ -3,6 +3,7 @@ import {
   EnhancedAppealableArbitrator,
   KlerosGovernor,
 } from '../typechain-types';
+import { increaseTime } from './test-helpers';
 
 export const useSetupFixture = deployments.createFixture(async ({ ethers }) => {
   const [
@@ -74,6 +75,49 @@ export const useListSubmissionFixture = deployments.createFixture(async () => {
     .submitList([governor.address], [10], '0xfdea', [2], listDescription, {
       value: args.submissionDeposit(),
     });
+
+  return { governor, appeableArbitrator, users, args };
+});
+
+export const useRulingSetupFixture = deployments.createFixture(async () => {
+  const { governor, appeableArbitrator, args, users } = await useSetupFixture();
+  const listDescription = 'tx1, tx2, tx3';
+
+  await governor
+    .connect(users.submitter1)
+    .submitList(
+      [governor.address],
+      [10],
+      '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
+      [36],
+      listDescription,
+      { value: args.submissionDeposit() }
+    );
+
+  await governor
+    .connect(users.submitter2)
+    .submitList(
+      [appeableArbitrator.address],
+      [10],
+      '0x2462',
+      [2],
+      listDescription,
+      {
+        value: args.submissionDeposit(),
+      }
+    );
+
+  await governor
+    .connect(users.submitter3)
+    .submitList([], [], '0x24621111', [], listDescription, {
+      value: args.submissionDeposit(),
+    });
+
+  await increaseTime(args.submissionTimeout + 1);
+  await governor.connect(users.deployer).executeSubmissions();
+
+  // Ruling 1 is equal to 0 submission index (submitter1)
+  await appeableArbitrator.giveRuling(0, 1);
 
   return { governor, appeableArbitrator, users, args };
 });
