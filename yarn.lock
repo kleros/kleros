@@ -9663,7 +9663,7 @@ web3-core-promievent@^1.0.0-beta.21:
   dependencies:
     eventemitter3 "4.0.4"
 
-web3-utils@^1.0.0-beta.36, web3-utils@^1.2.1:
+web3-utils@^1.2.1, web3-utils@^1.8.1:
   version "1.8.1"
   resolved "https://registry.yarnpkg.com/web3-utils/-/web3-utils-1.8.1.tgz#f2f7ca7eb65e6feb9f3d61056d0de6bbd57125ff"
   integrity sha512-LgnM9p6V7rHHUGfpMZod+NST8cRfGzJ1BTXAyNo7A9cJX9LczBfSRxJp+U/GInYe9mby40t3v22AJdlELibnsQ==
