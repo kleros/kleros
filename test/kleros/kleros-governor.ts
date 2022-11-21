@@ -204,7 +204,7 @@ describe('KlerosGovernor', () => {
       ).to.be.revertedWith('Appeal fee has already been paid.');
     });
 
-    it('Should fail to pay appeal after appeal timeout', async () => {
+    it('Should fail to pay appeal fee after appeal timeout', async () => {
       const {
         governor,
         appeableArbitrator,
