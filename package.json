@@ -33,6 +33,7 @@
     "@kleros/kathari": "^0.23.0",
     "@nomicfoundation/hardhat-chai-matchers": "^1.0.4",
     "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers",
+    "@nomiclabs/hardhat-etherscan": "^3.1.2",
     "@typechain/ethers-v5": "^10.1.1",
     "@typechain/hardhat": "^6.1.4",
     "@types/chai": "^4.3.4",
