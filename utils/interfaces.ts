@@ -1,5 +1,5 @@
 import { BigNumber, BigNumberish } from 'ethers';
-import { PromiseOrValue } from '../typechain-types/common';
+import { PromiseOrValue } from 'typechain-types/common';
 
 export interface TransactionInfo {
   target: string;

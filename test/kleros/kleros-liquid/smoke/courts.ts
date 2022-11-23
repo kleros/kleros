@@ -5,9 +5,9 @@ import {
   asyncForEach,
   generateSubcourts,
   increaseTime,
-} from '../../../../utils/test-helpers';
-import { MiniMeTokenERC20, KlerosLiquid } from '../../../../typechain-types';
-import { SubcourtInfo } from '../../../../utils/interfaces';
+} from 'utils/test-helpers';
+import { MiniMeTokenERC20, KlerosLiquid } from 'typechain-types';
+import { SubcourtInfo } from 'utils/interfaces';
 
 const setup = async () => {
   await deployments.fixture('KlerosLiquid', {

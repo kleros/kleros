@@ -3,18 +3,17 @@ import { expect } from 'chai';
 import { soliditySha3 } from 'web3-utils';
 import { BigNumber, BytesLike } from 'ethers';
 
-import { PromiseOrValue } from '../../typechain-types/common';
+import { PromiseOrValue } from 'typechain-types/common';
 
-import { increaseTime } from '../../utils/test-helpers';
-import { HashType } from '../../utils/types';
-import { TransactionInfo } from '../../utils/interfaces';
+import { increaseTime } from 'utils/test-helpers';
+import { HashType, TransactionInfo } from 'utils';
 
 import {
   useInitialSetup,
   useListSubmissionSetup,
   useRulingSetup,
   useTransactionsSetup,
-} from '../../utils/fixtures/kleros-governor';
+} from 'utils/fixtures/kleros-governor';
 
 enum Status {
   NoDispute,

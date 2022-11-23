@@ -1,5 +1,5 @@
 import { deployments } from 'hardhat';
-import { KlerosLiquid, MiniMeTokenERC20 } from '../../typechain-types';
+import { KlerosLiquid, MiniMeTokenERC20 } from 'typechain-types';
 
 export const useInitialSetup = deployments.createFixture(async ({ ethers }) => {
   const [deployer, other, mock] = await ethers.getSigners();

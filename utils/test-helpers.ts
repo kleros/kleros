@@ -1,6 +1,6 @@
 import { BigNumber, BigNumberish, ContractFunction } from 'ethers';
 import { ethers } from 'hardhat';
-import { PromiseOrValue } from '../typechain-types/common';
+import { PromiseOrValue } from 'typechain-types/common';
 
 export const getCurrentTimestamp = async () =>
   (await ethers.provider.getBlock(await ethers.provider.getBlockNumber()))

@@ -1,9 +1,6 @@
 import { deployments } from 'hardhat';
-import {
-  EnhancedAppealableArbitrator,
-  KlerosGovernor,
-} from '../../typechain-types';
-import { PromiseOrValue } from '../../typechain-types/common';
+import { EnhancedAppealableArbitrator, KlerosGovernor } from 'typechain-types';
+import { PromiseOrValue } from 'typechain-types/common';
 import { increaseTime } from '../test-helpers';
 import { BytesLike } from 'ethers';
 import { soliditySha3 } from 'web3-utils';

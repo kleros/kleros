@@ -9,7 +9,12 @@
     "outDir": "dist",
     "noImplicitAny": false,
     "declaration": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "baseUrl": "./",
+    "paths": {
+      "utils/*": ["utils/*"],
+      "type-chain/*": ["type-chain/*"]
+    }
   },
   "include": [
     "hardhat.config.ts",

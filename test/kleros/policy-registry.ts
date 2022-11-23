@@ -1,6 +1,6 @@
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
-import { PolicyRegistry } from '../../typechain-types';
+import { PolicyRegistry } from 'typechain-types';
 
 describe('PolicyRegistry', () =>
   it('Should allow setting subcourt policies.', async () => {

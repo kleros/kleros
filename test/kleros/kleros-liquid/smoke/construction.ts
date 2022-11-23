@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { useInitialSetup } from '../../../../utils/fixtures/kleros-liquid';
+import { useInitialSetup } from 'utils/fixtures/kleros-liquid';
 
 describe('KlerosLiquid Smoke', () => {
   describe('Construction', () => {
