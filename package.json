@@ -54,6 +54,7 @@
     "solidity-coverage": "^0.5.11",
     "standard-version": "^9.5.0",
     "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.1.0",
     "typechain": "^8.1.1",
     "typescript": "^4.9.3",
     "web3-utils": "^1.8.1"
