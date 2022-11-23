@@ -14,7 +14,7 @@ import {
   useListSubmissionSetup,
   useRulingSetup,
   useTransactionsSetup,
-} from '../../utils/fixtures';
+} from '../../utils/fixtures/kleros-governor';
 
 enum Status {
   NoDispute,
