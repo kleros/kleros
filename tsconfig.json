@@ -12,9 +12,12 @@
     "resolveJsonModule": true,
     "baseUrl": "./",
     "paths": {
-      "utils/*": ["utils/*"],
+      "utils/*": ["utils/*", "utils/"],
       "type-chain/*": ["type-chain/*"]
     }
+  },
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
   },
   "include": [
     "hardhat.config.ts",
