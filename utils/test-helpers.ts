@@ -19,12 +19,6 @@ export const asyncForEach = async function<F extends ContractFunction>(
   for (const arg of array) await method(arg);
 };
 
-const randomInt = (max: number, min = 1) =>
-  Math.max(min, Math.ceil(Math.random() * max));
-
-interface FixedLengthArray<T, L extends number> extends ArrayLike<T> {
-  length: L;
-}
 export const generateSubcourts = (
   depth: number,
   ID = 0,
@@ -46,7 +40,6 @@ export const generateSubcourts = (
     timesPerPeriod,
     sortitionSumTreeK,
   } = args;
-  const newMinStake = Math.max(randomInt(minStake + 100), minStake);
   const subcourtTree = {
     ID,
     children:
@@ -57,7 +50,7 @@ export const generateSubcourts = (
                 depth - 1,
                 sortitionSumTreeK * ID + i + 1,
                 {
-                  minStake: newMinStake,
+                  minStake,
                   alpha,
                   feeForJuror,
                   jurorsForCourtJump,
@@ -69,7 +62,7 @@ export const generateSubcourts = (
           )
         : undefined,
     hiddenVotes: ID % 2 === 0,
-    minStake: newMinStake,
+    minStake,
     alpha,
     feeForJuror,
     jurorsForCourtJump,
