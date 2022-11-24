@@ -19,11 +19,17 @@ export const asyncForEach = async function<F extends ContractFunction>(
   for (const arg of array) await method(arg);
 };
 
+export const generageExtradata = (subcourtID: number, numberOfJurors: number) =>
+  `0x${subcourtID.toString(16).padStart(64, '0')}${numberOfJurors
+    .toString(16)
+    .padStart(64, '0')}`;
+
+
 export const generateSubcourts = (
   depth: number,
   ID = 0,
   args: {
-    minStake: number;
+    minStake: BigNumber | number;
     alpha: number;
     feeForJuror: BigNumber | number;
     jurorsForCourtJump: number;
