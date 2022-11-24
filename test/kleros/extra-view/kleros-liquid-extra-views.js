@@ -1,6 +1,6 @@
 /* globals artifacts, contract, expect, web3 */
 
-const { increaseTime } = require('../../utils/test-helpers')
+const { increaseTime } = require('../../../utils/test-helpers')
 
 const Pinakion = artifacts.require(
   '@kleros/kleros-interaction/contracts/standard/arbitration/ArbitrableTokens/MiniMeTokenERC20.sol'

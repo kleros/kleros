@@ -620,6 +620,8 @@ contract('KlerosLiquid', accounts => {
     await expectThrow(klerosLiquid.passPeriod(disputeID))
     await klerosLiquid.drawJurors(disputeID, -1)
     await klerosLiquid.passPeriod(disputeID)
+
+    
     await expectThrow(klerosLiquid.passPeriod(disputeID))
     await klerosLiquid.castCommit(
       disputeID,

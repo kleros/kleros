@@ -1,58 +1,10 @@
-import { ethers, deployments } from 'hardhat';
+import { ethers } from 'hardhat';
 import { expect } from 'chai';
 
-import {
-  asyncForEach,
-  generateSubcourts,
-  increaseTime,
-} from 'utils/test-helpers';
-import { MiniMeTokenERC20, KlerosLiquid } from 'typechain-types';
+import { asyncForEach } from 'utils/test-helpers';
 import { SubcourtInfo } from 'utils/interfaces';
 
-const setup = async () => {
-  await deployments.fixture('KlerosLiquid', {
-    fallbackToGlobal: true,
-    keepExistingDeployments: false,
-  });
-
-  const pnk = (await ethers.getContract(
-    'MiniMeTokenERC20'
-  )) as MiniMeTokenERC20;
-
-  const klerosLiquid = (await ethers.getContract(
-    'KlerosLiquid'
-  )) as KlerosLiquid;
-
-  const args = {
-    minStake: 550,
-    alpha: 10000,
-    feeForJuror: ethers.utils.parseEther('1'),
-    jurorsForCourtJump: 511,
-    timesPerPeriod: [30, 600, 600, 600],
-    sortitionSumTreeK: 4,
-  };
-
-  const { subcourtMap } = generateSubcourts(2, 0, args);
-
-  await asyncForEach(
-    (subcourt: SubcourtInfo) =>
-      klerosLiquid.createSubcourt(
-        subcourt.parent,
-        subcourt.hiddenVotes,
-        subcourt.minStake,
-        subcourt.alpha,
-        subcourt.feeForJuror,
-        subcourt.jurorsForCourtJump,
-        subcourt.timesPerPeriod,
-        subcourt.sortitionSumTreeK
-      ),
-    subcourtMap
-  );
-
-  const [governor, other, mock] = await ethers.getSigners();
-
-  return { klerosLiquid, pnk, subcourtMap, users: { governor, other, mock } };
-};
+import { setup } from 'utils/fixtures/kleros-liquid';
 
 describe('Court Tree Smoke', () => {
   describe('Construction', () => {
@@ -146,6 +98,47 @@ describe('Court Tree Smoke', () => {
 
       const subcourt = await klerosLiquid.getSubcourt(court.children[0]);
       expect(subcourt.timesPerPeriod).to.deep.equal(newTimesPerPeriod);
+    });
+  });
+  describe('Revert Execution', () => {
+    it('Should fail to create subcourt with lower minStake than in its parent', async () => {
+      const { klerosLiquid, subcourtTree } = await setup();
+
+      await expect(
+        klerosLiquid.createSubcourt(
+          subcourtTree.parent,
+          subcourtTree.hiddenVotes,
+          subcourtTree.minStake.sub(1),
+          subcourtTree.alpha,
+          subcourtTree.feeForJuror,
+          subcourtTree.jurorsForCourtJump,
+          subcourtTree.timesPerPeriod,
+          subcourtTree.sortitionSumTreeK
+        )
+      ).to.be.reverted;
+    });
+
+    it('Should fail to set new subcourt minStake to lower value than in its parent', async () => {
+      const { klerosLiquid, subcourtTree } = await setup();
+      const subcourt = subcourtTree.children[0];
+
+      await expect(
+        klerosLiquid.changeSubcourtMinStake(
+          subcourt.ID,
+          subcourtTree.minStake.sub(1)
+        )
+      ).to.be.reverted;
+    });
+
+    it('Should fail to set new subcourt minStake to higher value than in its child', async () => {
+      const { klerosLiquid, subcourtTree } = await setup();
+
+      await expect(
+        klerosLiquid.changeSubcourtMinStake(
+          subcourtTree.ID,
+          subcourtTree.minStake.add(1)
+        )
+      ).to.be.reverted;
     });
   });
 });

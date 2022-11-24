@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 
-import { useInitialSetup } from 'utils/fixtures/kleros-liquid';
+import { useSetupFixture } from 'utils/fixtures/kleros-liquid';
 
-describe('KlerosLiquid Smoke', () => {
+describe('Smoke: KlerosLiquid', () => {
   describe('Construction', () => {
     it('Should set state variables correctly', async () => {
-      const { klerosLiquid, args } = await useInitialSetup();
+      const { klerosLiquid, args } = await useSetupFixture();
 
       expect(await klerosLiquid.governor()).to.equal(args.governor);
       expect(await klerosLiquid.pinakion()).to.equal(args.pinakion);
@@ -25,28 +25,28 @@ describe('KlerosLiquid Smoke', () => {
 
   describe('Setters', () => {
     it('Should set new governor', async () => {
-      const { klerosLiquid, users } = await useInitialSetup();
+      const { klerosLiquid, users } = await useSetupFixture();
 
       await klerosLiquid.changeGovernor(users.mock.address);
       expect(await klerosLiquid.governor()).to.equal(users.mock.address);
     });
 
     it('Should set new pinakion', async () => {
-      const { klerosLiquid, users } = await useInitialSetup();
+      const { klerosLiquid, users } = await useSetupFixture();
 
       await klerosLiquid.changePinakion(users.mock.address);
       expect(await klerosLiquid.pinakion()).to.equal(users.mock.address);
     });
 
     it('Should set new RNGenerator', async () => {
-      const { klerosLiquid, users } = await useInitialSetup();
+      const { klerosLiquid, users } = await useSetupFixture();
 
       await klerosLiquid.changeRNGenerator(users.mock.address);
       expect(await klerosLiquid.RNGenerator()).to.equal(users.mock.address);
     });
 
     it('Should set new minimum staking time', async () => {
-      const { klerosLiquid } = await useInitialSetup();
+      const { klerosLiquid } = await useSetupFixture();
 
       const newMinStakingTime = 30;
       await klerosLiquid.changeMinStakingTime(newMinStakingTime);
@@ -54,7 +54,7 @@ describe('KlerosLiquid Smoke', () => {
     });
 
     it('Should set new maximum drawing time', async () => {
-      const { klerosLiquid } = await useInitialSetup();
+      const { klerosLiquid } = await useSetupFixture();
 
       const newMaxDrawingTime = 400;
       await klerosLiquid.changeMaxDrawingTime(newMaxDrawingTime);
