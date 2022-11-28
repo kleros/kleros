@@ -1,4 +1,9 @@
-import { BigNumber, BigNumberish, ContractFunction } from 'ethers';
+import {
+  BigNumber,
+  BigNumberish,
+  ContractFunction,
+  ContractTransaction,
+} from 'ethers';
 import { ethers } from 'hardhat';
 import { PromiseOrValue } from 'typechain-types/common';
 
@@ -23,7 +28,6 @@ export const generageExtradata = (subcourtID: number, numberOfJurors: number) =>
   `0x${subcourtID.toString(16).padStart(64, '0')}${numberOfJurors
     .toString(16)
     .padStart(64, '0')}`;
-
 
 export const generateSubcourts = (
   depth: number,
@@ -86,4 +90,19 @@ export const generateSubcourts = (
     };
   }
   return { subcourtMap, subcourtTree };
+};
+
+export const getVoteIDs = async (tx: ContractTransaction) => {
+  const voteIDs = new Map<string, number>();
+
+  const receipt = await tx.wait();
+  const args = receipt.events?.map((event) => event.args);
+  args?.forEach((item, index) => voteIDs.set(item?._address, index));
+  return voteIDs;
+};
+
+export const getRandomNumber = (maxNumber: number): number => {
+  return ethers.BigNumber.from(ethers.utils.randomBytes(32))
+    .mod(maxNumber)
+    .toNumber();
 };
