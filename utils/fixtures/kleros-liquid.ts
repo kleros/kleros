@@ -5,6 +5,7 @@ import {
   asyncForEach,
   generageExtradata,
   generateSubcourts,
+  increaseTime,
 } from 'utils/test-helpers';
 
 export const useSetupFixture = deployments.createFixture(async ({ ethers }) => {
@@ -155,4 +156,22 @@ export const useDisputeSetup = async (numberOfJurors?: number) => {
     subcourt,
     users,
   };
+};
+
+export const useStakedSetup = async (numberOfJurors: number) => {
+  const { klerosLiquid, pnk, subcourt } = await useDisputeSetup(numberOfJurors);
+  const jurors = (await ethers.getSigners()).slice(0, 2 * numberOfJurors);
+
+  for (let juror of Object.values(jurors)) {
+    await pnk.generateTokens(juror.address, subcourt.minStake);
+    await klerosLiquid.connect(juror).setStake(subcourt.ID, subcourt.minStake);
+  }
+
+  const minStakingTime = await klerosLiquid.minStakingTime();
+  await increaseTime(minStakingTime.toNumber());
+
+  await klerosLiquid.passPhase();
+  await klerosLiquid.passPhase();
+
+  return { klerosLiquid, subcourt, jurors };
 };
