@@ -71,8 +71,8 @@ export const useSetupFixture = deployments.createFixture(async ({ ethers }) => {
   return { klerosLiquid, rng, pnk, args, users: { deployer, other, mock } };
 });
 
-export const setup = async () => {
-  await deployments.fixture('KlerosLiquid', {
+export const setup = async (subcourtTreeDepth = 2) => {
+  await deployments.fixture('KlerosLiquidExtraViews', {
     fallbackToGlobal: true,
     keepExistingDeployments: false,
   });
@@ -95,7 +95,11 @@ export const setup = async () => {
     sortitionSumTreeK: 4,
   };
 
-  const { subcourtMap, subcourtTree } = generateSubcourts(2, 0, args);
+  const { subcourtMap, subcourtTree } = generateSubcourts(
+    subcourtTreeDepth,
+    0,
+    args
+  );
 
   await asyncForEach(
     (subcourt: SubcourtInfo) =>
@@ -125,8 +129,13 @@ export const setup = async () => {
   };
 };
 
-export const useDisputeSetup = async (numberOfJurors?: number) => {
-  const { klerosLiquid, pnk, subcourtMap, subcourtTree, users } = await setup();
+export const useDisputeSetup = async (
+  numberOfJurors?: number,
+  subcourtTreeDepth?: number
+) => {
+  const { klerosLiquid, pnk, subcourtMap, subcourtTree, users } = await setup(
+    subcourtTreeDepth
+  );
   const NUMBER_OF_CHOICES = 2;
 
   const dispute = {
