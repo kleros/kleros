@@ -1,22 +1,14 @@
-import { ethers } from 'hardhat';
-import { expect } from 'chai';
+import { ethers } from "hardhat";
+import { expect } from "chai";
 
-import { increaseTime } from 'utils/test-helpers';
-import { KlerosLiquidExtraViews } from 'typechain-types';
-import { useDisputeSetup } from '../court/setups';
+import { increaseTime } from "utils/test-helpers";
+import { KlerosLiquidExtraViews } from "typechain-types";
+import { useDisputeSetup } from "../court/setups";
 
 const setup = async (numberOfJurors?: number, treeDepth?: number) => {
-  const {
-    klerosLiquid,
-    pnk,
-    subcourt,
-    subcourtTree,
-    users,
-  } = await useDisputeSetup(numberOfJurors, treeDepth);
+  const { klerosLiquid, pnk, subcourt, subcourtTree, users } = await useDisputeSetup(numberOfJurors, treeDepth);
 
-  const extraViews = (await ethers.getContract(
-    'KlerosLiquidExtraViews'
-  )) as KlerosLiquidExtraViews;
+  const extraViews = (await ethers.getContract("KlerosLiquidExtraViews")) as KlerosLiquidExtraViews;
 
   const minStakingTime = await klerosLiquid.minStakingTime();
   await increaseTime(minStakingTime.toNumber());
@@ -25,13 +17,11 @@ const setup = async (numberOfJurors?: number, treeDepth?: number) => {
   return { klerosLiquid, extraViews, pnk, subcourtTree, subcourt, users };
 };
 
-describe('KlerosLiquidExtraViews', () => {
-  describe('Staking & Jurors', () => {
-    it('Should query delayed stakes correctly', async () => {
+describe("KlerosLiquidExtraViews", () => {
+  describe("Staking & Jurors", () => {
+    it("Should query delayed stakes correctly", async () => {
       const numberOfJurors = 3;
-      const { klerosLiquid, extraViews, pnk, subcourt, users } = await setup(
-        numberOfJurors
-      );
+      const { klerosLiquid, extraViews, pnk, subcourt, users } = await setup(numberOfJurors);
 
       const totalStake = 3 * subcourt.minStake;
       await pnk.generateTokens(users.governor.address, totalStake);
@@ -51,46 +41,29 @@ describe('KlerosLiquidExtraViews', () => {
       expect(juror.subcourtStakes).to.deep.equal([stake0, stake1, 0, 0]);
     });
 
-    it('Should ignore delayed stakes below the minStake in a court', async () => {
+    it("Should ignore delayed stakes below the minStake in a court", async () => {
       const numberOfJurors = 3;
-      const { klerosLiquid, extraViews, pnk, subcourt, users } = await setup(
-        numberOfJurors
-      );
+      const { klerosLiquid, extraViews, pnk, subcourt, users } = await setup(numberOfJurors);
 
       await pnk.generateTokens(users.governor.address, subcourt.minStake);
       await klerosLiquid.setStake(0, subcourt.minStake - 1);
 
-      const stake0 = await extraViews.stakeOf(
-        users.governor.address,
-        subcourt.ID
-      );
+      const stake0 = await extraViews.stakeOf(users.governor.address, subcourt.ID);
       expect(stake0).to.be.equal(0);
     });
 
-    it('Should ignore delayed stake in a fifth subcourt path', async () => {
+    it("Should ignore delayed stake in a fifth subcourt path", async () => {
       const numberOfJurors = 3;
       const treeDepth = 3;
-      const {
-        klerosLiquid,
-        extraViews,
-        pnk,
-        subcourtTree,
-        users,
-      } = await setup(numberOfJurors, treeDepth);
+      const { klerosLiquid, extraViews, pnk, subcourtTree, users } = await setup(numberOfJurors, treeDepth);
 
       const totalStake = 5 * subcourtTree.minStake;
       await pnk.generateTokens(users.governor.address, totalStake);
 
       // Set delayed stakes in 4 paths.
       await klerosLiquid.setStake(subcourtTree.ID, subcourtTree.minStake);
-      await klerosLiquid.setStake(
-        subcourtTree.children[0].ID,
-        subcourtTree.children[0].minStake
-      );
-      await klerosLiquid.setStake(
-        subcourtTree.children[1].ID,
-        subcourtTree.children[1].minStake
-      );
+      await klerosLiquid.setStake(subcourtTree.children[0].ID, subcourtTree.children[0].minStake);
+      await klerosLiquid.setStake(subcourtTree.children[1].ID, subcourtTree.children[1].minStake);
       await klerosLiquid.setStake(
         subcourtTree.children[0].children[0].ID,
         subcourtTree.children[0].children[0].minStake
@@ -117,29 +90,17 @@ describe('KlerosLiquidExtraViews', () => {
       ]);
     });
 
-    it('Should validate unstaking', async () => {
+    it("Should validate unstaking", async () => {
       const numberOfJurors = 3;
       const treeDepth = 3;
-      const {
-        klerosLiquid,
-        extraViews,
-        pnk,
-        subcourtTree,
-        users,
-      } = await setup(numberOfJurors, treeDepth);
+      const { klerosLiquid, extraViews, pnk, subcourtTree, users } = await setup(numberOfJurors, treeDepth);
 
       let totalStake = 4 * subcourtTree.minStake;
       await pnk.generateTokens(users.governor.address, totalStake);
 
       await klerosLiquid.setStake(subcourtTree.ID, subcourtTree.minStake);
-      await klerosLiquid.setStake(
-        subcourtTree.children[0].ID,
-        subcourtTree.children[0].minStake
-      );
-      await klerosLiquid.setStake(
-        subcourtTree.children[1].ID,
-        subcourtTree.children[1].minStake
-      );
+      await klerosLiquid.setStake(subcourtTree.children[0].ID, subcourtTree.children[0].minStake);
+      await klerosLiquid.setStake(subcourtTree.children[1].ID, subcourtTree.children[1].minStake);
       await klerosLiquid.setStake(
         subcourtTree.children[0].children[0].ID,
         subcourtTree.children[0].children[0].minStake

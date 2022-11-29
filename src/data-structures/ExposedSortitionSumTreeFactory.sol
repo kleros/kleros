@@ -18,7 +18,7 @@ contract ExposedSortitionSumTreeFactory {
      *  @param _key The key of the tree to get.
      *  @return All of the tree's properties.
      */
-    function _sortitionSumTrees(bytes32 _key) public view returns(uint K, uint[] stack, uint[] nodes) {
+    function _sortitionSumTrees(bytes32 _key) public view returns (uint K, uint[] stack, uint[] nodes) {
         return (
             sortitionSumTrees.sortitionSumTrees[_key].K,
             sortitionSumTrees.sortitionSumTrees[_key].stack,
@@ -56,7 +56,11 @@ contract ExposedSortitionSumTreeFactory {
      *  @param _count The number of items to return.
      *  @return The index at which leaves start, the values of the returned leaves, and whether there are more for pagination.
      */
-    function _queryLeafs(bytes32 _key, uint _cursor, uint _count) public view returns(uint startIndex, uint[] values, bool hasMore) {
+    function _queryLeafs(
+        bytes32 _key,
+        uint _cursor,
+        uint _count
+    ) public view returns (uint startIndex, uint[] values, bool hasMore) {
         return sortitionSumTrees.queryLeafs(_key, _cursor, _count);
     }
 
@@ -66,7 +70,7 @@ contract ExposedSortitionSumTreeFactory {
      *  @param _drawnNumber The drawn number.
      *  @return The drawn ID.
      */
-    function _draw(bytes32 _key, uint _drawnNumber) public view returns(bytes32 ID) {
+    function _draw(bytes32 _key, uint _drawnNumber) public view returns (bytes32 ID) {
         return sortitionSumTrees.draw(_key, _drawnNumber);
     }
 
@@ -75,7 +79,7 @@ contract ExposedSortitionSumTreeFactory {
      *  @param _ID The ID of the value.
      *  @return The associated value.
      */
-    function _stakeOf(bytes32 _key, bytes32 _ID) public view returns(uint value) {
+    function _stakeOf(bytes32 _key, bytes32 _ID) public view returns (uint value) {
         return sortitionSumTrees.stakeOf(_key, _ID);
     }
 }

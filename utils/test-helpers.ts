@@ -1,26 +1,17 @@
-import { JsonRpcProvider } from '@ethersproject/providers';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import {
-  BigNumber,
-  BigNumberish,
-  Contract,
-  ContractFunction,
-  ContractTransaction,
-} from 'ethers';
-import { ethers } from 'hardhat';
-import { MiniMeTokenERC20 } from 'typechain-types';
-import { PromiseOrValue } from 'typechain-types/common';
+import { JsonRpcProvider } from "@ethersproject/providers";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { BigNumber, BigNumberish, Contract, ContractFunction, ContractTransaction } from "ethers";
+import { ethers } from "hardhat";
+import { MiniMeTokenERC20 } from "typechain-types";
+import { PromiseOrValue } from "typechain-types/common";
 
 export const getCurrentTimestamp = async () =>
-  (await ethers.provider.getBlock(await ethers.provider.getBlockNumber()))
-    .timestamp;
+  (await ethers.provider.getBlock(await ethers.provider.getBlockNumber())).timestamp;
 
 export const increaseTime = async (amount: number) =>
-  await ethers.provider.send('evm_mine', [
-    (await getCurrentTimestamp()) + amount,
-  ]);
+  await ethers.provider.send("evm_mine", [(await getCurrentTimestamp()) + amount]);
 
-export const asyncForEach = async function<F extends ContractFunction>(
+export const asyncForEach = async function <F extends ContractFunction>(
   method: F,
   iterable: { [s: string]: unknown } | ArrayLike<unknown>
 ): Promise<void> {
@@ -29,9 +20,7 @@ export const asyncForEach = async function<F extends ContractFunction>(
 };
 
 export const generageExtradata = (subcourtID: number, numberOfJurors: number) =>
-  `0x${subcourtID.toString(16).padStart(64, '0')}${numberOfJurors
-    .toString(16)
-    .padStart(64, '0')}`;
+  `0x${subcourtID.toString(16).padStart(64, "0")}${numberOfJurors.toString(16).padStart(64, "0")}`;
 
 export const generateSubcourts = (
   depth: number,
@@ -46,14 +35,7 @@ export const generateSubcourts = (
   },
   subcourtMap = {}
 ) => {
-  const {
-    minStake,
-    alpha,
-    feeForJuror,
-    jurorsForCourtJump,
-    timesPerPeriod,
-    sortitionSumTreeK,
-  } = args;
+  const { minStake, alpha, feeForJuror, jurorsForCourtJump, timesPerPeriod, sortitionSumTreeK } = args;
   const subcourtTree = {
     ID,
     children:
@@ -88,9 +70,7 @@ export const generateSubcourts = (
     subcourtTree.parent = Math.floor((ID - 1) / sortitionSumTreeK);
     subcourtMap[subcourtTree.ID] = {
       ...subcourtTree,
-      children:
-        subcourtTree.children &&
-        subcourtTree.children.map((child: { ID: any }) => child.ID),
+      children: subcourtTree.children && subcourtTree.children.map((child: { ID: any }) => child.ID),
     };
   }
   return { subcourtMap, subcourtTree };
@@ -106,9 +86,7 @@ export const getVoteIDs = async (tx: ContractTransaction) => {
 };
 
 export const getRandomNumber = (maxNumber: number): number => {
-  return ethers.BigNumber.from(ethers.utils.randomBytes(32))
-    .mod(maxNumber)
-    .toNumber();
+  return ethers.BigNumber.from(ethers.utils.randomBytes(32)).mod(maxNumber).toNumber();
 };
 
 export const getJurorsBalances = async (
@@ -119,15 +97,9 @@ export const getJurorsBalances = async (
 
   for (const juror of drawnJurors) {
     if (isERC20(balanceChecker)) {
-      jurorsBalances.set(
-        juror,
-        (await balanceChecker?.balanceOf(juror)) as BigNumber
-      );
+      jurorsBalances.set(juror, (await balanceChecker?.balanceOf(juror)) as BigNumber);
     } else {
-      jurorsBalances.set(
-        juror,
-        (await balanceChecker?.getBalance(juror)) as BigNumber
-      );
+      jurorsBalances.set(juror, (await balanceChecker?.getBalance(juror)) as BigNumber);
     }
   }
 
@@ -135,7 +107,7 @@ export const getJurorsBalances = async (
 };
 
 const isERC20 = (obj: any): obj is MiniMeTokenERC20 => {
-  return 'balanceOf' in obj;
+  return "balanceOf" in obj;
 };
 
 export const execute = async <C extends Contract, F extends keyof C>(

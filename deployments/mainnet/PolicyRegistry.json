@@ -5,23 +5,43 @@
       "constant": true,
       "inputs": [],
       "name": "governor",
-      "outputs": [{ "name": "", "type": "address" }],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
       "payable": false,
       "stateMutability": "view",
       "type": "function"
     },
     {
       "constant": true,
-      "inputs": [{ "name": "", "type": "uint256" }],
+      "inputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
       "name": "policies",
-      "outputs": [{ "name": "", "type": "string" }],
+      "outputs": [
+        {
+          "name": "",
+          "type": "string"
+        }
+      ],
       "payable": false,
       "stateMutability": "view",
       "type": "function"
     },
     {
       "constant": false,
-      "inputs": [{ "name": "_governor", "type": "address" }],
+      "inputs": [
+        {
+          "name": "_governor",
+          "type": "address"
+        }
+      ],
       "name": "changeGovernor",
       "outputs": [],
       "payable": false,
@@ -31,8 +51,14 @@
     {
       "constant": false,
       "inputs": [
-        { "name": "_subcourtID", "type": "uint256" },
-        { "name": "_policy", "type": "string" }
+        {
+          "name": "_subcourtID",
+          "type": "uint256"
+        },
+        {
+          "name": "_policy",
+          "type": "string"
+        }
       ],
       "name": "setPolicy",
       "outputs": [],
@@ -41,7 +67,12 @@
       "type": "function"
     },
     {
-      "inputs": [{ "name": "_governor", "type": "address" }],
+      "inputs": [
+        {
+          "name": "_governor",
+          "type": "address"
+        }
+      ],
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "constructor"
@@ -49,8 +80,16 @@
     {
       "anonymous": false,
       "inputs": [
-        { "indexed": true, "name": "_subcourtID", "type": "uint256" },
-        { "indexed": false, "name": "_policy", "type": "string" }
+        {
+          "indexed": true,
+          "name": "_subcourtID",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_policy",
+          "type": "string"
+        }
       ],
       "name": "PolicyUpdate",
       "type": "event"

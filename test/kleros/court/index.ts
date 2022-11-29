@@ -1,17 +1,11 @@
-import { expect } from 'chai';
-import { BigNumber } from 'ethers';
-import { ethers } from 'hardhat';
-import { TwoPartyArbitrable } from 'typechain-types';
-import { Period, Status } from 'utils/enums';
-import { setup } from './setups';
-import { PartyTxFees } from 'utils/interfaces';
-import {
-  execute,
-  generageExtradata,
-  getRandomNumber,
-  getVoteIDs,
-  increaseTime,
-} from 'utils/test-helpers';
+import { expect } from "chai";
+import { BigNumber } from "ethers";
+import { ethers } from "hardhat";
+import { TwoPartyArbitrable } from "typechain-types";
+import { Period, Status } from "utils/enums";
+import { setup } from "./setups";
+import { PartyTxFees } from "utils/interfaces";
+import { execute, generageExtradata, getRandomNumber, getVoteIDs, increaseTime } from "utils/test-helpers";
 
 const NUMBER_OF_JURORS = 5;
 const NUMBER_OF_CHOICES = 2;
@@ -25,54 +19,27 @@ const txFeesPartyA: PartyTxFees = {
 };
 const txFeesPartyB = Object.assign({}, txFeesPartyA);
 
-describe('KlerosLiquid: Full Dispute Cycle', () => {
-  it('Should resolve dispute', async () => {
+describe("KlerosLiquid: Full Dispute Cycle", () => {
+  it("Should resolve dispute", async () => {
     const { klerosLiquid, pnk, subcourt } = await setup();
     const extraData = generageExtradata(subcourt.ID, NUMBER_OF_JURORS);
 
-    const signers = (await ethers.getSigners()).slice(
-      0,
-      3 * NUMBER_OF_JURORS + 2
-    );
+    const signers = (await ethers.getSigners()).slice(0, 3 * NUMBER_OF_JURORS + 2);
     const jurors = signers.slice(0, 3 * NUMBER_OF_JURORS);
     const [partyA, partyB] = signers.slice(jurors.length);
 
-    const arbitrableFactory = await ethers.getContractFactory(
-      'TwoPartyArbitrable',
-      jurors[0]
-    );
+    const arbitrableFactory = await ethers.getContractFactory("TwoPartyArbitrable", jurors[0]);
     const arbitrable = (await arbitrableFactory
       .connect(partyA)
-      .deploy(
-        klerosLiquid.address,
-        0,
-        partyB.address,
-        NUMBER_OF_CHOICES,
-        extraData,
-        '0x00'
-      )) as TwoPartyArbitrable;
+      .deploy(klerosLiquid.address, 0, partyB.address, NUMBER_OF_CHOICES, extraData, "0x00")) as TwoPartyArbitrable;
 
     const arbitrationCost = await klerosLiquid.arbitrationCost(extraData);
 
-    const balanceBeforePartyA = await ethers.provider.getBalance(
-      partyA.address
-    );
-    txFeesPartyA.arbitration = await execute(
-      arbitrable,
-      'payArbitrationFeeByPartyA',
-      arbitrationCost,
-      partyA
-    );
+    const balanceBeforePartyA = await ethers.provider.getBalance(partyA.address);
+    txFeesPartyA.arbitration = await execute(arbitrable, "payArbitrationFeeByPartyA", arbitrationCost, partyA);
 
-    const balanceBeforePartyB = await ethers.provider.getBalance(
-      partyB.address
-    );
-    txFeesPartyB.arbitration = await execute(
-      arbitrable,
-      'payArbitrationFeeByPartyB',
-      arbitrationCost,
-      partyB
-    );
+    const balanceBeforePartyB = await ethers.provider.getBalance(partyB.address);
+    txFeesPartyB.arbitration = await execute(arbitrable, "payArbitrationFeeByPartyB", arbitrationCost, partyB);
 
     const disputeID = await arbitrable.disputeID();
     let dispute = await klerosLiquid.disputes(disputeID);
@@ -80,9 +47,7 @@ describe('KlerosLiquid: Full Dispute Cycle', () => {
     // Staking Phase
     for (let juror of Object.values(jurors)) {
       await pnk.generateTokens(juror.address, subcourt.minStake);
-      await klerosLiquid
-        .connect(juror)
-        .setStake(subcourt.ID, subcourt.minStake);
+      await klerosLiquid.connect(juror).setStake(subcourt.ID, subcourt.minStake);
     }
 
     let minStakingTime = await klerosLiquid.minStakingTime();
@@ -107,47 +72,25 @@ describe('KlerosLiquid: Full Dispute Cycle', () => {
       const voteId = Number(voteIDs.get(juror.address));
       const choice = Number(choices.get(juror.address));
 
-      if (voteIDs.has(juror.address))
-        await klerosLiquid
-          .connect(juror)
-          .castVote(disputeID, [voteId], choice, 0);
+      if (voteIDs.has(juror.address)) await klerosLiquid.connect(juror).castVote(disputeID, [voteId], choice, 0);
     }
 
     // Appeal period
     await klerosLiquid.passPeriod(disputeID);
     const appealFee = await klerosLiquid.appealCost(disputeID, extraData);
 
-    txFeesPartyA.appeal = await execute(
-      arbitrable,
-      'appeal',
-      appealFee,
-      partyA,
-      [extraData]
-    );
+    txFeesPartyA.appeal = await execute(arbitrable, "appeal", appealFee, partyA, [extraData]);
 
     // Evidence Period
-    txFeesPartyA.evidenceSumbission = await execute(
-      arbitrable,
-      'submitEvidence',
-      BigNumber.from(0),
-      partyA,
-      ['0x00']
-    );
+    txFeesPartyA.evidenceSumbission = await execute(arbitrable, "submitEvidence", BigNumber.from(0), partyA, ["0x00"]);
 
-    txFeesPartyB.evidenceSumbission = await execute(
-      arbitrable,
-      'submitEvidence',
-      BigNumber.from(0),
-      partyB,
-      ['0x01']
-    );
+    txFeesPartyB.evidenceSumbission = await execute(arbitrable, "submitEvidence", BigNumber.from(0), partyB, ["0x01"]);
 
     let disputesWithoutJurors = await klerosLiquid.disputesWithoutJurors();
     expect(disputesWithoutJurors).to.be.equal(1);
 
     const disputeInfo = await klerosLiquid.getDispute(disputeID);
-    const jurorsInNewRound =
-      disputeInfo.votesLengths[disputeInfo.votesLengths.length - 1];
+    const jurorsInNewRound = disputeInfo.votesLengths[disputeInfo.votesLengths.length - 1];
     tx = await klerosLiquid.drawJurors(disputeID, jurorsInNewRound);
 
     disputesWithoutJurors = await klerosLiquid.disputesWithoutJurors();
@@ -164,10 +107,7 @@ describe('KlerosLiquid: Full Dispute Cycle', () => {
       const voteId = Number(voteIDs.get(juror.address));
       const choice = Number(choices.get(juror.address));
 
-      if (voteIDs.has(juror.address))
-        await klerosLiquid
-          .connect(juror)
-          .castVote(disputeID, [voteId], choice, 0);
+      if (voteIDs.has(juror.address)) await klerosLiquid.connect(juror).castVote(disputeID, [voteId], choice, 0);
     }
 
     // Appeal Period: No one appeals
@@ -180,7 +120,7 @@ describe('KlerosLiquid: Full Dispute Cycle', () => {
 
     const ruling = await klerosLiquid.currentRuling(disputeID);
     await expect(klerosLiquid.executeRuling(disputeID))
-      .to.emit(arbitrable, 'Ruling')
+      .to.emit(arbitrable, "Ruling")
       .withArgs(klerosLiquid.address, disputeID, ruling);
 
     dispute = await klerosLiquid.disputes(disputeID);
@@ -204,18 +144,13 @@ describe('KlerosLiquid: Full Dispute Cycle', () => {
       );
 
       expect(balanceAfterPartyB).to.be.equal(
-        balanceBeforePartyB
-          .sub(partyBFee)
-          .sub(txFeesPartyB.arbitration)
-          .sub(txFeesPartyB.evidenceSumbission)
+        balanceBeforePartyB.sub(partyBFee).sub(txFeesPartyB.arbitration).sub(txFeesPartyB.evidenceSumbission)
       );
     }
 
     if (ruling.eq(PARTY_B_WINS)) {
       expect(balanceAfterPartyB).to.be.equal(
-        balanceBeforePartyB
-          .sub(txFeesPartyB.arbitration)
-          .sub(txFeesPartyB.evidenceSumbission)
+        balanceBeforePartyB.sub(txFeesPartyB.arbitration).sub(txFeesPartyB.evidenceSumbission)
       );
 
       expect(balanceAfterPartyA).to.be.equal(

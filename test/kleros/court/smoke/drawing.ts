@@ -1,18 +1,16 @@
-import { expect } from 'chai';
+import { expect } from "chai";
 
-import { useDisputeSetup } from '../setups';
-import { increaseTime } from 'utils/test-helpers';
+import { useDisputeSetup } from "../setups";
+import { increaseTime } from "utils/test-helpers";
 
-describe('Smoke: Dispute - Drawing', () => {
-  it('Should draw jurors in full', async () => {
+describe("Smoke: Dispute - Drawing", () => {
+  it("Should draw jurors in full", async () => {
     const { klerosLiquid, pnk, subcourt, users } = await useDisputeSetup(3);
     const disputeID = 0;
 
     for (let juror of Object.values(users)) {
       await pnk.generateTokens(juror.address, subcourt.minStake);
-      await klerosLiquid
-        .connect(juror)
-        .setStake(subcourt.ID, subcourt.minStake);
+      await klerosLiquid.connect(juror).setStake(subcourt.ID, subcourt.minStake);
     }
 
     const minStakingTime = await klerosLiquid.minStakingTime();

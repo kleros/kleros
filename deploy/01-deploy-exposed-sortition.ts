@@ -1,18 +1,14 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { DeployFunction } from 'hardhat-deploy/types';
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { DeployFunction } from "hardhat-deploy/types";
 
-const deployExposedSortitionSumTree: DeployFunction = async function(
-  hre: HardhatRuntimeEnvironment
-) {
+const deployExposedSortitionSumTree: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts } = hre;
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  const SortitionSumTreeLibrary = await deployments.get(
-    'SortitionSumTreeFactory'
-  );
+  const SortitionSumTreeLibrary = await deployments.get("SortitionSumTreeFactory");
 
-  await deploy('ExposedSortitionSumTreeFactory', {
+  await deploy("ExposedSortitionSumTreeFactory", {
     from: deployer,
     libraries: {
       SortitionSumTreeFactory: SortitionSumTreeLibrary.address,
@@ -21,6 +17,6 @@ const deployExposedSortitionSumTree: DeployFunction = async function(
   });
 };
 
-deployExposedSortitionSumTree.tags = ['ExposedSortitionSumTreeFactory'];
-deployExposedSortitionSumTree.dependencies = ['SortitionSumTreeLibrary'];
+deployExposedSortitionSumTree.tags = ["ExposedSortitionSumTreeFactory"];
+deployExposedSortitionSumTree.dependencies = ["SortitionSumTreeLibrary"];
 export default deployExposedSortitionSumTree;

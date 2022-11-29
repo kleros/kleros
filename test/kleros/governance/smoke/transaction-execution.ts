@@ -1,19 +1,11 @@
-import { expect } from 'chai';
-import { ethers } from 'ethers';
-import {
-  useListSubmissionSetup,
-  useTransactionsSetup,
-} from 'utils/fixtures/kleros-governor';
-import { increaseTime } from 'utils/test-helpers';
+import { expect } from "chai";
+import { ethers } from "ethers";
+import { useListSubmissionSetup, useTransactionsSetup } from "utils/fixtures/kleros-governor";
+import { increaseTime } from "utils/test-helpers";
 
-describe('Smoke: Governor - Approved List Transactions', () => {
-  it('Should correctly execute atomic transactions', async () => {
-    const {
-      governor,
-      appeableArbitrator,
-      args,
-      users,
-    } = await useTransactionsSetup();
+describe("Smoke: Governor - Approved List Transactions", () => {
+  it("Should correctly execute atomic transactions", async () => {
+    const { governor, appeableArbitrator, args, users } = await useTransactionsSetup();
 
     // Execute the first and the second transactions separately to check atomic execution.
     await governor.connect(users.deployer).executeTransactionList(0, 0, 1);
@@ -30,13 +22,8 @@ describe('Smoke: Governor - Approved List Transactions', () => {
     expect(dispute.fee).to.equal(args.arbitrationFee);
   });
 
-  it('Should correctly execute batch transactions', async () => {
-    const {
-      governor,
-      appeableArbitrator,
-      args,
-      users,
-    } = await useTransactionsSetup();
+  it("Should correctly execute batch transactions", async () => {
+    const { governor, appeableArbitrator, args, users } = await useTransactionsSetup();
 
     await governor.connect(users.deployer).executeTransactionList(0, 0, 0);
 
@@ -55,8 +42,8 @@ describe('Smoke: Governor - Approved List Transactions', () => {
     expect(tx2.executed).to.equal(true);
   });
 
-  describe('Revert Execution', () => {
-    it('Should fail after the execution timeout', async () => {
+  describe("Revert Execution", () => {
+    it("Should fail after the execution timeout", async () => {
       const { governor, args, users } = await useListSubmissionSetup();
 
       await increaseTime(args.submissionTimeout + 1);
@@ -64,13 +51,11 @@ describe('Smoke: Governor - Approved List Transactions', () => {
 
       users.other.sendTransaction({
         to: governor.address,
-        value: ethers.utils.parseEther('3'),
+        value: ethers.utils.parseEther("3"),
       });
 
       await increaseTime(args.executionTimeout + 1);
-      await expect(
-        governor.connect(users.deployer).executeTransactionList(0, 0, 0)
-      ).to.be.reverted;
+      await expect(governor.connect(users.deployer).executeTransactionList(0, 0, 0)).to.be.reverted;
     });
   });
 });

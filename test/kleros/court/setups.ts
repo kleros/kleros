@@ -1,6 +1,6 @@
-import { deployments, ethers } from 'hardhat';
-import { MiniMeTokenERC20, KlerosLiquid } from 'typechain-types';
-import { SubcourtInfo } from 'utils/interfaces';
+import { deployments, ethers } from "hardhat";
+import { MiniMeTokenERC20, KlerosLiquid } from "typechain-types";
+import { SubcourtInfo } from "utils/interfaces";
 import {
   generateSubcourts,
   asyncForEach,
@@ -8,37 +8,29 @@ import {
   increaseTime,
   getVoteIDs,
   getRandomNumber,
-} from 'utils/test-helpers';
+} from "utils/test-helpers";
 
 export const setup = async (subcourtTreeDepth = 2) => {
-  await deployments.fixture('KlerosLiquidExtraViews', {
+  await deployments.fixture("KlerosLiquidExtraViews", {
     fallbackToGlobal: true,
     keepExistingDeployments: false,
   });
 
-  const pnk = (await ethers.getContract(
-    'MiniMeTokenERC20'
-  )) as MiniMeTokenERC20;
+  const pnk = (await ethers.getContract("MiniMeTokenERC20")) as MiniMeTokenERC20;
 
-  const klerosLiquid = (await ethers.getContract(
-    'KlerosLiquid'
-  )) as KlerosLiquid;
+  const klerosLiquid = (await ethers.getContract("KlerosLiquid")) as KlerosLiquid;
 
   const court = await klerosLiquid.courts(0);
   const args = {
     minStake: court.minStake,
     alpha: 10000,
-    feeForJuror: ethers.utils.parseEther('1'),
+    feeForJuror: ethers.utils.parseEther("1"),
     jurorsForCourtJump: 511,
     timesPerPeriod: [30, 600, 600, 600],
     sortitionSumTreeK: 4,
   };
 
-  const { subcourtMap, subcourtTree } = generateSubcourts(
-    subcourtTreeDepth,
-    0,
-    args
-  );
+  const { subcourtMap, subcourtTree } = generateSubcourts(subcourtTreeDepth, 0, args);
 
   await asyncForEach(
     (subcourt: SubcourtInfo) =>
@@ -68,27 +60,18 @@ export const setup = async (subcourtTreeDepth = 2) => {
   };
 };
 
-export const useDisputeSetup = async (
-  numberOfJurors?: number,
-  subcourtTreeDepth?: number
-) => {
-  const { klerosLiquid, pnk, subcourtMap, subcourtTree, users } = await setup(
-    subcourtTreeDepth
-  );
+export const useDisputeSetup = async (numberOfJurors?: number, subcourtTreeDepth?: number) => {
+  const { klerosLiquid, pnk, subcourtMap, subcourtTree, users } = await setup(subcourtTreeDepth);
   const NUMBER_OF_CHOICES = 2;
 
   const dispute = {
     ID: 0,
     appeals: 0,
-    numberOfJurors:
-      numberOfJurors || subcourtTree.children[0].jurorsForCourtJump,
+    numberOfJurors: numberOfJurors || subcourtTree.children[0].jurorsForCourtJump,
     subcourtID: subcourtTree.children[0].ID,
   };
 
-  const extraData = generageExtradata(
-    dispute.subcourtID,
-    dispute.numberOfJurors
-  );
+  const extraData = generageExtradata(dispute.subcourtID, dispute.numberOfJurors);
 
   const arbitrationCost = await klerosLiquid.arbitrationCost(extraData);
   await klerosLiquid.createDispute(NUMBER_OF_CHOICES, extraData, {
@@ -140,10 +123,7 @@ export const useVotedSetup = async (numberOfJurors: number) => {
     const voteId = Number(voteIDs.get(juror.address));
     const choice = Number(choices.get(juror.address));
 
-    if (voteIDs.has(juror.address))
-      await klerosLiquid
-        .connect(juror)
-        .castVote(disputeID, [voteId], choice, 0);
+    if (voteIDs.has(juror.address)) await klerosLiquid.connect(juror).castVote(disputeID, [voteId], choice, 0);
   }
 
   return { klerosLiquid, jurors, voteIDs, choices, pnk };

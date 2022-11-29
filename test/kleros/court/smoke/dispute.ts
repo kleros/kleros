@@ -1,25 +1,25 @@
-import { expect } from 'chai';
+import { expect } from "chai";
 
-import { setup, useDisputeSetup } from '../setups';
-import { Period, Status } from 'utils/index';
+import { setup, useDisputeSetup } from "../setups";
+import { Period, Status } from "utils/index";
 
 const NUMBER_OF_CHOICES = 2;
 
-describe('Smoke: Dispute - Construction', () => {
-  it('Should create dispute', async () => {
+describe("Smoke: Dispute - Construction", () => {
+  it("Should create dispute", async () => {
     const { klerosLiquid, users } = await setup();
 
-    const arbitrationCost = await klerosLiquid.arbitrationCost('0x00');
+    const arbitrationCost = await klerosLiquid.arbitrationCost("0x00");
     await expect(
-      klerosLiquid.createDispute(NUMBER_OF_CHOICES, '0x00', {
+      klerosLiquid.createDispute(NUMBER_OF_CHOICES, "0x00", {
         value: arbitrationCost,
       })
     )
-      .to.emit(klerosLiquid, 'DisputeCreation')
+      .to.emit(klerosLiquid, "DisputeCreation")
       .withArgs(0, users.governor.address);
   });
 
-  it('Should set correct values', async () => {
+  it("Should set correct values", async () => {
     const { klerosLiquid, subcourtTree, users } = await useDisputeSetup();
 
     const disputeInfo = await klerosLiquid.disputes(0);

@@ -1,46 +1,36 @@
-import { expect } from 'chai';
-import { anyValue } from '@nomicfoundation/hardhat-chai-matchers/withArgs';
+import { expect } from "chai";
+import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 
-import { setup, useDisputeSetup } from '../setups';
-import { increaseTime } from 'utils/test-helpers';
-import { Phase } from 'utils';
+import { setup, useDisputeSetup } from "../setups";
+import { increaseTime } from "utils/test-helpers";
+import { Phase } from "utils";
 
-describe('Smoke: Dispute - Staking', () => {
-  it('Should set stakes in subcourt', async () => {
+describe("Smoke: Dispute - Staking", () => {
+  it("Should set stakes in subcourt", async () => {
     const { klerosLiquid, pnk, subcourt, users } = await setup();
 
     await pnk.generateTokens(users.governor.address, subcourt.minStake);
 
     await expect(klerosLiquid.setStake(subcourt.ID, subcourt.minStake))
-      .to.emit(klerosLiquid, 'StakeSet')
-      .withArgs(
-        users.governor.address,
-        subcourt.ID,
-        subcourt.minStake,
-        anyValue
-      );
+      .to.emit(klerosLiquid, "StakeSet")
+      .withArgs(users.governor.address, subcourt.ID, subcourt.minStake, anyValue);
   });
 
-  it('Should check juror records after staking', async () => {
+  it("Should check juror records after staking", async () => {
     const { klerosLiquid, pnk, subcourt, users } = await setup();
 
     await pnk.generateTokens(users.other.address, subcourt.minStake);
 
-    await klerosLiquid
-      .connect(users.other)
-      .setStake(subcourt.ID, subcourt.minStake);
+    await klerosLiquid.connect(users.other).setStake(subcourt.ID, subcourt.minStake);
 
     const jurorSubcourtID = await klerosLiquid.getJuror(users.other.address);
     expect(Number(jurorSubcourtID)).to.be.equal(subcourt.ID);
 
-    const jurorStake = await klerosLiquid.stakeOf(
-      users.other.address,
-      Number(jurorSubcourtID)
-    );
+    const jurorStake = await klerosLiquid.stakeOf(users.other.address, Number(jurorSubcourtID));
     expect(jurorStake).to.be.equal(subcourt.minStake);
   });
 
-  it('Should execute delayed set stakes', async () => {
+  it("Should execute delayed set stakes", async () => {
     const { klerosLiquid, pnk, subcourt, users } = await useDisputeSetup();
 
     await pnk.generateTokens(users.governor.address, subcourt.minStake);
@@ -68,17 +58,16 @@ describe('Smoke: Dispute - Staking', () => {
     expect(juror.stakedTokens).to.be.equal(subcourt.minStake);
   });
 
-  describe('Revert Execution', () => {
-    it('Should fail to set stake less than required minStake', async () => {
+  describe("Revert Execution", () => {
+    it("Should fail to set stake less than required minStake", async () => {
       const { klerosLiquid, pnk, subcourt, users } = await setup();
 
       await pnk.generateTokens(users.governor.address, subcourt.minStake);
 
-      await expect(klerosLiquid.setStake(subcourt.ID, subcourt.minStake.sub(1)))
-        .to.be.reverted;
+      await expect(klerosLiquid.setStake(subcourt.ID, subcourt.minStake.sub(1))).to.be.reverted;
     });
 
-    it('Should fail staking not during Staking phase', async () => {
+    it("Should fail staking not during Staking phase", async () => {
       const { klerosLiquid, pnk, subcourt, users } = await useDisputeSetup();
 
       await pnk.generateTokens(users.governor.address, subcourt.minStake);
@@ -86,16 +75,12 @@ describe('Smoke: Dispute - Staking', () => {
       const minStakingTime = await klerosLiquid.minStakingTime();
       await increaseTime(minStakingTime.toNumber());
 
-      await expect(klerosLiquid.passPhase())
-        .to.emit(klerosLiquid, 'NewPhase')
-        .withArgs(Phase.generating);
+      await expect(klerosLiquid.passPhase()).to.emit(klerosLiquid, "NewPhase").withArgs(Phase.generating);
 
       await klerosLiquid.setStake(subcourt.ID, subcourt.minStake);
       await expect(klerosLiquid.executeDelayedSetStakes(1)).to.be.reverted;
 
-      await expect(klerosLiquid.passPhase())
-        .to.emit(klerosLiquid, 'NewPhase')
-        .withArgs(Phase.drawing);
+      await expect(klerosLiquid.passPhase()).to.emit(klerosLiquid, "NewPhase").withArgs(Phase.drawing);
 
       await expect(klerosLiquid.executeDelayedSetStakes(1)).to.be.reverted;
     });

@@ -24,7 +24,11 @@ contract KlerosGovernor is Arbitrable {
     using CappedMath for uint;
 
     /* *** Contract variables *** */
-    enum Status { NoDispute, DisputeCreated, Resolved }
+    enum Status {
+        NoDispute,
+        DisputeCreated,
+        Resolved
+    }
 
     struct Session {
         Round[] rounds; // Tracks each appeal round of the dispute in the session in the form rounds[appeal].
@@ -55,10 +59,10 @@ contract KlerosGovernor is Arbitrable {
     }
 
     struct Round {
-        mapping (uint => uint) paidFees; // Tracks the fees paid by each side in this round in the form paidFees[submissionID].
-        mapping (uint => bool) hasPaid; // True when the side has fully paid its fees, false otherwise in the form hasPaid[submissionID].
+        mapping(uint => uint) paidFees; // Tracks the fees paid by each side in this round in the form paidFees[submissionID].
+        mapping(uint => bool) hasPaid; // True when the side has fully paid its fees, false otherwise in the form hasPaid[submissionID].
         uint feeRewards; // Sum of reimbursable fees and stake rewards available to the parties that made contributions to the side that ultimately wins a dispute.
-        mapping(address => mapping (uint => uint)) contributions; // Maps contributors to their contributions for each side in the form contributions[address][submissionID].
+        mapping(address => mapping(uint => uint)) contributions; // Maps contributors to their contributions for each side in the form contributions[address][submissionID].
         uint successfullyPaid; // Sum of all successfully paid fees paid by all sides.
     }
 
@@ -95,7 +99,10 @@ contract KlerosGovernor is Arbitrable {
         require(now - lastApprovalTime > submissionTimeout.addCap(offset), "Approval time has not started yet.");
         _;
     }
-    modifier onlyByGovernor() {require(address(this) == msg.sender, "Only the governor can execute this."); _;}
+    modifier onlyByGovernor() {
+        require(address(this) == msg.sender, "Only the governor can execute this.");
+        _;
+    }
 
     /* *** Events *** */
     /** @dev Emitted when a new list is submitted.
@@ -118,7 +125,7 @@ contract KlerosGovernor is Arbitrable {
      *  @param _winnerMultiplier Multiplier of the appeal cost that the winner has to pay for a round. In basis points.
      *  @param _loserMultiplier Multiplier of the appeal cost that the loser has to pay for a round. In basis points.
      */
-    constructor (
+    constructor(
         Arbitrator _arbitrator,
         bytes _extraData,
         uint _submissionBaseDeposit,
@@ -205,7 +212,10 @@ contract KlerosGovernor is Arbitrable {
      *  @param _arbitrator The new trusted arbitrator.
      *  @param _arbitratorExtraData The extra data used by the new arbitrator.
      */
-    function changeArbitrator(Arbitrator _arbitrator, bytes _arbitratorExtraData) public onlyByGovernor duringSubmissionPeriod {
+    function changeArbitrator(
+        Arbitrator _arbitrator,
+        bytes _arbitratorExtraData
+    ) public onlyByGovernor duringSubmissionPeriod {
         arbitrator = _arbitrator;
         arbitratorExtraData = _arbitratorExtraData;
     }
@@ -227,9 +237,21 @@ contract KlerosGovernor is Arbitrable {
      *  @param _dataSize List of lengths in bytes required to split calldata for its respective targets.
      *  @param _description String in CSV format that describes list's transactions.
      */
-    function submitList (address[] _target, uint[] _value, bytes _data, uint[] _dataSize, string _description) public payable duringSubmissionPeriod {
-        require(_target.length == _value.length, "Incorrect input. Target and value arrays must be of the same length.");
-        require(_target.length == _dataSize.length, "Incorrect input. Target and datasize arrays must be of the same length.");
+    function submitList(
+        address[] _target,
+        uint[] _value,
+        bytes _data,
+        uint[] _dataSize,
+        string _description
+    ) public payable duringSubmissionPeriod {
+        require(
+            _target.length == _value.length,
+            "Incorrect input. Target and value arrays must be of the same length."
+        );
+        require(
+            _target.length == _dataSize.length,
+            "Incorrect input. Target and datasize arrays must be of the same length."
+        );
         Session storage session = sessions[sessions.length - 1];
         Submission storage submission = submissions[submissions.length++];
         submission.submitter = msg.sender;
@@ -263,14 +285,12 @@ contract KlerosGovernor is Arbitrable {
         submission.submissionTime = now;
         session.sumDeposit += submission.deposit;
         session.submittedLists.push(submissions.length - 1);
-        if (session.submittedLists.length == 1)
-            session.durationOffset = now.subCap(lastApprovalTime);
+        if (session.submittedLists.length == 1) session.durationOffset = now.subCap(lastApprovalTime);
 
         emit ListSubmitted(submissions.length - 1, msg.sender, sessions.length - 1, _description);
 
         uint remainder = msg.value - submission.deposit;
-        if (remainder > 0)
-            msg.sender.send(remainder);
+        if (remainder > 0) msg.sender.send(remainder);
 
         reservedETH += submission.deposit;
     }
@@ -283,7 +303,10 @@ contract KlerosGovernor is Arbitrable {
     function withdrawTransactionList(uint _submissionID, bytes32 _listHash) public {
         Session storage session = sessions[sessions.length - 1];
         Submission storage submission = submissions[session.submittedLists[_submissionID]];
-        require(now - lastApprovalTime <= submissionTimeout / 2, "Lists can be withdrawn only in the first half of the period.");
+        require(
+            now - lastApprovalTime <= submissionTimeout / 2,
+            "Lists can be withdrawn only in the first half of the period."
+        );
         // This require statement is an extra check to prevent _submissionID linking to the wrong list because of index swap during withdrawal.
         require(submission.listHash == _listHash, "Provided hash doesn't correspond with submission ID.");
         require(submission.submitter == msg.sender, "Can't withdraw the list created by someone else.");
@@ -322,7 +345,10 @@ contract KlerosGovernor is Arbitrable {
         } else {
             session.status = Status.DisputeCreated;
             uint arbitrationCost = arbitrator.arbitrationCost(arbitratorExtraData);
-            session.disputeID = arbitrator.createDispute.value(arbitrationCost)(session.submittedLists.length, arbitratorExtraData);
+            session.disputeID = arbitrator.createDispute.value(arbitrationCost)(
+                session.submittedLists.length,
+                arbitratorExtraData
+            );
             session.rounds.length++;
             session.sumDeposit = session.sumDeposit.subCap(arbitrationCost);
 
@@ -338,7 +364,10 @@ contract KlerosGovernor is Arbitrable {
         Session storage session = sessions[sessions.length - 1];
         require(_submissionID <= session.submittedLists.length - 1, "SubmissionID is out of bounds.");
         require(session.status == Status.DisputeCreated, "No dispute to appeal.");
-        require(arbitrator.disputeStatus(session.disputeID) == Arbitrator.DisputeStatus.Appealable, "Dispute is not appealable.");
+        require(
+            arbitrator.disputeStatus(session.disputeID) == Arbitrator.DisputeStatus.Appealable,
+            "Dispute is not appealable."
+        );
         (uint appealPeriodStart, uint appealPeriodEnd) = arbitrator.appealPeriod(session.disputeID);
         require(
             now >= appealPeriodStart && now < appealPeriodEnd,
@@ -353,7 +382,10 @@ contract KlerosGovernor is Arbitrable {
         } else if (winner == 0) {
             multiplier = sharedMultiplier;
         } else {
-            require(now - appealPeriodStart < (appealPeriodEnd - appealPeriodStart)/2, "The loser must pay during the first half of the appeal period.");
+            require(
+                now - appealPeriodStart < (appealPeriodEnd - appealPeriodStart) / 2,
+                "The loser must pay during the first half of the appeal period."
+            );
             multiplier = loserMultiplier;
         }
 
@@ -365,14 +397,16 @@ contract KlerosGovernor is Arbitrable {
         // Take up to the amount necessary to fund the current round at the current costs.
         uint contribution; // Amount contributed.
         uint remainingETH; // Remaining ETH to send back.
-        (contribution, remainingETH) = calculateContribution(msg.value, totalCost.subCap(round.paidFees[_submissionID]));
+        (contribution, remainingETH) = calculateContribution(
+            msg.value,
+            totalCost.subCap(round.paidFees[_submissionID])
+        );
         round.contributions[msg.sender][_submissionID] += contribution;
         round.paidFees[_submissionID] += contribution;
         // Add contribution to reward when the fee funding is successful, otherwise it can be withdrawn later.
         if (round.paidFees[_submissionID] >= totalCost) {
             round.hasPaid[_submissionID] = true;
-            if (shadowWinner == NO_SHADOW_WINNER)
-                shadowWinner = _submissionID;
+            if (shadowWinner == NO_SHADOW_WINNER) shadowWinner = _submissionID;
 
             round.feeRewards += round.paidFees[_submissionID];
             round.successfullyPaid += round.paidFees[_submissionID];
@@ -398,13 +432,11 @@ contract KlerosGovernor is Arbitrable {
      *  @return taken The amount of ETH taken.
      *  @return remainder The amount of ETH left from the contribution.
      */
-    function calculateContribution(uint _available, uint _requiredAmount)
-        internal
-        pure
-        returns(uint taken, uint remainder)
-    {
-        if (_requiredAmount > _available)
-            taken = _available;
+    function calculateContribution(
+        uint _available,
+        uint _requiredAmount
+    ) internal pure returns (uint taken, uint remainder) {
+        if (_requiredAmount > _available) taken = _available;
         else {
             taken = _requiredAmount;
             remainder = _available - _requiredAmount;
@@ -466,8 +498,7 @@ contract KlerosGovernor is Arbitrable {
      *  @param _evidenceURI Link to evidence.
      */
     function submitEvidence(string _evidenceURI) public {
-        if (bytes(_evidenceURI).length > 0)
-            emit Evidence(arbitrator, sessions.length - 1, msg.sender, _evidenceURI);
+        if (bytes(_evidenceURI).length > 0) emit Evidence(arbitrator, sessions.length - 1, msg.sender, _evidenceURI);
     }
 
     /** @dev Executes a ruling of a dispute.
@@ -519,7 +550,7 @@ contract KlerosGovernor is Arbitrable {
 
     /** @dev Fallback function to receive funds for the execution of transactions.
      */
-    function () public payable {}
+    function() public payable {}
 
     /** @dev Gets the sum of contract funds that are used for the execution of transactions.
      *  @return Contract balance without reserved ETH.
@@ -533,24 +564,13 @@ contract KlerosGovernor is Arbitrable {
      *  @param _transactionIndex The index of the transaction.
      *  @return The transaction info.
      */
-    function getTransactionInfo(uint _listID, uint _transactionIndex)
-        public
-        view
-        returns (
-            address target,
-            uint value,
-            bytes data,
-            bool executed
-        )
-    {
+    function getTransactionInfo(
+        uint _listID,
+        uint _transactionIndex
+    ) public view returns (address target, uint value, bytes data, bool executed) {
         Submission storage submission = submissions[_listID];
         Transaction storage transaction = submission.txs[_transactionIndex];
-        return (
-            transaction.target,
-            transaction.value,
-            transaction.data,
-            transaction.executed
-        );
+        return (transaction.target, transaction.value, transaction.data, transaction.executed);
     }
 
     /** @dev Gets the contributions made by a party for a given round of a session.
@@ -564,7 +584,7 @@ contract KlerosGovernor is Arbitrable {
         uint _session,
         uint _round,
         address _contributor
-    ) public view returns(uint[] contributions) {
+    ) public view returns (uint[] contributions) {
         Session storage session = sessions[_session];
         Round storage round = session.rounds[_round];
 
@@ -580,16 +600,10 @@ contract KlerosGovernor is Arbitrable {
      *  @param _round The round to be queried.
      *  @return The round information.
      */
-    function getRoundInfo(uint _session, uint _round)
-        public
-        view
-        returns (
-            uint[] paidFees,
-            bool[] hasPaid,
-            uint feeRewards,
-            uint successfullyPaid
-        )
-    {
+    function getRoundInfo(
+        uint _session,
+        uint _round
+    ) public view returns (uint[] paidFees, bool[] hasPaid, uint feeRewards, uint successfullyPaid) {
         Session storage session = sessions[_session];
         Round storage round = session.rounds[_round];
         paidFees = new uint[](session.submittedLists.length);

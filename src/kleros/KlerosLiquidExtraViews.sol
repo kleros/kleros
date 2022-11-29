@@ -8,7 +8,7 @@
  */
 pragma solidity ^0.4.24;
 
-import { KlerosLiquid } from "./KlerosLiquid.sol";
+import {KlerosLiquid} from "./KlerosLiquid.sol";
 
 /**
  *  @title KlerosLiquidExtraViews
@@ -36,13 +36,8 @@ contract KlerosLiquidExtraViews {
      *  @param _subcourtID The ID of the subcourt.
      *  @return The stake.
      */
-    function stakeOf(address _account, uint96 _subcourtID) external view returns(uint stake) {
-        (
-            uint96[] memory subcourtIDs,
-            ,
-            ,
-            uint[] memory subcourtStakes
-        ) = getJuror(_account);
+    function stakeOf(address _account, uint96 _subcourtID) external view returns (uint stake) {
+        (uint96[] memory subcourtIDs, , , uint[] memory subcourtStakes) = getJuror(_account);
         for (uint i = 0; i < subcourtIDs.length; i++) {
             if (_subcourtID + 1 == subcourtIDs[i]) {
                 stake = subcourtStakes[i];
@@ -56,12 +51,9 @@ contract KlerosLiquidExtraViews {
      *  @param _account The address of the juror.
      *  @return The juror's properties, taking into account delayed set stakes.
      */
-    function getJuror(address _account) public view returns(
-        uint96[] subcourtIDs,
-        uint stakedTokens,
-        uint lockedTokens,
-        uint[] subcourtStakes
-    ) {
+    function getJuror(
+        address _account
+    ) public view returns (uint96[] subcourtIDs, uint stakedTokens, uint lockedTokens, uint[] subcourtStakes) {
         subcourtIDs = new uint96[](klerosLiquid.MAX_STAKE_PATHS());
         (stakedTokens, lockedTokens) = klerosLiquid.jurors(_account);
         subcourtStakes = new uint[](klerosLiquid.MAX_STAKE_PATHS());
@@ -76,7 +68,7 @@ contract KlerosLiquidExtraViews {
             (address account, uint96 subcourtID, uint128 stake) = klerosLiquid.delayedSetStakes(i);
             if (_account != account) continue;
 
-            (,, uint courtMinStake,,,) = klerosLiquid.courts(subcourtID);
+            (, , uint courtMinStake, , , ) = klerosLiquid.courts(subcourtID);
 
             if (stake == 0) {
                 for (uint j = 0; j < subcourtIDs.length; j++) {

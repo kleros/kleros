@@ -1,17 +1,12 @@
-import { expect } from 'chai';
+import { expect } from "chai";
 
-import { useRulingSetup } from 'utils/fixtures/kleros-governor';
-import { increaseTime } from 'utils/test-helpers';
+import { useRulingSetup } from "utils/fixtures/kleros-governor";
+import { increaseTime } from "utils/test-helpers";
 
-describe('Smoke: Governor - Submission Rulling', () => {
+describe("Smoke: Governor - Submission Rulling", () => {
   const MULTIPLIER_DIVISOR = 10000;
-  it('Should enforce a correct ruling to the dispute with no appeals', async () => {
-    const {
-      governor,
-      appeableArbitrator,
-      args,
-      users,
-    } = await useRulingSetup();
+  it("Should enforce a correct ruling to the dispute with no appeals", async () => {
+    const { governor, appeableArbitrator, args, users } = await useRulingSetup();
 
     // Ruling 1 is equal to 0 submission index (submitter1)
     await appeableArbitrator.giveRuling(0, 1);
@@ -21,9 +16,7 @@ describe('Smoke: Governor - Submission Rulling', () => {
     const latestSession = await governor.getCurrentSessionNumber();
     let sessionInfo = await governor.sessions(latestSession);
 
-    await expect(() =>
-      appeableArbitrator.giveRuling(sessionInfo.disputeID, 1)
-    ).to.changeEtherBalances(
+    await expect(() => appeableArbitrator.giveRuling(sessionInfo.disputeID, 1)).to.changeEtherBalances(
       [users.submitter1, users.submitter2, users.submitter3],
       [sessionInfo.sumDeposit, 0, 0]
     );
@@ -36,13 +29,8 @@ describe('Smoke: Governor - Submission Rulling', () => {
     expect(submission.approved).to.equal(true);
   });
 
-  it('Should enforce a correct ruling to the dispute after appeal', async () => {
-    const {
-      governor,
-      appeableArbitrator,
-      args,
-      users,
-    } = await useRulingSetup();
+  it("Should enforce a correct ruling to the dispute after appeal", async () => {
+    const { governor, appeableArbitrator, args, users } = await useRulingSetup();
 
     // Ruling 1 is equal to 0 submission index (submitter1)
     await appeableArbitrator.giveRuling(0, 1);
@@ -69,9 +57,7 @@ describe('Smoke: Governor - Submission Rulling', () => {
     await appeableArbitrator.giveRuling(1, 2);
     await increaseTime(args.appealTimeout + 1);
 
-    await expect(() =>
-      appeableArbitrator.giveRuling(1, 2)
-    ).to.changeEtherBalances(
+    await expect(() => appeableArbitrator.giveRuling(1, 2)).to.changeEtherBalances(
       [users.submitter1, users.submitter2, users.submitter3],
       [0, sessionInfo.sumDeposit, 0]
     );
@@ -84,13 +70,8 @@ describe('Smoke: Governor - Submission Rulling', () => {
     expect(submission.submitter).to.equal(users.submitter2.address);
   });
 
-  it('Should change the ruling if loser paid appeal fees while the winner did not', async () => {
-    const {
-      governor,
-      appeableArbitrator,
-      args,
-      users,
-    } = await useRulingSetup();
+  it("Should change the ruling if loser paid appeal fees while the winner did not", async () => {
+    const { governor, appeableArbitrator, args, users } = await useRulingSetup();
 
     // Ruling 1 is equal to 0 submission index (submitter1)
     await appeableArbitrator.giveRuling(0, 1);
@@ -122,13 +103,8 @@ describe('Smoke: Governor - Submission Rulling', () => {
     expect(sessionInfo.ruling).to.equal(2);
   });
 
-  it('Should register payments correctly and withdraw correct fees if dispute had winner/loser', async () => {
-    const {
-      governor,
-      appeableArbitrator,
-      args,
-      users,
-    } = await useRulingSetup();
+  it("Should register payments correctly and withdraw correct fees if dispute had winner/loser", async () => {
+    const { governor, appeableArbitrator, args, users } = await useRulingSetup();
 
     await appeableArbitrator.giveRuling(0, 3);
 
@@ -168,13 +144,9 @@ describe('Smoke: Governor - Submission Rulling', () => {
     expect(roundInfo.paidFees[2]).to.equal(winnerAppealFee);
     expect(roundInfo.hasPaid[2]).to.equal(true);
 
-    expect(roundInfo.feeRewards).to.equal(
-      winnerAppealFee.add(loserAppealFee).sub(args.arbitrationFee)
-    );
+    expect(roundInfo.feeRewards).to.equal(winnerAppealFee.add(loserAppealFee).sub(args.arbitrationFee));
 
-    expect(roundInfo.successfullyPaid).to.equal(
-      winnerAppealFee.add(loserAppealFee)
-    );
+    expect(roundInfo.successfullyPaid).to.equal(winnerAppealFee.add(loserAppealFee));
 
     await appeableArbitrator.giveRuling(1, 3);
 
@@ -187,46 +159,28 @@ describe('Smoke: Governor - Submission Rulling', () => {
     await appeableArbitrator.giveRuling(1, 3);
 
     await expect(() =>
-      governor
-        .connect(users.deployer)
-        .withdrawFeesAndRewards(users.submitter1.address, 0, 0, 0)
+      governor.connect(users.deployer).withdrawFeesAndRewards(users.submitter1.address, 0, 0, 0)
     ).to.changeEtherBalance(users.submitter1, 0);
 
     await expect(() =>
-      governor
-        .connect(users.deployer)
-        .withdrawFeesAndRewards(users.submitter2.address, 0, 0, 1)
+      governor.connect(users.deployer).withdrawFeesAndRewards(users.submitter2.address, 0, 0, 1)
     ).to.changeEtherBalance(users.submitter2, args.arbitrationFee);
 
     await expect(() =>
-      governor
-        .connect(users.deployer)
-        .withdrawFeesAndRewards(users.submitter2.address, 0, 1, 1)
+      governor.connect(users.deployer).withdrawFeesAndRewards(users.submitter2.address, 0, 1, 1)
     ).to.changeEtherBalance(users.submitter2, loserAppealFee.sub(1000));
 
     await expect(() =>
-      governor
-        .connect(users.deployer)
-        .withdrawFeesAndRewards(users.submitter3.address, 0, 0, 2)
-    ).to.changeEtherBalance(
-      users.submitter3,
-      roundInfo.feeRewards.mul(25).div(100)
-    );
+      governor.connect(users.deployer).withdrawFeesAndRewards(users.submitter3.address, 0, 0, 2)
+    ).to.changeEtherBalance(users.submitter3, roundInfo.feeRewards.mul(25).div(100));
 
     await expect(() =>
-      governor
-        .connect(users.deployer)
-        .withdrawFeesAndRewards(users.other.address, 0, 0, 2)
+      governor.connect(users.deployer).withdrawFeesAndRewards(users.other.address, 0, 0, 2)
     ).to.changeEtherBalance(users.other, roundInfo.feeRewards.mul(75).div(100));
   });
 
-  it('Should withdraw correct fees if arbitrator refused to arbitrate', async () => {
-    const {
-      governor,
-      appeableArbitrator,
-      args,
-      users,
-    } = await useRulingSetup();
+  it("Should withdraw correct fees if arbitrator refused to arbitrate", async () => {
+    const { governor, appeableArbitrator, args, users } = await useRulingSetup();
 
     await appeableArbitrator.giveRuling(0, 0);
 
@@ -262,50 +216,29 @@ describe('Smoke: Governor - Submission Rulling', () => {
     await appeableArbitrator.giveRuling(1, 0);
 
     await expect(() =>
-      governor
-        .connect(users.deployer)
-        .withdrawFeesAndRewards(users.submitter1.address, 0, 0, 0)
-    ).to.changeEtherBalance(
-      users.submitter1,
-      roundInfo.feeRewards.mul(4).div(10)
-    );
+      governor.connect(users.deployer).withdrawFeesAndRewards(users.submitter1.address, 0, 0, 0)
+    ).to.changeEtherBalance(users.submitter1, roundInfo.feeRewards.mul(4).div(10));
 
     await expect(() =>
-      governor
-        .connect(users.deployer)
-        .withdrawFeesAndRewards(users.submitter2.address, 0, 0, 1)
-    ).to.changeEtherBalance(
-      users.submitter2,
-      roundInfo.feeRewards.mul(3).div(10)
-    );
+      governor.connect(users.deployer).withdrawFeesAndRewards(users.submitter2.address, 0, 0, 1)
+    ).to.changeEtherBalance(users.submitter2, roundInfo.feeRewards.mul(3).div(10));
 
     await expect(() =>
-      governor
-        .connect(users.deployer)
-        .withdrawFeesAndRewards(users.submitter3.address, 0, 0, 2)
+      governor.connect(users.deployer).withdrawFeesAndRewards(users.submitter3.address, 0, 0, 2)
     ).to.changeEtherBalance(users.submitter3, sharedAppealFee.mul(3).div(10));
 
     await expect(() =>
-      governor
-        .connect(users.deployer)
-        .withdrawFeesAndRewards(users.other.address, 0, 0, 0)
+      governor.connect(users.deployer).withdrawFeesAndRewards(users.other.address, 0, 0, 0)
     ).to.changeEtherBalance(users.other, roundInfo.feeRewards.mul(1).div(10));
 
     await expect(() =>
-      governor
-        .connect(users.deployer)
-        .withdrawFeesAndRewards(users.other.address, 0, 0, 1)
+      governor.connect(users.deployer).withdrawFeesAndRewards(users.other.address, 0, 0, 1)
     ).to.changeEtherBalance(users.other, roundInfo.feeRewards.mul(2).div(10));
   });
 
-  describe('Revert Execution', () => {
-    it('Should fail to withdraw fees while dispute is unresolved', async () => {
-      const {
-        governor,
-        appeableArbitrator,
-        args,
-        users,
-      } = await useRulingSetup();
+  describe("Revert Execution", () => {
+    it("Should fail to withdraw fees while dispute is unresolved", async () => {
+      const { governor, appeableArbitrator, args, users } = await useRulingSetup();
 
       await appeableArbitrator.giveRuling(0, 1);
 
@@ -314,19 +247,12 @@ describe('Smoke: Governor - Submission Rulling', () => {
       });
 
       await expect(
-        governor
-          .connect(users.deployer)
-          .withdrawFeesAndRewards(users.submitter1.address, 0, 0, 0)
-      ).to.be.revertedWith('Session has an ongoing dispute.');
+        governor.connect(users.deployer).withdrawFeesAndRewards(users.submitter1.address, 0, 0, 0)
+      ).to.be.revertedWith("Session has an ongoing dispute.");
     });
 
-    it('Should fail to pay appeal fee twice', async () => {
-      const {
-        governor,
-        appeableArbitrator,
-        args,
-        users,
-      } = await useRulingSetup();
+    it("Should fail to pay appeal fee twice", async () => {
+      const { governor, appeableArbitrator, args, users } = await useRulingSetup();
 
       await appeableArbitrator.giveRuling(0, 1);
 
@@ -338,31 +264,20 @@ describe('Smoke: Governor - Submission Rulling', () => {
         value: loserAppealFee,
       });
 
-      await expect(
-        governor
-          .connect(users.submitter2)
-          .fundAppeal(1, { value: loserAppealFee })
-      ).to.be.revertedWith('Appeal fee has already been paid.');
+      await expect(governor.connect(users.submitter2).fundAppeal(1, { value: loserAppealFee })).to.be.revertedWith(
+        "Appeal fee has already been paid."
+      );
     });
 
-    it('Should fail to pay appeal fee after appeal timeout', async () => {
-      const {
-        governor,
-        appeableArbitrator,
-        args,
-        users,
-      } = await useRulingSetup();
+    it("Should fail to pay appeal fee after appeal timeout", async () => {
+      const { governor, appeableArbitrator, args, users } = await useRulingSetup();
 
       await appeableArbitrator.giveRuling(0, 1);
 
       await increaseTime(args.appealTimeout + 1);
 
-      await expect(
-        governor
-          .connect(users.submitter2)
-          .fundAppeal(1, { value: args.arbitrationFee })
-      ).to.be.revertedWith(
-        'Appeal fees must be paid within the appeal period.'
+      await expect(governor.connect(users.submitter2).fundAppeal(1, { value: args.arbitrationFee })).to.be.revertedWith(
+        "Appeal fees must be paid within the appeal period."
       );
     });
   });

@@ -62,17 +62,21 @@ library SortitionSumTreeFactory {
         SortitionSumTree storage tree = self.sortitionSumTrees[_key];
         uint treeIndex = tree.IDsToNodeIndexes[_ID];
 
-        if (treeIndex == 0) { // No existing node.
-            if (_value != 0) { // Non zero value.
+        if (treeIndex == 0) {
+            // No existing node.
+            if (_value != 0) {
+                // Non zero value.
                 // Append.
                 // Add node.
-                if (tree.stack.length == 0) { // No vacant spots.
+                if (tree.stack.length == 0) {
+                    // No vacant spots.
                     // Get the index and append the value.
                     treeIndex = tree.nodes.length;
                     tree.nodes.push(_value);
 
                     // Potentially append a new node and make the parent a sum node.
-                    if (treeIndex != 1 && (treeIndex - 1) % tree.K == 0) { // Is first child.
+                    if (treeIndex != 1 && (treeIndex - 1) % tree.K == 0) {
+                        // Is first child.
                         uint parentIndex = treeIndex / tree.K;
                         bytes32 parentID = tree.nodeIndexesToIDs[parentIndex];
                         uint newIndex = treeIndex + 1;
@@ -81,7 +85,8 @@ library SortitionSumTreeFactory {
                         tree.IDsToNodeIndexes[parentID] = newIndex;
                         tree.nodeIndexesToIDs[newIndex] = parentID;
                     }
-                } else { // Some vacant spot.
+                } else {
+                    // Some vacant spot.
                     // Pop the stack and append the value.
                     treeIndex = tree.stack[tree.stack.length - 1];
                     tree.stack.length--;
@@ -94,8 +99,10 @@ library SortitionSumTreeFactory {
 
                 updateParents(self, _key, treeIndex, true, _value);
             }
-        } else { // Existing node.
-            if (_value == 0) { // Zero value.
+        } else {
+            // Existing node.
+            if (_value == 0) {
+                // Zero value.
                 // Remove.
                 // Remember value and set to 0.
                 uint value = tree.nodes[treeIndex];
@@ -109,7 +116,8 @@ library SortitionSumTreeFactory {
                 delete tree.nodeIndexesToIDs[treeIndex];
 
                 updateParents(self, _key, treeIndex, false, value);
-            } else if (_value != tree.nodes[treeIndex]) { // New, non zero value.
+            } else if (_value != tree.nodes[treeIndex]) {
+                // New, non zero value.
                 // Set.
                 bool plusOrMinus = tree.nodes[treeIndex] <= _value;
                 uint plusOrMinusValue = plusOrMinus ? _value - tree.nodes[treeIndex] : tree.nodes[treeIndex] - _value;
@@ -138,7 +146,7 @@ library SortitionSumTreeFactory {
         bytes32 _key,
         uint _cursor,
         uint _count
-    ) public view returns(uint startIndex, uint[] values, bool hasMore) {
+    ) public view returns (uint startIndex, uint[] values, bool hasMore) {
         SortitionSumTree storage tree = self.sortitionSumTrees[_key];
 
         // Find the start index.
@@ -173,18 +181,23 @@ library SortitionSumTreeFactory {
      *  `k` is the maximum number of childs per node in the tree,
      *   and `n` is the maximum number of nodes ever appended.
      */
-    function draw(SortitionSumTrees storage self, bytes32 _key, uint _drawnNumber) public view returns(bytes32 ID) {
+    function draw(SortitionSumTrees storage self, bytes32 _key, uint _drawnNumber) public view returns (bytes32 ID) {
         SortitionSumTree storage tree = self.sortitionSumTrees[_key];
         uint treeIndex = 0;
         uint currentDrawnNumber = _drawnNumber % tree.nodes[0];
 
-        while ((tree.K * treeIndex) + 1 < tree.nodes.length)  // While it still has children.
-            for (uint i = 1; i <= tree.K; i++) { // Loop over children.
+        while (
+            (tree.K * treeIndex) + 1 < tree.nodes.length // While it still has children.
+        )
+            for (uint i = 1; i <= tree.K; i++) {
+                // Loop over children.
                 uint nodeIndex = (tree.K * treeIndex) + i;
                 uint nodeValue = tree.nodes[nodeIndex];
 
-                if (currentDrawnNumber >= nodeValue) currentDrawnNumber -= nodeValue; // Go to the next child.
-                else { // Pick this child.
+                if (currentDrawnNumber >= nodeValue)
+                    currentDrawnNumber -= nodeValue; // Go to the next child.
+                else {
+                    // Pick this child.
                     treeIndex = nodeIndex;
                     break;
                 }
@@ -198,7 +211,7 @@ library SortitionSumTreeFactory {
      *  @param _ID The ID of the value.
      *  @return value The associated value.
      */
-    function stakeOf(SortitionSumTrees storage self, bytes32 _key, bytes32 _ID) public view returns(uint value) {
+    function stakeOf(SortitionSumTrees storage self, bytes32 _key, bytes32 _ID) public view returns (uint value) {
         SortitionSumTree storage tree = self.sortitionSumTrees[_key];
         uint treeIndex = tree.IDsToNodeIndexes[_ID];
 
@@ -218,13 +231,21 @@ library SortitionSumTreeFactory {
      *  `k` is the maximum number of childs per node in the tree,
      *   and `n` is the maximum number of nodes ever appended.
      */
-    function updateParents(SortitionSumTrees storage self, bytes32 _key, uint _treeIndex, bool _plusOrMinus, uint _value) private {
+    function updateParents(
+        SortitionSumTrees storage self,
+        bytes32 _key,
+        uint _treeIndex,
+        bool _plusOrMinus,
+        uint _value
+    ) private {
         SortitionSumTree storage tree = self.sortitionSumTrees[_key];
 
         uint parentIndex = _treeIndex;
         while (parentIndex != 0) {
             parentIndex = (parentIndex - 1) / tree.K;
-            tree.nodes[parentIndex] = _plusOrMinus ? tree.nodes[parentIndex] + _value : tree.nodes[parentIndex] - _value;
+            tree.nodes[parentIndex] = _plusOrMinus
+                ? tree.nodes[parentIndex] + _value
+                : tree.nodes[parentIndex] - _value;
         }
     }
 }

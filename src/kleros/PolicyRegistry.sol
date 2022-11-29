@@ -22,21 +22,28 @@ contract PolicyRegistry {
     /* Modifiers */
 
     /** @dev Requires that the sender is the governor. */
-    modifier onlyByGovernor() {require(governor == msg.sender, "Can only be called by the governor."); _;}
+    modifier onlyByGovernor() {
+        require(governor == msg.sender, "Can only be called by the governor.");
+        _;
+    }
 
     /* Constructor */
 
     /** @dev Constructs the `PolicyRegistry` contract.
      *  @param _governor The governor's address.
      */
-    constructor(address _governor) public {governor = _governor;}
+    constructor(address _governor) public {
+        governor = _governor;
+    }
 
     /* External */
 
     /** @dev Changes the `governor` storage variable.
      *  @param _governor The new value for the `governor` storage variable.
      */
-    function changeGovernor(address _governor) external onlyByGovernor {governor = _governor;}
+    function changeGovernor(address _governor) external onlyByGovernor {
+        governor = _governor;
+    }
 
     /** @dev Sets the policy for the specified subcourt.
      *  @param _subcourtID The ID of the specified subcourt.

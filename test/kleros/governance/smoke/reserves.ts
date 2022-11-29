@@ -1,20 +1,15 @@
-import { expect } from 'chai';
-import { BigNumber, ethers } from 'ethers';
+import { expect } from "chai";
+import { BigNumber, ethers } from "ethers";
 
-import { useInitialSetup } from 'utils/fixtures/kleros-governor';
-import { increaseTime } from 'utils/test-helpers';
+import { useInitialSetup } from "utils/fixtures/kleros-governor";
+import { increaseTime } from "utils/test-helpers";
 
-describe('Smoke: Governor - Reserves', () => {
-  const listDescription = 'tx1, tx2, tx3';
+describe("Smoke: Governor - Reserves", () => {
+  const listDescription = "tx1, tx2, tx3";
   const MULTIPLIER_DIVISOR = 10000;
 
-  it('Should check that funds are tracked correctly', async () => {
-    const {
-      governor,
-      appeableArbitrator,
-      users,
-      args,
-    } = await useInitialSetup();
+  it("Should check that funds are tracked correctly", async () => {
+    const { governor, appeableArbitrator, users, args } = await useInitialSetup();
 
     let reservedETH: BigNumber;
     let expendableFunds: BigNumber;
@@ -23,8 +18,8 @@ describe('Smoke: Governor - Reserves', () => {
       .connect(users.submitter1)
       .submitList(
         [appeableArbitrator.address],
-        ['100000000000000000'],
-        '0xc13517e1000000000000000000000000000000000000000000000000000000000000000b00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000001fa',
+        ["100000000000000000"],
+        "0xc13517e1000000000000000000000000000000000000000000000000000000000000000b00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000001fa",
         [101],
         listDescription,
         { value: args.submissionDeposit() }
@@ -35,7 +30,7 @@ describe('Smoke: Governor - Reserves', () => {
       .submitList(
         [governor.address],
         [10],
-        '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
+        "0x246c76df0000000000000000000000000000000000000000000000000000000000000014",
         [36],
         listDescription,
         { value: args.submissionDeposit() }
@@ -45,9 +40,7 @@ describe('Smoke: Governor - Reserves', () => {
     expect(reservedETH).to.equal(args.submissionDeposit().mul(2));
 
     const listInfo = await governor.submissions(1);
-    await governor
-      .connect(users.submitter2)
-      .withdrawTransactionList(1, listInfo.listHash);
+    await governor.connect(users.submitter2).withdrawTransactionList(1, listInfo.listHash);
 
     reservedETH = await governor.reservedETH();
     expect(reservedETH).to.equal(args.submissionDeposit());
@@ -58,7 +51,7 @@ describe('Smoke: Governor - Reserves', () => {
       .submitList(
         [governor.address],
         [10],
-        '0x246c76df0000000000000000000000000000000000000000000000000000000000000014',
+        "0x246c76df0000000000000000000000000000000000000000000000000000000000000014",
         [36],
         listDescription,
         { value: args.submissionDeposit() }
@@ -68,7 +61,7 @@ describe('Smoke: Governor - Reserves', () => {
     await governor.connect(users.deployer).executeSubmissions();
 
     reservedETH = await governor.reservedETH();
-    expect(reservedETH).to.equal(ethers.utils.parseEther('1.9'));
+    expect(reservedETH).to.equal(ethers.utils.parseEther("1.9"));
 
     await appeableArbitrator.giveRuling(0, 2);
 
@@ -85,13 +78,7 @@ describe('Smoke: Governor - Reserves', () => {
     });
 
     reservedETH = await governor.reservedETH();
-    expect(reservedETH).to.equal(
-      args
-        .submissionDeposit()
-        .mul(2)
-        .sub(args.arbitrationFee)
-        .add(loserAppealFee)
-    );
+    expect(reservedETH).to.equal(args.submissionDeposit().mul(2).sub(args.arbitrationFee).add(loserAppealFee));
 
     await governor.connect(users.other).fundAppeal(1, {
       value: winnerAppealFee,
@@ -118,21 +105,17 @@ describe('Smoke: Governor - Reserves', () => {
     await appeableArbitrator.giveRuling(1, 1);
 
     reservedETH = await governor.reservedETH();
-    expect(reservedETH).to.equal(
-      reserveBeforeRuling.sub(sessionInfo.sumDeposit)
-    );
+    expect(reservedETH).to.equal(reserveBeforeRuling.sub(sessionInfo.sumDeposit));
 
     expendableFunds = await governor.getExpendableFunds();
     expect(expendableFunds).to.equal(0);
 
-    await governor
-      .connect(users.deployer)
-      .withdrawFeesAndRewards(users.submitter1.address, 0, 0, 0);
+    await governor.connect(users.deployer).withdrawFeesAndRewards(users.submitter1.address, 0, 0, 0);
 
     reservedETH = await governor.reservedETH();
     expect(reservedETH).to.equal(0);
 
-    const fundingAmount = ethers.utils.parseEther('3');
+    const fundingAmount = ethers.utils.parseEther("3");
     await users.other.sendTransaction({
       to: governor.address,
       value: fundingAmount,
@@ -144,6 +127,6 @@ describe('Smoke: Governor - Reserves', () => {
     await governor.connect(users.deployer).executeTransactionList(0, 0, 0);
 
     expendableFunds = await governor.getExpendableFunds();
-    expect(expendableFunds).to.equal(ethers.utils.parseEther('2.9'));
+    expect(expendableFunds).to.equal(ethers.utils.parseEther("2.9"));
   });
 });
