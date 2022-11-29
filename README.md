@@ -1,10 +1,23 @@
 <p align="center">
+  <a href="https://kleros.io">
+    <img alt="Kleros" src="https://github.com/kleros/court/blob/master/public/icon-512.png?raw=true" width="128">
+  </a>
+</p>
+
+<p align="center">
   <b style="font-size: 32px;">Kleros</b>
+</p>
+<p align="center">
+<a href="https://sonarcloud.io/summary/new_code?id=kleros_kleros"><img src="https://sonarcloud.io/api/project_badges/measure?project=kleros_kleros&metric=security_rating"></a>
+<a href="https://sonarcloud.io/summary/new_code?id=kleros_kleros"><img src="https://sonarcloud.io/api/project_badges/measure?project=kleros_kleros&metric=alert_status"></a>
+<a href="https://sonarcloud.io/summary/new_code?id=kleros_kleros"><img src="https://sonarcloud.io/api/project_badges/measure?project=kleros_kleros&metric=bugs"></a>
+<a href="https://sonarcloud.io/summary/new_code?id=kleros_kleros"><img src="https://sonarcloud.io/api/project_badges/measure?project=kleros_kleros&metric=reliability_rating"></a>
+<a href="https://sonarcloud.io/summary/new_code?id=kleros_kleros"><img src="https://sonarcloud.io/api/project_badges/measure?project=kleros_kleros&metric=sqale_rating"></a>
 </p>
 
 <p align="center">
   <a href="https://standardjs.com"><img src="https://img.shields.io/badge/code_style-standard-brightgreen.svg" alt="JavaScript Style Guide"></a>
-  <a href="https://github.com/trufflesuite/truffle"><img src="https://img.shields.io/badge/tested%20with-truffle-red.svg" alt="Tested with Truffle"></a>
+  <a href="https://github.com/trufflesuite/truffle"><img src="https://img.shields.io/badge/tested%20with-truffle-red.svg" alt="Tested with Hardhat"></a>
   <a href="https://conventionalcommits.org"><img src="https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg" alt="Conventional Commits"></a>
   <a href="http://commitizen.github.io/cz-cli/"><img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commitizen Friendly"></a>
   <a href="https://github.com/prettier/prettier"><img src="https://img.shields.io/badge/styled_with-prettier-ff69b4.svg" alt="Styled with Prettier"></a>
@@ -71,7 +84,7 @@ yarn lint
 
 ### Deploy Instructions
 
-#### 0. Set the Environment Variables
+#### 1. Set the Environment Variables
 
 Copy `.env.example` file as `.env` and edit it accordingly.
 
@@ -85,11 +98,11 @@ The following env vars are required:
 - `MAINNET_PRIVATE_KEY`: the private key of the deployer account used for Mainnet.
 - `INFURA_API_KEY`: the API key for infura.
 
-#### 1. Update the Constructor Parameters (optional)
+#### 2. Update the Constructor Parameters (optional)
 
 If some of the constructor parameters (such as the Meta Evidence) needs to change, you need to update the files in the `deploy/` directory.
 
-#### 2. Deploy to a Local Network
+#### 3. Deploy to a Local Network
 
 Execute deploy scripts by running
 
