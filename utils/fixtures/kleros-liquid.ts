@@ -5,6 +5,8 @@ import {
   asyncForEach,
   generageExtradata,
   generateSubcourts,
+  getRandomNumber,
+  getVoteIDs,
   increaseTime,
 } from 'utils/test-helpers';
 
@@ -133,7 +135,6 @@ export const useDisputeSetup = async (numberOfJurors?: number) => {
     numberOfJurors:
       numberOfJurors || subcourtTree.children[0].jurorsForCourtJump,
     subcourtID: subcourtTree.children[0].ID,
-    voteRatio: [0, 1, 2],
   };
 
   const extraData = generageExtradata(
@@ -173,5 +174,29 @@ export const useStakedSetup = async (numberOfJurors: number) => {
   await klerosLiquid.passPhase();
   await klerosLiquid.passPhase();
 
-  return { klerosLiquid, subcourt, jurors };
+  return { klerosLiquid, subcourt, jurors, pnk };
+};
+
+export const useVotedSetup = async (numberOfJurors: number) => {
+  const disputeID = 0;
+  const choices = new Map<string, number>();
+  const { klerosLiquid, pnk, jurors } = await useStakedSetup(numberOfJurors);
+
+  const tx = await klerosLiquid.drawJurors(disputeID, 6);
+  await klerosLiquid.passPeriod(disputeID);
+
+  const voteIDs = await getVoteIDs(tx);
+  voteIDs.forEach((_, juror) => choices.set(juror, getRandomNumber(2) + 1));
+
+  for (const juror of Object.values(jurors)) {
+    const voteId = Number(voteIDs.get(juror.address));
+    const choice = Number(choices.get(juror.address));
+
+    if (voteIDs.has(juror.address))
+      await klerosLiquid
+        .connect(juror)
+        .castVote(disputeID, [voteId], choice, 0);
+  }
+
+  return { klerosLiquid, jurors, voteIDs, choices, pnk };
 };
