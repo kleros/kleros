@@ -1,0 +1,234 @@
+{
+  "address": "0x67fe2D0d38DBF6dfdF359A5FEa7b7CD9a966FE53",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_key",
+          "type": "bytes32"
+        },
+        {
+          "name": "_value",
+          "type": "uint256"
+        },
+        {
+          "name": "_ID",
+          "type": "bytes32"
+        }
+      ],
+      "name": "_set",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_key",
+          "type": "bytes32"
+        },
+        {
+          "name": "_drawnNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "_draw",
+      "outputs": [
+        {
+          "name": "ID",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_key",
+          "type": "bytes32"
+        },
+        {
+          "name": "_ID",
+          "type": "bytes32"
+        }
+      ],
+      "name": "_stakeOf",
+      "outputs": [
+        {
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_key",
+          "type": "bytes32"
+        },
+        {
+          "name": "_cursor",
+          "type": "uint256"
+        },
+        {
+          "name": "_count",
+          "type": "uint256"
+        }
+      ],
+      "name": "_queryLeafs",
+      "outputs": [
+        {
+          "name": "startIndex",
+          "type": "uint256"
+        },
+        {
+          "name": "values",
+          "type": "uint256[]"
+        },
+        {
+          "name": "hasMore",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_key",
+          "type": "bytes32"
+        },
+        {
+          "name": "_K",
+          "type": "uint256"
+        }
+      ],
+      "name": "_createTree",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_key",
+          "type": "bytes32"
+        }
+      ],
+      "name": "_sortitionSumTrees",
+      "outputs": [
+        {
+          "name": "K",
+          "type": "uint256"
+        },
+        {
+          "name": "stack",
+          "type": "uint256[]"
+        },
+        {
+          "name": "nodes",
+          "type": "uint256[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x8bece32ced388cb7db028437776b8662ca6402985366d4d3bcc7b6a466a8537e",
+  "receipt": {
+    "to": null,
+    "from": "0x7c1119221eaD0E2749AD58E7F9669df5896363B5",
+    "contractAddress": "0x67fe2D0d38DBF6dfdF359A5FEa7b7CD9a966FE53",
+    "transactionIndex": 57,
+    "gasUsed": "422988",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0xeef50da989913fc71da919095c7437a6092e75cd6a49a7edba21a4d99a9cfaaf",
+    "transactionHash": "0x8bece32ced388cb7db028437776b8662ca6402985366d4d3bcc7b6a466a8537e",
+    "logs": [],
+    "blockNumber": 7969518,
+    "cumulativeGasUsed": "29986182",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "d1e0706dec2c12921cdd74a294ddc93f",
+  "metadata": "{\"compiler\":{\"version\":\"0.4.26+commit.4563c3fc\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"name\":\"_key\",\"type\":\"bytes32\"},{\"name\":\"_value\",\"type\":\"uint256\"},{\"name\":\"_ID\",\"type\":\"bytes32\"}],\"name\":\"_set\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_key\",\"type\":\"bytes32\"},{\"name\":\"_drawnNumber\",\"type\":\"uint256\"}],\"name\":\"_draw\",\"outputs\":[{\"name\":\"ID\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_key\",\"type\":\"bytes32\"},{\"name\":\"_ID\",\"type\":\"bytes32\"}],\"name\":\"_stakeOf\",\"outputs\":[{\"name\":\"value\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_key\",\"type\":\"bytes32\"},{\"name\":\"_cursor\",\"type\":\"uint256\"},{\"name\":\"_count\",\"type\":\"uint256\"}],\"name\":\"_queryLeafs\",\"outputs\":[{\"name\":\"startIndex\",\"type\":\"uint256\"},{\"name\":\"values\",\"type\":\"uint256[]\"},{\"name\":\"hasMore\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_key\",\"type\":\"bytes32\"},{\"name\":\"_K\",\"type\":\"uint256\"}],\"name\":\"_createTree\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_key\",\"type\":\"bytes32\"}],\"name\":\"_sortitionSumTrees\",\"outputs\":[{\"name\":\"K\",\"type\":\"uint256\"},{\"name\":\"stack\",\"type\":\"uint256[]\"},{\"name\":\"nodes\",\"type\":\"uint256[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Enrique Piqueras - <epiquerass@gmail.com>\",\"methods\":{\"_createTree(bytes32,uint256)\":{\"details\":\"Create a sortition sum tree at the specified key.\",\"params\":{\"_K\":\"The number of children each node in the tree should have.\",\"_key\":\"The key of the new tree.\"}},\"_draw(bytes32,uint256)\":{\"details\":\"Draw an ID from a tree using a number.\",\"params\":{\"_drawnNumber\":\"The drawn number.\",\"_key\":\"The key of the tree.\"},\"return\":\"The drawn ID.\"},\"_queryLeafs(bytes32,uint256,uint256)\":{\"details\":\"Query the leaves of a tree.\",\"params\":{\"_count\":\"The number of items to return.\",\"_cursor\":\"The pagination cursor.\",\"_key\":\"The key of the tree to get the leaves from.\"},\"return\":\"The index at which leaves start, the values of the returned leaves, and whether there are more for pagination.\"},\"_set(bytes32,uint256,bytes32)\":{\"details\":\"Set a value of a tree.\",\"params\":{\"_ID\":\"The ID of the value.\",\"_key\":\"The key of the tree.\",\"_value\":\"The new value.\"}},\"_sortitionSumTrees(bytes32)\":{\"details\":\"Public getter for sortitionSumTrees.\",\"params\":{\"_key\":\"The key of the tree to get.\"},\"return\":\"All of the tree's properties.\"},\"_stakeOf(bytes32,bytes32)\":{\"details\":\"Gets a specified candidate's associated value.\",\"params\":{\"_ID\":\"The ID of the value.\",\"_key\":\"The key of the tree.\"},\"return\":\"The associated value.\"}},\"title\":\"ExposedSortitionSumTreeFactory\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"src/data-structures/ExposedSortitionSumTreeFactory.sol\":\"ExposedSortitionSumTreeFactory\"},\"evmVersion\":\"byzantium\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":100},\"remappings\":[]},\"sources\":{\"src/data-structures/ExposedSortitionSumTreeFactory.sol\":{\"content\":\"pragma solidity ^0.4.24;\\n\\nimport \\\"./SortitionSumTreeFactory.sol\\\";\\n\\n/**\\n *  @title ExposedSortitionSumTreeFactory\\n *  @author Enrique Piqueras - <epiquerass@gmail.com>\\n *  @dev Exposed version of SortitionSumTreeFactory for testing.\\n */\\ncontract ExposedSortitionSumTreeFactory {\\n    /* Storage */\\n\\n    using SortitionSumTreeFactory for SortitionSumTreeFactory.SortitionSumTrees;\\n    SortitionSumTreeFactory.SortitionSumTrees internal sortitionSumTrees;\\n\\n    /**\\n     *  @dev Public getter for sortitionSumTrees.\\n     *  @param _key The key of the tree to get.\\n     *  @return All of the tree's properties.\\n     */\\n    function _sortitionSumTrees(bytes32 _key) public view returns(uint K, uint[] stack, uint[] nodes) {\\n        return (\\n            sortitionSumTrees.sortitionSumTrees[_key].K,\\n            sortitionSumTrees.sortitionSumTrees[_key].stack,\\n            sortitionSumTrees.sortitionSumTrees[_key].nodes\\n        );\\n    }\\n\\n    /* Public */\\n\\n    /**\\n     *  @dev Create a sortition sum tree at the specified key.\\n     *  @param _key The key of the new tree.\\n     *  @param _K The number of children each node in the tree should have.\\n     */\\n    function _createTree(bytes32 _key, uint _K) public {\\n        sortitionSumTrees.createTree(_key, _K);\\n    }\\n\\n    /**\\n     *  @dev Set a value of a tree.\\n     *  @param _key The key of the tree.\\n     *  @param _value The new value.\\n     *  @param _ID The ID of the value.\\n     */\\n    function _set(bytes32 _key, uint _value, bytes32 _ID) public {\\n        sortitionSumTrees.set(_key, _value, _ID);\\n    }\\n\\n    /* Public Views */\\n\\n    /**\\n     *  @dev Query the leaves of a tree.\\n     *  @param _key The key of the tree to get the leaves from.\\n     *  @param _cursor The pagination cursor.\\n     *  @param _count The number of items to return.\\n     *  @return The index at which leaves start, the values of the returned leaves, and whether there are more for pagination.\\n     */\\n    function _queryLeafs(bytes32 _key, uint _cursor, uint _count) public view returns(uint startIndex, uint[] values, bool hasMore) {\\n        return sortitionSumTrees.queryLeafs(_key, _cursor, _count);\\n    }\\n\\n    /**\\n     *  @dev Draw an ID from a tree using a number.\\n     *  @param _key The key of the tree.\\n     *  @param _drawnNumber The drawn number.\\n     *  @return The drawn ID.\\n     */\\n    function _draw(bytes32 _key, uint _drawnNumber) public view returns(bytes32 ID) {\\n        return sortitionSumTrees.draw(_key, _drawnNumber);\\n    }\\n\\n    /** @dev Gets a specified candidate's associated value.\\n     *  @param _key The key of the tree.\\n     *  @param _ID The ID of the value.\\n     *  @return The associated value.\\n     */\\n    function _stakeOf(bytes32 _key, bytes32 _ID) public view returns(uint value) {\\n        return sortitionSumTrees.stakeOf(_key, _ID);\\n    }\\n}\\n\",\"keccak256\":\"0xada5bcda39bca3da66994d6caf9aaabf779774a449e764adf12e9014ca55a828\"},\"src/data-structures/SortitionSumTreeFactory.sol\":{\"content\":\"/**\\n *  @authors: [@epiqueras]\\n *  @reviewers: [@clesaege, @unknownunknown1, @ferittuncer, @remedcu, @shalzz]\\n *  @auditors: []\\n *  @bounties: [{ duration: 28 days, link: https://github.com/kleros/kleros/issues/115, maxPayout: 50 ETH }]\\n *  @deployments: [ https://etherscan.io/address/0x180eba68d164c3f8c3f6dc354125ebccf4dfcb86 ]\\n */\\n\\npragma solidity ^0.4.24;\\n\\n/**\\n *  @title SortitionSumTreeFactory\\n *  @author Enrique Piqueras - <epiquerass@gmail.com>\\n *  @dev A factory of trees that keep track of staked values for sortition.\\n */\\nlibrary SortitionSumTreeFactory {\\n    /* Structs */\\n\\n    struct SortitionSumTree {\\n        uint K; // The maximum number of childs per node.\\n        // We use this to keep track of vacant positions in the tree after removing a leaf. This is for keeping the tree as balanced as possible without spending gas on moving nodes around.\\n        uint[] stack;\\n        uint[] nodes;\\n        // Two-way mapping of IDs to node indexes. Note that node index 0 is reserved for the root node, and means the ID does not have a node.\\n        mapping(bytes32 => uint) IDsToNodeIndexes;\\n        mapping(uint => bytes32) nodeIndexesToIDs;\\n    }\\n\\n    /* Storage */\\n\\n    struct SortitionSumTrees {\\n        mapping(bytes32 => SortitionSumTree) sortitionSumTrees;\\n    }\\n\\n    /* Public */\\n\\n    /**\\n     *  @dev Create a sortition sum tree at the specified key.\\n     *  @param _key The key of the new tree.\\n     *  @param _K The number of children each node in the tree should have.\\n     */\\n    function createTree(SortitionSumTrees storage self, bytes32 _key, uint _K) public {\\n        SortitionSumTree storage tree = self.sortitionSumTrees[_key];\\n        require(tree.K == 0, \\\"Tree already exists.\\\");\\n        require(_K > 1, \\\"K must be greater than one.\\\");\\n        tree.K = _K;\\n        tree.stack.length = 0;\\n        tree.nodes.length = 0;\\n        tree.nodes.push(0);\\n    }\\n\\n    /**\\n     *  @dev Set a value of a tree.\\n     *  @param _key The key of the tree.\\n     *  @param _value The new value.\\n     *  @param _ID The ID of the value.\\n     *  `O(log_k(n))` where\\n     *  `k` is the maximum number of childs per node in the tree,\\n     *   and `n` is the maximum number of nodes ever appended.\\n     */\\n    function set(SortitionSumTrees storage self, bytes32 _key, uint _value, bytes32 _ID) public {\\n        SortitionSumTree storage tree = self.sortitionSumTrees[_key];\\n        uint treeIndex = tree.IDsToNodeIndexes[_ID];\\n\\n        if (treeIndex == 0) { // No existing node.\\n            if (_value != 0) { // Non zero value.\\n                // Append.\\n                // Add node.\\n                if (tree.stack.length == 0) { // No vacant spots.\\n                    // Get the index and append the value.\\n                    treeIndex = tree.nodes.length;\\n                    tree.nodes.push(_value);\\n\\n                    // Potentially append a new node and make the parent a sum node.\\n                    if (treeIndex != 1 && (treeIndex - 1) % tree.K == 0) { // Is first child.\\n                        uint parentIndex = treeIndex / tree.K;\\n                        bytes32 parentID = tree.nodeIndexesToIDs[parentIndex];\\n                        uint newIndex = treeIndex + 1;\\n                        tree.nodes.push(tree.nodes[parentIndex]);\\n                        delete tree.nodeIndexesToIDs[parentIndex];\\n                        tree.IDsToNodeIndexes[parentID] = newIndex;\\n                        tree.nodeIndexesToIDs[newIndex] = parentID;\\n                    }\\n                } else { // Some vacant spot.\\n                    // Pop the stack and append the value.\\n                    treeIndex = tree.stack[tree.stack.length - 1];\\n                    tree.stack.length--;\\n                    tree.nodes[treeIndex] = _value;\\n                }\\n\\n                // Add label.\\n                tree.IDsToNodeIndexes[_ID] = treeIndex;\\n                tree.nodeIndexesToIDs[treeIndex] = _ID;\\n\\n                updateParents(self, _key, treeIndex, true, _value);\\n            }\\n        } else { // Existing node.\\n            if (_value == 0) { // Zero value.\\n                // Remove.\\n                // Remember value and set to 0.\\n                uint value = tree.nodes[treeIndex];\\n                tree.nodes[treeIndex] = 0;\\n\\n                // Push to stack.\\n                tree.stack.push(treeIndex);\\n\\n                // Clear label.\\n                delete tree.IDsToNodeIndexes[_ID];\\n                delete tree.nodeIndexesToIDs[treeIndex];\\n\\n                updateParents(self, _key, treeIndex, false, value);\\n            } else if (_value != tree.nodes[treeIndex]) { // New, non zero value.\\n                // Set.\\n                bool plusOrMinus = tree.nodes[treeIndex] <= _value;\\n                uint plusOrMinusValue = plusOrMinus ? _value - tree.nodes[treeIndex] : tree.nodes[treeIndex] - _value;\\n                tree.nodes[treeIndex] = _value;\\n\\n                updateParents(self, _key, treeIndex, plusOrMinus, plusOrMinusValue);\\n            }\\n        }\\n    }\\n\\n    /* Public Views */\\n\\n    /**\\n     *  @dev Query the leaves of a tree. Note that if `startIndex == 0`, the tree is empty and the root node will be returned.\\n     *  @param _key The key of the tree to get the leaves from.\\n     *  @param _cursor The pagination cursor.\\n     *  @param _count The number of items to return.\\n     *  @return startIndex The index at which leaves start.\\n     *  @return values The values of the returned leaves.\\n     *  @return hasMore Whether there are more for pagination.\\n     *  `O(n)` where\\n     *  `n` is the maximum number of nodes ever appended.\\n     */\\n    function queryLeafs(\\n        SortitionSumTrees storage self,\\n        bytes32 _key,\\n        uint _cursor,\\n        uint _count\\n    ) public view returns(uint startIndex, uint[] values, bool hasMore) {\\n        SortitionSumTree storage tree = self.sortitionSumTrees[_key];\\n\\n        // Find the start index.\\n        for (uint i = 0; i < tree.nodes.length; i++) {\\n            if ((tree.K * i) + 1 >= tree.nodes.length) {\\n                startIndex = i;\\n                break;\\n            }\\n        }\\n\\n        // Get the values.\\n        uint loopStartIndex = startIndex + _cursor;\\n        values = new uint[](loopStartIndex + _count > tree.nodes.length ? tree.nodes.length - loopStartIndex : _count);\\n        uint valuesIndex = 0;\\n        for (uint j = loopStartIndex; j < tree.nodes.length; j++) {\\n            if (valuesIndex < _count) {\\n                values[valuesIndex] = tree.nodes[j];\\n                valuesIndex++;\\n            } else {\\n                hasMore = true;\\n                break;\\n            }\\n        }\\n    }\\n\\n    /**\\n     *  @dev Draw an ID from a tree using a number. Note that this function reverts if the sum of all values in the tree is 0.\\n     *  @param _key The key of the tree.\\n     *  @param _drawnNumber The drawn number.\\n     *  @return ID The drawn ID.\\n     *  `O(k * log_k(n))` where\\n     *  `k` is the maximum number of childs per node in the tree,\\n     *   and `n` is the maximum number of nodes ever appended.\\n     */\\n    function draw(SortitionSumTrees storage self, bytes32 _key, uint _drawnNumber) public view returns(bytes32 ID) {\\n        SortitionSumTree storage tree = self.sortitionSumTrees[_key];\\n        uint treeIndex = 0;\\n        uint currentDrawnNumber = _drawnNumber % tree.nodes[0];\\n\\n        while ((tree.K * treeIndex) + 1 < tree.nodes.length)  // While it still has children.\\n            for (uint i = 1; i <= tree.K; i++) { // Loop over children.\\n                uint nodeIndex = (tree.K * treeIndex) + i;\\n                uint nodeValue = tree.nodes[nodeIndex];\\n\\n                if (currentDrawnNumber >= nodeValue) currentDrawnNumber -= nodeValue; // Go to the next child.\\n                else { // Pick this child.\\n                    treeIndex = nodeIndex;\\n                    break;\\n                }\\n            }\\n\\n        ID = tree.nodeIndexesToIDs[treeIndex];\\n    }\\n\\n    /** @dev Gets a specified ID's associated value.\\n     *  @param _key The key of the tree.\\n     *  @param _ID The ID of the value.\\n     *  @return value The associated value.\\n     */\\n    function stakeOf(SortitionSumTrees storage self, bytes32 _key, bytes32 _ID) public view returns(uint value) {\\n        SortitionSumTree storage tree = self.sortitionSumTrees[_key];\\n        uint treeIndex = tree.IDsToNodeIndexes[_ID];\\n\\n        if (treeIndex == 0) value = 0;\\n        else value = tree.nodes[treeIndex];\\n    }\\n\\n    /* Private */\\n\\n    /**\\n     *  @dev Update all the parents of a node.\\n     *  @param _key The key of the tree to update.\\n     *  @param _treeIndex The index of the node to start from.\\n     *  @param _plusOrMinus Wether to add (true) or substract (false).\\n     *  @param _value The value to add or substract.\\n     *  `O(log_k(n))` where\\n     *  `k` is the maximum number of childs per node in the tree,\\n     *   and `n` is the maximum number of nodes ever appended.\\n     */\\n    function updateParents(SortitionSumTrees storage self, bytes32 _key, uint _treeIndex, bool _plusOrMinus, uint _value) private {\\n        SortitionSumTree storage tree = self.sortitionSumTrees[_key];\\n\\n        uint parentIndex = _treeIndex;\\n        while (parentIndex != 0) {\\n            parentIndex = (parentIndex - 1) / tree.K;\\n            tree.nodes[parentIndex] = _plusOrMinus ? tree.nodes[parentIndex] + _value : tree.nodes[parentIndex] - _value;\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0x8a73ca17a0efa36b8c8e00fa40db5f2fc89431298c981722817874413fd6a004\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b506106ba806100206000396000f3006080604052600436106100775763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166318fd0ce8811461007c5780631f45bf931461009c57806337640f39146100c9578063b27680fa146100e4578063da9a804b14610168578063e5541ff614610183575b600080fd5b34801561008857600080fd5b5061009a60043560243560443561023b565b005b3480156100a857600080fd5b506100b76004356024356102d6565b60408051918252519081900360200190f35b3480156100d557600080fd5b506100b7600435602435610384565b3480156100f057600080fd5b506101026004356024356044356103ff565b604051808481526020018060200183151515158152602001828103825284818151815260200191508051906020019060200280838360005b8381101561015257818101518382015260200161013a565b5050505090500194505050505060405180910390f35b34801561017457600080fd5b5061009a60043560243561052e565b34801561018f57600080fd5b5061019b6004356105c1565b604051808481526020018060200180602001838103835285818151815260200191508051906020019060200280838360005b838110156101e55781810151838201526020016101cd565b50505050905001838103825284818151815260200191508051906020019060200280838360005b8381101561022457818101518382015260200161020c565b505050509050019550505050505060405180910390f35b604080517f2e25c38a00000000000000000000000000000000000000000000000000000000815260006004820181905260248201869052604482018590526064820184905291517317aA5CDbe970fB8C0FdfD9090F2883fF70c83DD892632e25c38a9260848082019391829003018186803b1580156102b957600080fd5b505af41580156102cd573d6000803e3d6000fd5b50505050505050565b604080517f88c1d467000000000000000000000000000000000000000000000000000000008152600060048201819052602482018590526044820184905291517317aA5CDbe970fB8C0FdfD9090F2883fF70c83DD8916388c1d467916064808301926020929190829003018186803b15801561035157600080fd5b505af4158015610365573d6000803e3d6000fd5b505050506040513d602081101561037b57600080fd5b50519392505050565b604080517f7521ccb1000000000000000000000000000000000000000000000000000000008152600060048201819052602482018590526044820184905291517317aA5CDbe970fB8C0FdfD9090F2883fF70c83DD891637521ccb1916064808301926020929190829003018186803b15801561035157600080fd5b604080517f65b81f4f000000000000000000000000000000000000000000000000000000008152600060048201819052602482018690526044820185905260648201849052915160609183917317aA5CDbe970fB8C0FdfD9090F2883fF70c83DD8916365b81f4f9160848083019286929190829003018186803b15801561048557600080fd5b505af4158015610499573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f1916820160405260608110156104c257600080fd5b8151602083018051919392830192916401000000008111156104e357600080fd5b820160208101848111156104f657600080fd5b815185602082028301116401000000008211171561051357600080fd5b50506020909101519396509450919250505093509350939050565b604080517f9075789e000000000000000000000000000000000000000000000000000000008152600060048201819052602482018590526044820184905291517317aA5CDbe970fB8C0FdfD9090F2883fF70c83DD892639075789e9260648082019391829003018186803b1580156105a557600080fd5b505af41580156105b9573d6000803e3d6000fd5b505050505050565b600081815260208181526040808320805460018201805484518187028101870190955280855260609586959394929360029093019291849183018282801561062857602002820191906000526020600020905b815481526020019060010190808311610614575b505050505091508080548060200260200160405190810160405280929190818152602001828054801561067a57602002820191906000526020600020905b815481526020019060010190808311610666575b5050505050905092509250925091939092505600a165627a7a72305820c1d86c6e123ee29ee8fd63f4d2d6f07abdd2704d5415fb241b298f0dace8fe260029",
+  "deployedBytecode": "0x6080604052600436106100775763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166318fd0ce8811461007c5780631f45bf931461009c57806337640f39146100c9578063b27680fa146100e4578063da9a804b14610168578063e5541ff614610183575b600080fd5b34801561008857600080fd5b5061009a60043560243560443561023b565b005b3480156100a857600080fd5b506100b76004356024356102d6565b60408051918252519081900360200190f35b3480156100d557600080fd5b506100b7600435602435610384565b3480156100f057600080fd5b506101026004356024356044356103ff565b604051808481526020018060200183151515158152602001828103825284818151815260200191508051906020019060200280838360005b8381101561015257818101518382015260200161013a565b5050505090500194505050505060405180910390f35b34801561017457600080fd5b5061009a60043560243561052e565b34801561018f57600080fd5b5061019b6004356105c1565b604051808481526020018060200180602001838103835285818151815260200191508051906020019060200280838360005b838110156101e55781810151838201526020016101cd565b50505050905001838103825284818151815260200191508051906020019060200280838360005b8381101561022457818101518382015260200161020c565b505050509050019550505050505060405180910390f35b604080517f2e25c38a000000000000000000000000000000000000000000000000000000008152600060048201819052602482018690526044820185905260648201849052915173__src/data-structures/SortitionSumTree__92632e25c38a9260848082019391829003018186803b1580156102b957600080fd5b505af41580156102cd573d6000803e3d6000fd5b50505050505050565b604080517f88c1d4670000000000000000000000000000000000000000000000000000000081526000600482018190526024820185905260448201849052915173__src/data-structures/SortitionSumTree__916388c1d467916064808301926020929190829003018186803b15801561035157600080fd5b505af4158015610365573d6000803e3d6000fd5b505050506040513d602081101561037b57600080fd5b50519392505050565b604080517f7521ccb10000000000000000000000000000000000000000000000000000000081526000600482018190526024820185905260448201849052915173__src/data-structures/SortitionSumTree__91637521ccb1916064808301926020929190829003018186803b15801561035157600080fd5b604080517f65b81f4f0000000000000000000000000000000000000000000000000000000081526000600482018190526024820186905260448201859052606482018490529151606091839173__src/data-structures/SortitionSumTree__916365b81f4f9160848083019286929190829003018186803b15801561048557600080fd5b505af4158015610499573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f1916820160405260608110156104c257600080fd5b8151602083018051919392830192916401000000008111156104e357600080fd5b820160208101848111156104f657600080fd5b815185602082028301116401000000008211171561051357600080fd5b50506020909101519396509450919250505093509350939050565b604080517f9075789e0000000000000000000000000000000000000000000000000000000081526000600482018190526024820185905260448201849052915173__src/data-structures/SortitionSumTree__92639075789e9260648082019391829003018186803b1580156105a557600080fd5b505af41580156105b9573d6000803e3d6000fd5b505050505050565b600081815260208181526040808320805460018201805484518187028101870190955280855260609586959394929360029093019291849183018282801561062857602002820191906000526020600020905b815481526020019060010190808311610614575b505050505091508080548060200260200160405190810160405280929190818152602001828054801561067a57602002820191906000526020600020905b815481526020019060010190808311610666575b5050505050905092509250925091939092505600a165627a7a72305820c1d86c6e123ee29ee8fd63f4d2d6f07abdd2704d5415fb241b298f0dace8fe260029",
+  "libraries": {
+    "SortitionSumTreeFactory": "0x17aA5CDbe970fB8C0FdfD9090F2883fF70c83DD8"
+  },
+  "devdoc": {
+    "author": "Enrique Piqueras - <epiquerass@gmail.com>",
+    "methods": {
+      "_createTree(bytes32,uint256)": {
+        "details": "Create a sortition sum tree at the specified key.",
+        "params": {
+          "_K": "The number of children each node in the tree should have.",
+          "_key": "The key of the new tree."
+        }
+      },
+      "_draw(bytes32,uint256)": {
+        "details": "Draw an ID from a tree using a number.",
+        "params": {
+          "_drawnNumber": "The drawn number.",
+          "_key": "The key of the tree."
+        },
+        "return": "The drawn ID."
+      },
+      "_queryLeafs(bytes32,uint256,uint256)": {
+        "details": "Query the leaves of a tree.",
+        "params": {
+          "_count": "The number of items to return.",
+          "_cursor": "The pagination cursor.",
+          "_key": "The key of the tree to get the leaves from."
+        },
+        "return": "The index at which leaves start, the values of the returned leaves, and whether there are more for pagination."
+      },
+      "_set(bytes32,uint256,bytes32)": {
+        "details": "Set a value of a tree.",
+        "params": {
+          "_ID": "The ID of the value.",
+          "_key": "The key of the tree.",
+          "_value": "The new value."
+        }
+      },
+      "_sortitionSumTrees(bytes32)": {
+        "details": "Public getter for sortitionSumTrees.",
+        "params": {
+          "_key": "The key of the tree to get."
+        },
+        "return": "All of the tree's properties."
+      },
+      "_stakeOf(bytes32,bytes32)": {
+        "details": "Gets a specified candidate's associated value.",
+        "params": {
+          "_ID": "The ID of the value.",
+          "_key": "The key of the tree."
+        },
+        "return": "The associated value."
+      }
+    },
+    "title": "ExposedSortitionSumTreeFactory"
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}

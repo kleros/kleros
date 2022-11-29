@@ -1,0 +1,1162 @@
+{
+  "address": "0x64f71bc0340f3b7bdbae6dcf69445a75b2de5943",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_metaEvidence",
+          "type": "string"
+        }
+      ],
+      "name": "setMetaEvidence",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_loserMultiplier",
+          "type": "uint256"
+        }
+      ],
+      "name": "changeLoserMultiplier",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "arbitratorExtraData",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_session",
+          "type": "uint256"
+        }
+      ],
+      "name": "getSubmittedLists",
+      "outputs": [
+        {
+          "name": "submittedLists",
+          "type": "uint256[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "executionTimeout",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_withdrawTimeout",
+          "type": "uint256"
+        }
+      ],
+      "name": "changeWithdrawTimeout",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_submissionBaseDeposit",
+          "type": "uint256"
+        }
+      ],
+      "name": "changeSubmissionDeposit",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_disputeID",
+          "type": "uint256"
+        },
+        {
+          "name": "_ruling",
+          "type": "uint256"
+        }
+      ],
+      "name": "rule",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_winnerMultiplier",
+          "type": "uint256"
+        }
+      ],
+      "name": "changeWinnerMultiplier",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_target",
+          "type": "address[]"
+        },
+        {
+          "name": "_value",
+          "type": "uint256[]"
+        },
+        {
+          "name": "_data",
+          "type": "bytes"
+        },
+        {
+          "name": "_dataSize",
+          "type": "uint256[]"
+        },
+        {
+          "name": "_description",
+          "type": "string"
+        }
+      ],
+      "name": "submitList",
+      "outputs": [],
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_beneficiary",
+          "type": "address"
+        },
+        {
+          "name": "_session",
+          "type": "uint256"
+        },
+        {
+          "name": "_round",
+          "type": "uint256"
+        },
+        {
+          "name": "_submissionID",
+          "type": "uint256"
+        }
+      ],
+      "name": "withdrawFeesAndRewards",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_session",
+          "type": "uint256"
+        },
+        {
+          "name": "_round",
+          "type": "uint256"
+        },
+        {
+          "name": "_contributor",
+          "type": "address"
+        }
+      ],
+      "name": "getContributions",
+      "outputs": [
+        {
+          "name": "contributions",
+          "type": "uint256[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getCurrentSessionNumber",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "arbitrator",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "metaEvidenceUpdates",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_listID",
+          "type": "uint256"
+        },
+        {
+          "name": "_cursor",
+          "type": "uint256"
+        },
+        {
+          "name": "_count",
+          "type": "uint256"
+        }
+      ],
+      "name": "executeTransactionList",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "reservedETH",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "sessions",
+      "outputs": [
+        {
+          "name": "ruling",
+          "type": "uint256"
+        },
+        {
+          "name": "disputeID",
+          "type": "uint256"
+        },
+        {
+          "name": "sumDeposit",
+          "type": "uint256"
+        },
+        {
+          "name": "status",
+          "type": "uint8"
+        },
+        {
+          "name": "durationOffset",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "shadowWinner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_session",
+          "type": "uint256"
+        },
+        {
+          "name": "_round",
+          "type": "uint256"
+        }
+      ],
+      "name": "getRoundInfo",
+      "outputs": [
+        {
+          "name": "paidFees",
+          "type": "uint256[]"
+        },
+        {
+          "name": "hasPaid",
+          "type": "bool[]"
+        },
+        {
+          "name": "feeRewards",
+          "type": "uint256"
+        },
+        {
+          "name": "successfullyPaid",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_metaEvidence",
+          "type": "string"
+        }
+      ],
+      "name": "changeMetaEvidence",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "executeSubmissions",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_submissionTimeout",
+          "type": "uint256"
+        }
+      ],
+      "name": "changeSubmissionTimeout",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_sharedMultiplier",
+          "type": "uint256"
+        }
+      ],
+      "name": "changeSharedMultiplier",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "loserMultiplier",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "winnerMultiplier",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "withdrawTimeout",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_listID",
+          "type": "uint256"
+        },
+        {
+          "name": "_transactionIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "getTransactionInfo",
+      "outputs": [
+        {
+          "name": "target",
+          "type": "address"
+        },
+        {
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "name": "data",
+          "type": "bytes"
+        },
+        {
+          "name": "executed",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_submissionID",
+          "type": "uint256"
+        }
+      ],
+      "name": "fundAppeal",
+      "outputs": [],
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "submissions",
+      "outputs": [
+        {
+          "name": "submitter",
+          "type": "address"
+        },
+        {
+          "name": "deposit",
+          "type": "uint256"
+        },
+        {
+          "name": "listHash",
+          "type": "bytes32"
+        },
+        {
+          "name": "submissionTime",
+          "type": "uint256"
+        },
+        {
+          "name": "approved",
+          "type": "bool"
+        },
+        {
+          "name": "approvalTime",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getExpendableFunds",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_submissionID",
+          "type": "uint256"
+        },
+        {
+          "name": "_listHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "withdrawTransactionList",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getNumberOfCreatedLists",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_arbitrator",
+          "type": "address"
+        },
+        {
+          "name": "_arbitratorExtraData",
+          "type": "bytes"
+        }
+      ],
+      "name": "changeArbitrator",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_evidenceURI",
+          "type": "string"
+        }
+      ],
+      "name": "submitEvidence",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "submissionBaseDeposit",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "submissionTimeout",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_executionTimeout",
+          "type": "uint256"
+        }
+      ],
+      "name": "changeExecutionTimeout",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "sharedMultiplier",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "deployer",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "MULTIPLIER_DIVISOR",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_listID",
+          "type": "uint256"
+        }
+      ],
+      "name": "getNumberOfTransactions",
+      "outputs": [
+        {
+          "name": "txCount",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "lastApprovalTime",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_session",
+          "type": "uint256"
+        }
+      ],
+      "name": "getSessionRoundsNumber",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_arbitrator",
+          "type": "address"
+        },
+        {
+          "name": "_extraData",
+          "type": "bytes"
+        },
+        {
+          "name": "_submissionBaseDeposit",
+          "type": "uint256"
+        },
+        {
+          "name": "_submissionTimeout",
+          "type": "uint256"
+        },
+        {
+          "name": "_executionTimeout",
+          "type": "uint256"
+        },
+        {
+          "name": "_withdrawTimeout",
+          "type": "uint256"
+        },
+        {
+          "name": "_sharedMultiplier",
+          "type": "uint256"
+        },
+        {
+          "name": "_winnerMultiplier",
+          "type": "uint256"
+        },
+        {
+          "name": "_loserMultiplier",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "fallback"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "_listID",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "name": "_submitter",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "_session",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_description",
+          "type": "string"
+        }
+      ],
+      "name": "ListSubmitted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "_metaEvidenceID",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_evidence",
+          "type": "string"
+        }
+      ],
+      "name": "MetaEvidence",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "_arbitrator",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "_disputeID",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_metaEvidenceID",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_evidenceGroupID",
+          "type": "uint256"
+        }
+      ],
+      "name": "Dispute",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "_arbitrator",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "_evidenceGroupID",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "name": "_party",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "_evidence",
+          "type": "string"
+        }
+      ],
+      "name": "Evidence",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "_arbitrator",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "_disputeID",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_ruling",
+          "type": "uint256"
+        }
+      ],
+      "name": "Ruling",
+      "type": "event"
+    }
+  ],
+  "transactionHash": "0x209fba64fb13ced092ae5069a5fce32575b01da1066c0f855021a2aec25c2653",
+  "receipt": {
+    "to": null,
+    "from": "0x7c1119221ead0e2749ad58e7f9669df5896363b5",
+    "contractAddress": "0x64f71bc0340f3b7bdbae6dcf69445a75b2de5943",
+    "transactionIndex": "0x18",
+    "gasUsed": "0x3b6908",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x851ec8365f0ae7435db444825e99edebbdae07caaf422c3990f6d778b4616f40",
+    "transactionHash": "0x209fba64fb13ced092ae5069a5fce32575b01da1066c0f855021a2aec25c2653",
+    "logs": [],
+    "blockNumber": "0x79aed9",
+    "cumulativeGasUsed": "0x708647",
+    "status": "0x1"
+  },
+  "args": [
+    "0x56478d65A70E91E9653723B38971eC73bb0b357D",
+    "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001",
+    {
+      "type": "BigNumber",
+      "hex": "0x01"
+    },
+    1000,
+    1000,
+    1000,
+    10000,
+    10000,
+    20000
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "d1e0706dec2c12921cdd74a294ddc93f",
+  "metadata": "{\"compiler\":{\"version\":\"0.4.26+commit.4563c3fc\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"name\":\"_metaEvidence\",\"type\":\"string\"}],\"name\":\"setMetaEvidence\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_loserMultiplier\",\"type\":\"uint256\"}],\"name\":\"changeLoserMultiplier\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"arbitratorExtraData\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_session\",\"type\":\"uint256\"}],\"name\":\"getSubmittedLists\",\"outputs\":[{\"name\":\"submittedLists\",\"type\":\"uint256[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"executionTimeout\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_withdrawTimeout\",\"type\":\"uint256\"}],\"name\":\"changeWithdrawTimeout\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_submissionBaseDeposit\",\"type\":\"uint256\"}],\"name\":\"changeSubmissionDeposit\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_disputeID\",\"type\":\"uint256\"},{\"name\":\"_ruling\",\"type\":\"uint256\"}],\"name\":\"rule\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_winnerMultiplier\",\"type\":\"uint256\"}],\"name\":\"changeWinnerMultiplier\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_target\",\"type\":\"address[]\"},{\"name\":\"_value\",\"type\":\"uint256[]\"},{\"name\":\"_data\",\"type\":\"bytes\"},{\"name\":\"_dataSize\",\"type\":\"uint256[]\"},{\"name\":\"_description\",\"type\":\"string\"}],\"name\":\"submitList\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_beneficiary\",\"type\":\"address\"},{\"name\":\"_session\",\"type\":\"uint256\"},{\"name\":\"_round\",\"type\":\"uint256\"},{\"name\":\"_submissionID\",\"type\":\"uint256\"}],\"name\":\"withdrawFeesAndRewards\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_session\",\"type\":\"uint256\"},{\"name\":\"_round\",\"type\":\"uint256\"},{\"name\":\"_contributor\",\"type\":\"address\"}],\"name\":\"getContributions\",\"outputs\":[{\"name\":\"contributions\",\"type\":\"uint256[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getCurrentSessionNumber\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"arbitrator\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"metaEvidenceUpdates\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_listID\",\"type\":\"uint256\"},{\"name\":\"_cursor\",\"type\":\"uint256\"},{\"name\":\"_count\",\"type\":\"uint256\"}],\"name\":\"executeTransactionList\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"reservedETH\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"sessions\",\"outputs\":[{\"name\":\"ruling\",\"type\":\"uint256\"},{\"name\":\"disputeID\",\"type\":\"uint256\"},{\"name\":\"sumDeposit\",\"type\":\"uint256\"},{\"name\":\"status\",\"type\":\"uint8\"},{\"name\":\"durationOffset\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"shadowWinner\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_session\",\"type\":\"uint256\"},{\"name\":\"_round\",\"type\":\"uint256\"}],\"name\":\"getRoundInfo\",\"outputs\":[{\"name\":\"paidFees\",\"type\":\"uint256[]\"},{\"name\":\"hasPaid\",\"type\":\"bool[]\"},{\"name\":\"feeRewards\",\"type\":\"uint256\"},{\"name\":\"successfullyPaid\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_metaEvidence\",\"type\":\"string\"}],\"name\":\"changeMetaEvidence\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"executeSubmissions\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_submissionTimeout\",\"type\":\"uint256\"}],\"name\":\"changeSubmissionTimeout\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_sharedMultiplier\",\"type\":\"uint256\"}],\"name\":\"changeSharedMultiplier\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"loserMultiplier\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"winnerMultiplier\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"withdrawTimeout\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_listID\",\"type\":\"uint256\"},{\"name\":\"_transactionIndex\",\"type\":\"uint256\"}],\"name\":\"getTransactionInfo\",\"outputs\":[{\"name\":\"target\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"},{\"name\":\"data\",\"type\":\"bytes\"},{\"name\":\"executed\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_submissionID\",\"type\":\"uint256\"}],\"name\":\"fundAppeal\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"submissions\",\"outputs\":[{\"name\":\"submitter\",\"type\":\"address\"},{\"name\":\"deposit\",\"type\":\"uint256\"},{\"name\":\"listHash\",\"type\":\"bytes32\"},{\"name\":\"submissionTime\",\"type\":\"uint256\"},{\"name\":\"approved\",\"type\":\"bool\"},{\"name\":\"approvalTime\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getExpendableFunds\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_submissionID\",\"type\":\"uint256\"},{\"name\":\"_listHash\",\"type\":\"bytes32\"}],\"name\":\"withdrawTransactionList\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getNumberOfCreatedLists\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_arbitrator\",\"type\":\"address\"},{\"name\":\"_arbitratorExtraData\",\"type\":\"bytes\"}],\"name\":\"changeArbitrator\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_evidenceURI\",\"type\":\"string\"}],\"name\":\"submitEvidence\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"submissionBaseDeposit\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"submissionTimeout\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_executionTimeout\",\"type\":\"uint256\"}],\"name\":\"changeExecutionTimeout\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"sharedMultiplier\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"deployer\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"MULTIPLIER_DIVISOR\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_listID\",\"type\":\"uint256\"}],\"name\":\"getNumberOfTransactions\",\"outputs\":[{\"name\":\"txCount\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"lastApprovalTime\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_session\",\"type\":\"uint256\"}],\"name\":\"getSessionRoundsNumber\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"name\":\"_arbitrator\",\"type\":\"address\"},{\"name\":\"_extraData\",\"type\":\"bytes\"},{\"name\":\"_submissionBaseDeposit\",\"type\":\"uint256\"},{\"name\":\"_submissionTimeout\",\"type\":\"uint256\"},{\"name\":\"_executionTimeout\",\"type\":\"uint256\"},{\"name\":\"_withdrawTimeout\",\"type\":\"uint256\"},{\"name\":\"_sharedMultiplier\",\"type\":\"uint256\"},{\"name\":\"_winnerMultiplier\",\"type\":\"uint256\"},{\"name\":\"_loserMultiplier\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"fallback\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_listID\",\"type\":\"uint256\"},{\"indexed\":true,\"name\":\"_submitter\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"_session\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"_description\",\"type\":\"string\"}],\"name\":\"ListSubmitted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_metaEvidenceID\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"_evidence\",\"type\":\"string\"}],\"name\":\"MetaEvidence\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_arbitrator\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"_disputeID\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"_metaEvidenceID\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"_evidenceGroupID\",\"type\":\"uint256\"}],\"name\":\"Dispute\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_arbitrator\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"_evidenceGroupID\",\"type\":\"uint256\"},{\"indexed\":true,\"name\":\"_party\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"_evidence\",\"type\":\"string\"}],\"name\":\"Evidence\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_arbitrator\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"_disputeID\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"_ruling\",\"type\":\"uint256\"}],\"name\":\"Ruling\",\"type\":\"event\"}],\"devdoc\":{\"methods\":{\"changeArbitrator(address,bytes)\":{\"details\":\"Changes the arbitrator of the contract.\",\"params\":{\"_arbitrator\":\"The new trusted arbitrator.\",\"_arbitratorExtraData\":\"The extra data used by the new arbitrator.\"}},\"changeExecutionTimeout(uint256)\":{\"details\":\"Changes the time allocated for list's execution.\",\"params\":{\"_executionTimeout\":\"The new duration of the execution timeout, in seconds.\"}},\"changeLoserMultiplier(uint256)\":{\"details\":\"Changes the proportion of appeal fees that must be added to appeal cost for the losing party.\",\"params\":{\"_loserMultiplier\":\"The new loser multiplier value in basis points.\"}},\"changeMetaEvidence(string)\":{\"details\":\"Update the meta evidence used for disputes.\",\"params\":{\"_metaEvidence\":\"URI to the new meta evidence file.\"}},\"changeSharedMultiplier(uint256)\":{\"details\":\"Changes the proportion of appeal fees that must be added to appeal cost when there is no winner or loser.\",\"params\":{\"_sharedMultiplier\":\"The new shared multiplier value in basis points.\"}},\"changeSubmissionDeposit(uint256)\":{\"details\":\"Changes the value of the base deposit required for submitting a list.\",\"params\":{\"_submissionBaseDeposit\":\"The new value of the base deposit, in wei.\"}},\"changeSubmissionTimeout(uint256)\":{\"details\":\"Changes the time allocated for submission.\",\"params\":{\"_submissionTimeout\":\"The new duration of the submission period, in seconds.\"}},\"changeWinnerMultiplier(uint256)\":{\"details\":\"Changes the proportion of appeal fees that must be added to appeal cost for the winning party.\",\"params\":{\"_winnerMultiplier\":\"The new winner multiplier value in basis points.\"}},\"changeWithdrawTimeout(uint256)\":{\"details\":\"Changes list withdrawal timeout. Note that withdrawals are only possible in the first half of the submission period.\",\"params\":{\"_withdrawTimeout\":\"The new duration of withdraw period, in seconds.\"}},\"executeSubmissions()\":{\"details\":\"Approves a transaction list or creates a dispute if more than one list was submitted. TRUSTED. If nothing was submitted changes session.\"},\"executeTransactionList(uint256,uint256,uint256)\":{\"details\":\"Executes selected transactions of the list. UNTRUSTED.\",\"params\":{\"_count\":\"Number of transactions to execute. Executes until the end if set to \\\"0\\\" or number higher than number of transactions in the list.\",\"_cursor\":\"Index of the transaction from which to start executing.\",\"_listID\":\"The index of the transaction list in the array of lists.\"}},\"fundAppeal(uint256)\":{\"details\":\"Takes up to the total amount required to fund a side of an appeal. Reimburses the rest. Creates an appeal if at least two lists are funded. TRUSTED.\",\"params\":{\"_submissionID\":\"Submission's index in the array of submitted lists of the current sesssion. Note that submissionID can be swapped with an ID of a withdrawn list in submission period.\"}},\"getContributions(uint256,uint256,address)\":{\"details\":\"Gets the contributions made by a party for a given round of a session. Note that this function is O(n), where n is the number of submissions in the session. This could exceed the gas limit, therefore this function should only be used for interface display and not by other contracts.\",\"params\":{\"_contributor\":\"The address of the contributor.\",\"_round\":\"The position of the round.\",\"_session\":\"The ID of the session.\"},\"return\":\"The contributions.\"},\"getCurrentSessionNumber()\":{\"details\":\"Gets the number of the ongoing session.\",\"return\":\"The number of the ongoing session.\"},\"getExpendableFunds()\":{\"details\":\"Gets the sum of contract funds that are used for the execution of transactions.\",\"return\":\"Contract balance without reserved ETH.\"},\"getNumberOfCreatedLists()\":{\"details\":\"Gets the number of lists created in contract's lifetime.\",\"return\":\"The number of created lists.\"},\"getNumberOfTransactions(uint256)\":{\"details\":\"Gets the number of transactions in the list.\",\"params\":{\"_listID\":\"The index of the transaction list in the array of lists.\"},\"return\":\"txCount The number of transactions in the list.\"},\"getRoundInfo(uint256,uint256)\":{\"details\":\"Gets the information on a round of a session. Note that this function is O(n), where n is the number of submissions in the session. This could exceed the gas limit, therefore this function should only be used for interface display and not by other contracts.\",\"params\":{\"_round\":\"The round to be queried.\",\"_session\":\"The ID of the session.\"},\"return\":\"The round information.\"},\"getSessionRoundsNumber(uint256)\":{\"details\":\"Gets the number rounds in ongoing session.\",\"return\":\"The number of rounds in session.\"},\"getSubmittedLists(uint256)\":{\"details\":\"Gets the array of submitted lists in the session. Note that this function is O(n), where n is the number of submissions in the session. This could exceed the gas limit, therefore this function should only be used for interface display and not by other contracts.\",\"params\":{\"_session\":\"The ID of the session.\"},\"return\":\"submittedLists Indexes of lists that were submitted during the session.\"},\"getTransactionInfo(uint256,uint256)\":{\"details\":\"Gets the info of the specified transaction in the specified list.\",\"params\":{\"_listID\":\"The index of the transaction list in the array of lists.\",\"_transactionIndex\":\"The index of the transaction.\"},\"return\":\"The transaction info.\"},\"rule(uint256,uint256)\":{\"details\":\"Gives a ruling for a dispute. Must be called by the arbitrator. The purpose of this function is to ensure that the address calling it has the right to rule on the contract.\",\"params\":{\"_disputeID\":\"ID of the dispute in the Arbitrator contract.\",\"_ruling\":\"Ruling given by the arbitrator. Note that 0 is reserved for \\\"Refuse to arbitrate\\\".\"}},\"setMetaEvidence(string)\":{\"details\":\"Sets the meta evidence. Can only be called once. Convenience function that removes the need to precompute the deployed contract address for the metaevidence data.\",\"params\":{\"_metaEvidence\":\"The URI of the meta evidence file.\"}},\"submitEvidence(string)\":{\"details\":\"Allows to submit evidence for a current session.\",\"params\":{\"_evidenceURI\":\"Link to evidence.\"}},\"submitList(address[],uint256[],bytes,uint256[],string)\":{\"details\":\"Creates transaction list based on input parameters and submits it for potential approval and execution. Transactions must be ordered by their hash.\",\"params\":{\"_data\":\"Concatenated calldata of all transactions of this list.\",\"_dataSize\":\"List of lengths in bytes required to split calldata for its respective targets.\",\"_description\":\"String in CSV format that describes list's transactions.\",\"_target\":\"List of addresses to call.\",\"_value\":\"List of values required for respective addresses.\"}},\"withdrawFeesAndRewards(address,uint256,uint256,uint256)\":{\"details\":\"Sends the fee stake rewards and reimbursements proportional to the contributions made to the winner of a dispute. Reimburses contributions if there is no winner.\",\"params\":{\"_beneficiary\":\"The address that made contributions to a request.\",\"_round\":\"The round from which to withdraw.\",\"_session\":\"The session from which to withdraw.\",\"_submissionID\":\"Submission's index in the array of submitted lists of the session which the beneficiary contributed to.\"}},\"withdrawTransactionList(uint256,bytes32)\":{\"details\":\"Withdraws submitted transaction list. Reimburses submission deposit. Withdrawal is only possible during the first half of the submission period and during withdrawTimeout seconds after the submission is made.\",\"params\":{\"_listHash\":\"Hash of a withdrawing list.\",\"_submissionID\":\"Submission's index in the array of submitted lists of the current sesssion.\"}}},\"title\":\"KlerosGovernor Note that this contract trusts that the Arbitrator is honest and will not re-enter or modify its costs during a call. Also note that tx.origin should not matter in contracts called by the governor.\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"src/kleros/KlerosGovernor.sol\":\"KlerosGovernor\"},\"evmVersion\":\"byzantium\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":100},\"remappings\":[]},\"sources\":{\"@kleros/kleros-interaction/contracts/libraries/CappedMath.sol\":{\"content\":\"/**\\n *  @authors: [@mtsalenc]\\n *  @reviewers: [@clesaege]\\n *  @auditors: []\\n *  @bounties: []\\n *  @deployments: []\\n */\\n\\npragma solidity ^0.4.24;\\n\\n\\n/**\\n * @title CappedMath\\n * @dev Math operations with caps for under and overflow.\\n */\\nlibrary CappedMath {\\n    uint constant private UINT_MAX = 2**256 - 1;\\n\\n    /**\\n     * @dev Adds two unsigned integers, returns 2^256 - 1 on overflow.\\n     */\\n    function addCap(uint _a, uint _b) internal pure returns (uint) {\\n        uint c = _a + _b;\\n        return c >= _a ? c : UINT_MAX;\\n    }\\n\\n    /**\\n     * @dev Subtracts two integers, returns 0 on underflow.\\n     */\\n    function subCap(uint _a, uint _b) internal pure returns (uint) {\\n        if (_b > _a)\\n            return 0;\\n        else\\n            return _a - _b;\\n    }\\n\\n    /**\\n     * @dev Multiplies two unsigned integers, returns 2^256 - 1 on overflow.\\n     */\\n    function mulCap(uint _a, uint _b) internal pure returns (uint) {\\n        // Gas optimization: this is cheaper than requiring '_a' not being zero, but the\\n        // benefit is lost if '_b' is also tested.\\n        // See: https://github.com/OpenZeppelin/openzeppelin-solidity/pull/522\\n        if (_a == 0)\\n            return 0;\\n\\n        uint c = _a * _b;\\n        return c / _a == _b ? c : UINT_MAX;\\n    }\\n}\\n\",\"keccak256\":\"0xc21ea4d71cec3b6cfdfe0b6abdadc9917e1539428141e49718be4b385031ebf4\"},\"@kleros/kleros-interaction/contracts/standard/arbitration/Arbitrable.sol\":{\"content\":\"/**\\n *  @title Arbitrable\\n *  @author Cl\\u00e9ment Lesaege - <clement@lesaege.com>\\n *  Bug Bounties: This code hasn't undertaken a bug bounty program yet.\\n */\\n\\npragma solidity ^0.4.15;\\n\\nimport \\\"./IArbitrable.sol\\\";\\n\\n/** @title Arbitrable\\n *  Arbitrable abstract contract.\\n *  When developing arbitrable contracts, we need to:\\n *  -Define the action taken when a ruling is received by the contract. We should do so in executeRuling.\\n *  -Allow dispute creation. For this a function must:\\n *      -Call arbitrator.createDispute.value(_fee)(_choices,_extraData);\\n *      -Create the event Dispute(_arbitrator,_disputeID,_rulingOptions);\\n */\\ncontract Arbitrable is IArbitrable {\\n    Arbitrator public arbitrator;\\n    bytes public arbitratorExtraData; // Extra data to require particular dispute and appeal behaviour.\\n\\n    modifier onlyArbitrator {require(msg.sender == address(arbitrator), \\\"Can only be called by the arbitrator.\\\"); _;}\\n\\n    /** @dev Constructor. Choose the arbitrator.\\n     *  @param _arbitrator The arbitrator of the contract.\\n     *  @param _arbitratorExtraData Extra data for the arbitrator.\\n     */\\n    constructor(Arbitrator _arbitrator, bytes _arbitratorExtraData) public {\\n        arbitrator = _arbitrator;\\n        arbitratorExtraData = _arbitratorExtraData;\\n    }\\n\\n    /** @dev Give a ruling for a dispute. Must be called by the arbitrator.\\n     *  The purpose of this function is to ensure that the address calling it has the right to rule on the contract.\\n     *  @param _disputeID ID of the dispute in the Arbitrator contract.\\n     *  @param _ruling Ruling given by the arbitrator. Note that 0 is reserved for \\\"Not able/wanting to make a decision\\\".\\n     */\\n    function rule(uint _disputeID, uint _ruling) public onlyArbitrator {\\n        emit Ruling(Arbitrator(msg.sender),_disputeID,_ruling);\\n\\n        executeRuling(_disputeID,_ruling);\\n    }\\n\\n\\n    /** @dev Execute a ruling of a dispute.\\n     *  @param _disputeID ID of the dispute in the Arbitrator contract.\\n     *  @param _ruling Ruling given by the arbitrator. Note that 0 is reserved for \\\"Not able/wanting to make a decision\\\".\\n     */\\n    function executeRuling(uint _disputeID, uint _ruling) internal;\\n}\\n\",\"keccak256\":\"0x449b4a7b45d37f6b596649b8842b8b6b5356270759918c1dcbfa8a5c09445555\"},\"@kleros/kleros-interaction/contracts/standard/arbitration/Arbitrator.sol\":{\"content\":\"/**\\n *  @title Arbitrator\\n *  @author Cl\\u00e9ment Lesaege - <clement@lesaege.com>\\n *  Bug Bounties: This code hasn't undertaken a bug bounty program yet.\\n */\\n\\npragma solidity ^0.4.15;\\n\\nimport \\\"./Arbitrable.sol\\\";\\n\\n/** @title Arbitrator\\n *  Arbitrator abstract contract.\\n *  When developing arbitrator contracts we need to:\\n *  -Define the functions for dispute creation (createDispute) and appeal (appeal). Don't forget to store the arbitrated contract and the disputeID (which should be unique, use nbDisputes).\\n *  -Define the functions for cost display (arbitrationCost and appealCost).\\n *  -Allow giving rulings. For this a function must call arbitrable.rule(disputeID, ruling).\\n */\\ncontract Arbitrator {\\n\\n    enum DisputeStatus {Waiting, Appealable, Solved}\\n\\n    modifier requireArbitrationFee(bytes _extraData) {\\n        require(msg.value >= arbitrationCost(_extraData), \\\"Not enough ETH to cover arbitration costs.\\\");\\n        _;\\n    }\\n    modifier requireAppealFee(uint _disputeID, bytes _extraData) {\\n        require(msg.value >= appealCost(_disputeID, _extraData), \\\"Not enough ETH to cover appeal costs.\\\");\\n        _;\\n    }\\n\\n    /** @dev To be raised when a dispute is created.\\n     *  @param _disputeID ID of the dispute.\\n     *  @param _arbitrable The contract which created the dispute.\\n     */\\n    event DisputeCreation(uint indexed _disputeID, Arbitrable indexed _arbitrable);\\n\\n    /** @dev To be raised when a dispute can be appealed.\\n     *  @param _disputeID ID of the dispute.\\n     */\\n    event AppealPossible(uint indexed _disputeID, Arbitrable indexed _arbitrable);\\n\\n    /** @dev To be raised when the current ruling is appealed.\\n     *  @param _disputeID ID of the dispute.\\n     *  @param _arbitrable The contract which created the dispute.\\n     */\\n    event AppealDecision(uint indexed _disputeID, Arbitrable indexed _arbitrable);\\n\\n    /** @dev Create a dispute. Must be called by the arbitrable contract.\\n     *  Must be paid at least arbitrationCost(_extraData).\\n     *  @param _choices Amount of choices the arbitrator can make in this dispute.\\n     *  @param _extraData Can be used to give additional info on the dispute to be created.\\n     *  @return disputeID ID of the dispute created.\\n     */\\n    function createDispute(uint _choices, bytes _extraData) public requireArbitrationFee(_extraData) payable returns(uint disputeID) {}\\n\\n    /** @dev Compute the cost of arbitration. It is recommended not to increase it often, as it can be highly time and gas consuming for the arbitrated contracts to cope with fee augmentation.\\n     *  @param _extraData Can be used to give additional info on the dispute to be created.\\n     *  @return fee Amount to be paid.\\n     */\\n    function arbitrationCost(bytes _extraData) public view returns(uint fee);\\n\\n    /** @dev Appeal a ruling. Note that it has to be called before the arbitrator contract calls rule.\\n     *  @param _disputeID ID of the dispute to be appealed.\\n     *  @param _extraData Can be used to give extra info on the appeal.\\n     */\\n    function appeal(uint _disputeID, bytes _extraData) public requireAppealFee(_disputeID,_extraData) payable {\\n        emit AppealDecision(_disputeID, Arbitrable(msg.sender));\\n    }\\n\\n    /** @dev Compute the cost of appeal. It is recommended not to increase it often, as it can be higly time and gas consuming for the arbitrated contracts to cope with fee augmentation.\\n     *  @param _disputeID ID of the dispute to be appealed.\\n     *  @param _extraData Can be used to give additional info on the dispute to be created.\\n     *  @return fee Amount to be paid.\\n     */\\n    function appealCost(uint _disputeID, bytes _extraData) public view returns(uint fee);\\n\\n    /** @dev Compute the start and end of the dispute's current or next appeal period, if possible.\\n     *  @param _disputeID ID of the dispute.\\n     *  @return The start and end of the period.\\n     */\\n    function appealPeriod(uint _disputeID) public view returns(uint start, uint end) {}\\n\\n    /** @dev Return the status of a dispute.\\n     *  @param _disputeID ID of the dispute to rule.\\n     *  @return status The status of the dispute.\\n     */\\n    function disputeStatus(uint _disputeID) public view returns(DisputeStatus status);\\n\\n    /** @dev Return the current ruling of a dispute. This is useful for parties to know if they should appeal.\\n     *  @param _disputeID ID of the dispute.\\n     *  @return ruling The ruling which has been given or the one which will be given if there is no appeal.\\n     */\\n    function currentRuling(uint _disputeID) public view returns(uint ruling);\\n}\\n\",\"keccak256\":\"0xf425ef97085604f648b3344db2d703fab23fa7487427c0839473260d3c91d916\"},\"@kleros/kleros-interaction/contracts/standard/arbitration/IArbitrable.sol\":{\"content\":\"/**\\n *  @title IArbitrable\\n *  @author Enrique Piqueras - <enrique@kleros.io>\\n *  Bug Bounties: This code hasn't undertaken a bug bounty program yet.\\n */\\n\\npragma solidity ^0.4.15;\\n\\nimport \\\"./Arbitrator.sol\\\";\\n\\n/** @title IArbitrable\\n *  Arbitrable interface.\\n *  When developing arbitrable contracts, we need to:\\n *  -Define the action taken when a ruling is received by the contract. We should do so in executeRuling.\\n *  -Allow dispute creation. For this a function must:\\n *      -Call arbitrator.createDispute.value(_fee)(_choices,_extraData);\\n *      -Create the event Dispute(_arbitrator,_disputeID,_rulingOptions);\\n */\\ninterface IArbitrable {\\n    /** @dev To be emmited when meta-evidence is submitted.\\n     *  @param _metaEvidenceID Unique identifier of meta-evidence.\\n     *  @param _evidence A link to the meta-evidence JSON.\\n     */\\n    event MetaEvidence(uint indexed _metaEvidenceID, string _evidence);\\n\\n    /** @dev To be emmited when a dispute is created to link the correct meta-evidence to the disputeID\\n     *  @param _arbitrator The arbitrator of the contract.\\n     *  @param _disputeID ID of the dispute in the Arbitrator contract.\\n     *  @param _metaEvidenceID Unique identifier of meta-evidence.\\n     *  @param _evidenceGroupID Unique identifier of the evidence group that is linked to this dispute.\\n     */\\n    event Dispute(Arbitrator indexed _arbitrator, uint indexed _disputeID, uint _metaEvidenceID, uint _evidenceGroupID);\\n\\n    /** @dev To be raised when evidence are submitted. Should point to the ressource (evidences are not to be stored on chain due to gas considerations).\\n     *  @param _arbitrator The arbitrator of the contract.\\n     *  @param _evidenceGroupID Unique identifier of the evidence group the evidence belongs to.\\n     *  @param _party The address of the party submiting the evidence. Note that 0x0 refers to evidence not submitted by any party.\\n     *  @param _evidence A URI to the evidence JSON file whose name should be its keccak256 hash followed by .json.\\n     */\\n    event Evidence(Arbitrator indexed _arbitrator, uint indexed _evidenceGroupID, address indexed _party, string _evidence);\\n\\n    /** @dev To be raised when a ruling is given.\\n     *  @param _arbitrator The arbitrator giving the ruling.\\n     *  @param _disputeID ID of the dispute in the Arbitrator contract.\\n     *  @param _ruling The ruling which was given.\\n     */\\n    event Ruling(Arbitrator indexed _arbitrator, uint indexed _disputeID, uint _ruling);\\n\\n    /** @dev Give a ruling for a dispute. Must be called by the arbitrator.\\n     *  The purpose of this function is to ensure that the address calling it has the right to rule on the contract.\\n     *  @param _disputeID ID of the dispute in the Arbitrator contract.\\n     *  @param _ruling Ruling given by the arbitrator. Note that 0 is reserved for \\\"Not able/wanting to make a decision\\\".\\n     */\\n    function rule(uint _disputeID, uint _ruling) external;\\n}\\n\",\"keccak256\":\"0xcd67538fdc6e5fd465e09f2e8cb2c87b9ba692c12a94592061323cac369359a2\"},\"src/kleros/KlerosGovernor.sol\":{\"content\":\"/**\\n *  @authors: [@unknownunknown1]\\n *  @reviewers: [@ferittuncer, @clesaege, @satello*, @mtsalenc, @remedcu, @nix1g, @fnanni-0, @MerlinEgalite]\\n *  @auditors: []\\n *  @bounties: [{ link: https://github.com/kleros/kleros/issues/155, maxPayout: 200 ETH }]\\n *  @deployments: []\\n *  @tools: [MythX]\\n */\\n\\n/* solium-disable security/no-block-members */\\n/* solium-disable max-len */\\n/* solium-disable security/no-send */\\n\\npragma solidity ^0.4.26;\\n\\nimport \\\"@kleros/kleros-interaction/contracts/standard/arbitration/Arbitrable.sol\\\";\\nimport \\\"@kleros/kleros-interaction/contracts/libraries/CappedMath.sol\\\";\\n\\n/** @title KlerosGovernor\\n *  Note that this contract trusts that the Arbitrator is honest and will not re-enter or modify its costs during a call.\\n *  Also note that tx.origin should not matter in contracts called by the governor.\\n */\\ncontract KlerosGovernor is Arbitrable {\\n    using CappedMath for uint;\\n\\n    /* *** Contract variables *** */\\n    enum Status { NoDispute, DisputeCreated, Resolved }\\n\\n    struct Session {\\n        Round[] rounds; // Tracks each appeal round of the dispute in the session in the form rounds[appeal].\\n        uint ruling; // The ruling that was given in this session, if any.\\n        uint disputeID; // ID given to the dispute of the session, if any.\\n        uint[] submittedLists; // Tracks all lists that were submitted in a session in the form submittedLists[submissionID].\\n        uint sumDeposit; // Sum of all submission deposits in a session (minus arbitration fees). This is used to calculate the reward.\\n        Status status; // Status of a session.\\n        mapping(bytes32 => bool) alreadySubmitted; // Indicates whether or not the transaction list was already submitted in order to catch duplicates in the form alreadySubmitted[listHash].\\n        uint durationOffset; // Time in seconds that prolongs the submission period after the first submission, to give other submitters time to react.\\n    }\\n\\n    struct Transaction {\\n        address target; // The address to call.\\n        uint value; // Value paid by governor contract that will be used as msg.value in the execution.\\n        bytes data; // Calldata of the transaction.\\n        bool executed; // Whether the transaction was already executed or not.\\n    }\\n\\n    struct Submission {\\n        address submitter; // The one who submits the list.\\n        uint deposit; // Value of the deposit paid upon submission of the list.\\n        Transaction[] txs; // Transactions stored in the list in the form txs[_transactionIndex].\\n        bytes32 listHash; // A hash chain of all transactions stored in the list. This is used as a unique identifier within a session.\\n        uint submissionTime; // The time when the list was submitted.\\n        bool approved; // Whether the list was approved for execution or not.\\n        uint approvalTime; // The time when the list was approved.\\n    }\\n\\n    struct Round {\\n        mapping (uint => uint) paidFees; // Tracks the fees paid by each side in this round in the form paidFees[submissionID].\\n        mapping (uint => bool) hasPaid; // True when the side has fully paid its fees, false otherwise in the form hasPaid[submissionID].\\n        uint feeRewards; // Sum of reimbursable fees and stake rewards available to the parties that made contributions to the side that ultimately wins a dispute.\\n        mapping(address => mapping (uint => uint)) contributions; // Maps contributors to their contributions for each side in the form contributions[address][submissionID].\\n        uint successfullyPaid; // Sum of all successfully paid fees paid by all sides.\\n    }\\n\\n    uint constant NO_SHADOW_WINNER = uint(-1); // The value that indicates that no one has successfully paid appeal fees in a current round. It's the largest integer and not 0, because 0 can be a valid submission index.\\n\\n    address public deployer; // The address of the deployer of the contract.\\n\\n    uint public reservedETH; // Sum of contract's submission deposits and appeal fees. These funds are not to be used in the execution of transactions.\\n\\n    uint public submissionBaseDeposit; // The base deposit in wei that needs to be paid in order to submit the list.\\n    uint public submissionTimeout; // Time in seconds allowed for submitting the lists. Once it's passed the contract enters the approval period.\\n    uint public executionTimeout; // Time in seconds allowed for the execution of approved lists.\\n    uint public withdrawTimeout; // Time in seconds allowed to withdraw a submitted list.\\n    uint public sharedMultiplier; // Multiplier for calculating the appeal fee that must be paid by each side in the case where there is no winner/loser (e.g. when the arbitrator ruled \\\"refuse to arbitrate\\\").\\n    uint public winnerMultiplier; // Multiplier for calculating the appeal fee of the party that won the previous round.\\n    uint public loserMultiplier; // Multiplier for calculating the appeal fee of the party that lost the previous round.\\n    uint public constant MULTIPLIER_DIVISOR = 10000; // Divisor parameter for multipliers.\\n\\n    uint public lastApprovalTime; // The time of the last approval of a transaction list.\\n    uint public shadowWinner; // Submission index of the first list that paid appeal fees. If it stays the only list that paid appeal fees, it will win regardless of the final ruling.\\n    uint public metaEvidenceUpdates; // The number of times the meta evidence has been updated. Used to track the latest meta evidence ID.\\n\\n    Submission[] public submissions; // Stores all created transaction lists. submissions[_listID].\\n    Session[] public sessions; // Stores all submitting sessions. sessions[_session].\\n\\n    /* *** Modifiers *** */\\n    modifier duringSubmissionPeriod() {\\n        uint offset = sessions[sessions.length - 1].durationOffset;\\n        require(now - lastApprovalTime <= submissionTimeout.addCap(offset), \\\"Submission time has ended.\\\");\\n        _;\\n    }\\n    modifier duringApprovalPeriod() {\\n        uint offset = sessions[sessions.length - 1].durationOffset;\\n        require(now - lastApprovalTime > submissionTimeout.addCap(offset), \\\"Approval time has not started yet.\\\");\\n        _;\\n    }\\n    modifier onlyByGovernor() {require(address(this) == msg.sender, \\\"Only the governor can execute this.\\\"); _;}\\n\\n    /* *** Events *** */\\n    /** @dev Emitted when a new list is submitted.\\n     *  @param _listID The index of the transaction list in the array of lists.\\n     *  @param _submitter The address that submitted the list.\\n     *  @param _session The number of the current session.\\n     *  @param _description The string in CSV format that contains labels of list's transactions.\\n     *  Note that the submitter may give bad descriptions of correct actions, but this is to be seen as UI enhancement, not a critical feature and that would play against him in case of dispute.\\n     */\\n    event ListSubmitted(uint indexed _listID, address indexed _submitter, uint indexed _session, string _description);\\n\\n    /** @dev Constructor.\\n     *  @param _arbitrator The arbitrator of the contract. It must support appealPeriod.\\n     *  @param _extraData Extra data for the arbitrator.\\n     *  @param _submissionBaseDeposit The base deposit required for submission.\\n     *  @param _submissionTimeout Time in seconds allocated for submitting transaction list.\\n     *  @param _executionTimeout Time in seconds after approval that allows to execute transactions of the approved list.\\n     *  @param _withdrawTimeout Time in seconds after submission that allows to withdraw submitted list.\\n     *  @param _sharedMultiplier Multiplier of the appeal cost that submitters has to pay for a round when there is no winner/loser in the previous round (e.g. when it's the very first round). In basis points.\\n     *  @param _winnerMultiplier Multiplier of the appeal cost that the winner has to pay for a round. In basis points.\\n     *  @param _loserMultiplier Multiplier of the appeal cost that the loser has to pay for a round. In basis points.\\n     */\\n    constructor (\\n        Arbitrator _arbitrator,\\n        bytes _extraData,\\n        uint _submissionBaseDeposit,\\n        uint _submissionTimeout,\\n        uint _executionTimeout,\\n        uint _withdrawTimeout,\\n        uint _sharedMultiplier,\\n        uint _winnerMultiplier,\\n        uint _loserMultiplier\\n    ) public Arbitrable(_arbitrator, _extraData) {\\n        lastApprovalTime = now;\\n        submissionBaseDeposit = _submissionBaseDeposit;\\n        submissionTimeout = _submissionTimeout;\\n        executionTimeout = _executionTimeout;\\n        withdrawTimeout = _withdrawTimeout;\\n        sharedMultiplier = _sharedMultiplier;\\n        winnerMultiplier = _winnerMultiplier;\\n        loserMultiplier = _loserMultiplier;\\n        shadowWinner = NO_SHADOW_WINNER;\\n        sessions.length++;\\n        deployer = msg.sender;\\n    }\\n\\n    /** @dev Sets the meta evidence. Can only be called once.\\n     *  Convenience function that removes the need to precompute the deployed contract address for the metaevidence data.\\n     *  @param _metaEvidence The URI of the meta evidence file.\\n     */\\n    function setMetaEvidence(string _metaEvidence) external {\\n        require(msg.sender == deployer, \\\"Can only be called once by the deployer of the contract.\\\");\\n        deployer = address(0);\\n        emit MetaEvidence(metaEvidenceUpdates, _metaEvidence);\\n    }\\n\\n    /** @dev Changes the value of the base deposit required for submitting a list.\\n     *  @param _submissionBaseDeposit The new value of the base deposit, in wei.\\n     */\\n    function changeSubmissionDeposit(uint _submissionBaseDeposit) public onlyByGovernor {\\n        submissionBaseDeposit = _submissionBaseDeposit;\\n    }\\n\\n    /** @dev Changes the time allocated for submission.\\n     *  @param _submissionTimeout The new duration of the submission period, in seconds.\\n     */\\n    function changeSubmissionTimeout(uint _submissionTimeout) public onlyByGovernor duringSubmissionPeriod {\\n        submissionTimeout = _submissionTimeout;\\n    }\\n\\n    /** @dev Changes the time allocated for list's execution.\\n     *  @param _executionTimeout The new duration of the execution timeout, in seconds.\\n     */\\n    function changeExecutionTimeout(uint _executionTimeout) public onlyByGovernor {\\n        executionTimeout = _executionTimeout;\\n    }\\n\\n    /** @dev Changes list withdrawal timeout. Note that withdrawals are only possible in the first half of the submission period.\\n     *  @param _withdrawTimeout The new duration of withdraw period, in seconds.\\n     */\\n    function changeWithdrawTimeout(uint _withdrawTimeout) public onlyByGovernor {\\n        withdrawTimeout = _withdrawTimeout;\\n    }\\n\\n    /** @dev Changes the proportion of appeal fees that must be added to appeal cost when there is no winner or loser.\\n     *  @param _sharedMultiplier The new shared multiplier value in basis points.\\n     */\\n    function changeSharedMultiplier(uint _sharedMultiplier) public onlyByGovernor {\\n        sharedMultiplier = _sharedMultiplier;\\n    }\\n\\n    /** @dev Changes the proportion of appeal fees that must be added to appeal cost for the winning party.\\n     *  @param _winnerMultiplier The new winner multiplier value in basis points.\\n     */\\n    function changeWinnerMultiplier(uint _winnerMultiplier) public onlyByGovernor {\\n        winnerMultiplier = _winnerMultiplier;\\n    }\\n\\n    /** @dev Changes the proportion of appeal fees that must be added to appeal cost for the losing party.\\n     *  @param _loserMultiplier The new loser multiplier value in basis points.\\n     */\\n    function changeLoserMultiplier(uint _loserMultiplier) public onlyByGovernor {\\n        loserMultiplier = _loserMultiplier;\\n    }\\n\\n    /** @dev Changes the arbitrator of the contract.\\n     *  @param _arbitrator The new trusted arbitrator.\\n     *  @param _arbitratorExtraData The extra data used by the new arbitrator.\\n     */\\n    function changeArbitrator(Arbitrator _arbitrator, bytes _arbitratorExtraData) public onlyByGovernor duringSubmissionPeriod {\\n        arbitrator = _arbitrator;\\n        arbitratorExtraData = _arbitratorExtraData;\\n    }\\n\\n    /** @dev Update the meta evidence used for disputes.\\n     *  @param _metaEvidence URI to the new meta evidence file.\\n     */\\n    function changeMetaEvidence(string _metaEvidence) public onlyByGovernor {\\n        require(deployer == address(0), \\\"Metaevidence was not set.\\\");\\n        metaEvidenceUpdates++;\\n        emit MetaEvidence(metaEvidenceUpdates, _metaEvidence);\\n    }\\n\\n    /** @dev Creates transaction list based on input parameters and submits it for potential approval and execution.\\n     *  Transactions must be ordered by their hash.\\n     *  @param _target List of addresses to call.\\n     *  @param _value List of values required for respective addresses.\\n     *  @param _data Concatenated calldata of all transactions of this list.\\n     *  @param _dataSize List of lengths in bytes required to split calldata for its respective targets.\\n     *  @param _description String in CSV format that describes list's transactions.\\n     */\\n    function submitList (address[] _target, uint[] _value, bytes _data, uint[] _dataSize, string _description) public payable duringSubmissionPeriod {\\n        require(_target.length == _value.length, \\\"Incorrect input. Target and value arrays must be of the same length.\\\");\\n        require(_target.length == _dataSize.length, \\\"Incorrect input. Target and datasize arrays must be of the same length.\\\");\\n        Session storage session = sessions[sessions.length - 1];\\n        Submission storage submission = submissions[submissions.length++];\\n        submission.submitter = msg.sender;\\n        // Do the assignment first to avoid creating a new variable and bypass a 'stack too deep' error.\\n        submission.deposit = submissionBaseDeposit + arbitrator.arbitrationCost(arbitratorExtraData);\\n        require(msg.value >= submission.deposit, \\\"Submission deposit must be paid in full.\\\");\\n        // Using an array to get around the stack limit.\\n        // 0 - List hash.\\n        // 1 - Previous transaction hash.\\n        // 2 - Current transaction hash.\\n        bytes32[3] memory hashes;\\n        uint readingPosition;\\n        for (uint i = 0; i < _target.length; i++) {\\n            bytes memory readData = new bytes(_dataSize[i]);\\n            Transaction storage transaction = submission.txs[submission.txs.length++];\\n            transaction.target = _target[i];\\n            transaction.value = _value[i];\\n            for (uint j = 0; j < _dataSize[i]; j++) {\\n                readData[j] = _data[readingPosition + j];\\n            }\\n            transaction.data = readData;\\n            readingPosition += _dataSize[i];\\n            hashes[2] = keccak256(abi.encodePacked(transaction.target, transaction.value, transaction.data));\\n            require(uint(hashes[2]) >= uint(hashes[1]), \\\"The transactions are in incorrect order.\\\");\\n            hashes[0] = keccak256(abi.encodePacked(hashes[2], hashes[0]));\\n            hashes[1] = hashes[2];\\n        }\\n        require(!session.alreadySubmitted[hashes[0]], \\\"The same list was already submitted earlier.\\\");\\n        session.alreadySubmitted[hashes[0]] = true;\\n        submission.listHash = hashes[0];\\n        submission.submissionTime = now;\\n        session.sumDeposit += submission.deposit;\\n        session.submittedLists.push(submissions.length - 1);\\n        if (session.submittedLists.length == 1)\\n            session.durationOffset = now.subCap(lastApprovalTime);\\n\\n        emit ListSubmitted(submissions.length - 1, msg.sender, sessions.length - 1, _description);\\n\\n        uint remainder = msg.value - submission.deposit;\\n        if (remainder > 0)\\n            msg.sender.send(remainder);\\n\\n        reservedETH += submission.deposit;\\n    }\\n\\n    /** @dev Withdraws submitted transaction list. Reimburses submission deposit.\\n     *  Withdrawal is only possible during the first half of the submission period and during withdrawTimeout seconds after the submission is made.\\n     *  @param _submissionID Submission's index in the array of submitted lists of the current sesssion.\\n     *  @param _listHash Hash of a withdrawing list.\\n     */\\n    function withdrawTransactionList(uint _submissionID, bytes32 _listHash) public {\\n        Session storage session = sessions[sessions.length - 1];\\n        Submission storage submission = submissions[session.submittedLists[_submissionID]];\\n        require(now - lastApprovalTime <= submissionTimeout / 2, \\\"Lists can be withdrawn only in the first half of the period.\\\");\\n        // This require statement is an extra check to prevent _submissionID linking to the wrong list because of index swap during withdrawal.\\n        require(submission.listHash == _listHash, \\\"Provided hash doesn't correspond with submission ID.\\\");\\n        require(submission.submitter == msg.sender, \\\"Can't withdraw the list created by someone else.\\\");\\n        require(now - submission.submissionTime <= withdrawTimeout, \\\"Withdrawing time has passed.\\\");\\n        session.submittedLists[_submissionID] = session.submittedLists[session.submittedLists.length - 1];\\n        session.alreadySubmitted[_listHash] = false;\\n        session.submittedLists.length--;\\n        session.sumDeposit = session.sumDeposit.subCap(submission.deposit);\\n        msg.sender.transfer(submission.deposit);\\n\\n        reservedETH = reservedETH.subCap(submission.deposit);\\n    }\\n\\n    /** @dev Approves a transaction list or creates a dispute if more than one list was submitted. TRUSTED.\\n     *  If nothing was submitted changes session.\\n     */\\n    function executeSubmissions() public duringApprovalPeriod {\\n        Session storage session = sessions[sessions.length - 1];\\n        require(session.status == Status.NoDispute, \\\"Can't approve transaction list while dispute is active.\\\");\\n        if (session.submittedLists.length == 0) {\\n            lastApprovalTime = now;\\n            session.status = Status.Resolved;\\n            sessions.length++;\\n        } else if (session.submittedLists.length == 1) {\\n            Submission storage submission = submissions[session.submittedLists[0]];\\n            submission.approved = true;\\n            submission.approvalTime = now;\\n            uint sumDeposit = session.sumDeposit;\\n            session.sumDeposit = 0;\\n            submission.submitter.send(sumDeposit);\\n            lastApprovalTime = now;\\n            session.status = Status.Resolved;\\n            sessions.length++;\\n\\n            reservedETH = reservedETH.subCap(sumDeposit);\\n        } else {\\n            session.status = Status.DisputeCreated;\\n            uint arbitrationCost = arbitrator.arbitrationCost(arbitratorExtraData);\\n            session.disputeID = arbitrator.createDispute.value(arbitrationCost)(session.submittedLists.length, arbitratorExtraData);\\n            session.rounds.length++;\\n            session.sumDeposit = session.sumDeposit.subCap(arbitrationCost);\\n\\n            reservedETH = reservedETH.subCap(arbitrationCost);\\n            emit Dispute(arbitrator, session.disputeID, metaEvidenceUpdates, sessions.length - 1);\\n        }\\n    }\\n\\n    /** @dev Takes up to the total amount required to fund a side of an appeal. Reimburses the rest. Creates an appeal if at least two lists are funded. TRUSTED.\\n     *  @param _submissionID Submission's index in the array of submitted lists of the current sesssion. Note that submissionID can be swapped with an ID of a withdrawn list in submission period.\\n     */\\n    function fundAppeal(uint _submissionID) public payable {\\n        Session storage session = sessions[sessions.length - 1];\\n        require(_submissionID <= session.submittedLists.length - 1, \\\"SubmissionID is out of bounds.\\\");\\n        require(session.status == Status.DisputeCreated, \\\"No dispute to appeal.\\\");\\n        require(arbitrator.disputeStatus(session.disputeID) == Arbitrator.DisputeStatus.Appealable, \\\"Dispute is not appealable.\\\");\\n        (uint appealPeriodStart, uint appealPeriodEnd) = arbitrator.appealPeriod(session.disputeID);\\n        require(\\n            now >= appealPeriodStart && now < appealPeriodEnd,\\n            \\\"Appeal fees must be paid within the appeal period.\\\"\\n        );\\n\\n        uint winner = arbitrator.currentRuling(session.disputeID);\\n        uint multiplier;\\n        // Unlike in submittedLists, in arbitrator \\\"0\\\" is reserved for \\\"refuse to arbitrate\\\" option. So we need to add 1 to map submission IDs with choices correctly.\\n        if (winner == _submissionID + 1) {\\n            multiplier = winnerMultiplier;\\n        } else if (winner == 0) {\\n            multiplier = sharedMultiplier;\\n        } else {\\n            require(now - appealPeriodStart < (appealPeriodEnd - appealPeriodStart)/2, \\\"The loser must pay during the first half of the appeal period.\\\");\\n            multiplier = loserMultiplier;\\n        }\\n\\n        Round storage round = session.rounds[session.rounds.length - 1];\\n        require(!round.hasPaid[_submissionID], \\\"Appeal fee has already been paid.\\\");\\n        uint appealCost = arbitrator.appealCost(session.disputeID, arbitratorExtraData);\\n        uint totalCost = appealCost.addCap((appealCost.mulCap(multiplier)) / MULTIPLIER_DIVISOR);\\n\\n        // Take up to the amount necessary to fund the current round at the current costs.\\n        uint contribution; // Amount contributed.\\n        uint remainingETH; // Remaining ETH to send back.\\n        (contribution, remainingETH) = calculateContribution(msg.value, totalCost.subCap(round.paidFees[_submissionID]));\\n        round.contributions[msg.sender][_submissionID] += contribution;\\n        round.paidFees[_submissionID] += contribution;\\n        // Add contribution to reward when the fee funding is successful, otherwise it can be withdrawn later.\\n        if (round.paidFees[_submissionID] >= totalCost) {\\n            round.hasPaid[_submissionID] = true;\\n            if (shadowWinner == NO_SHADOW_WINNER)\\n                shadowWinner = _submissionID;\\n\\n            round.feeRewards += round.paidFees[_submissionID];\\n            round.successfullyPaid += round.paidFees[_submissionID];\\n        }\\n\\n        // Reimburse leftover ETH.\\n        msg.sender.send(remainingETH);\\n        reservedETH += contribution;\\n\\n        if (shadowWinner != NO_SHADOW_WINNER && shadowWinner != _submissionID && round.hasPaid[_submissionID]) {\\n            // Two sides are fully funded.\\n            shadowWinner = NO_SHADOW_WINNER;\\n            arbitrator.appeal.value(appealCost)(session.disputeID, arbitratorExtraData);\\n            session.rounds.length++;\\n            round.feeRewards = round.feeRewards.subCap(appealCost);\\n            reservedETH = reservedETH.subCap(appealCost);\\n        }\\n    }\\n\\n    /** @dev Returns the contribution value and remainder from available ETH and required amount.\\n     *  @param _available The amount of ETH available for the contribution.\\n     *  @param _requiredAmount The amount of ETH required for the contribution.\\n     *  @return taken The amount of ETH taken.\\n     *  @return remainder The amount of ETH left from the contribution.\\n     */\\n    function calculateContribution(uint _available, uint _requiredAmount)\\n        internal\\n        pure\\n        returns(uint taken, uint remainder)\\n    {\\n        if (_requiredAmount > _available)\\n            taken = _available;\\n        else {\\n            taken = _requiredAmount;\\n            remainder = _available - _requiredAmount;\\n        }\\n    }\\n\\n    /** @dev Sends the fee stake rewards and reimbursements proportional to the contributions made to the winner of a dispute. Reimburses contributions if there is no winner.\\n     *  @param _beneficiary The address that made contributions to a request.\\n     *  @param _session The session from which to withdraw.\\n     *  @param _round The round from which to withdraw.\\n     *  @param _submissionID Submission's index in the array of submitted lists of the session which the beneficiary contributed to.\\n     */\\n    function withdrawFeesAndRewards(address _beneficiary, uint _session, uint _round, uint _submissionID) public {\\n        Session storage session = sessions[_session];\\n        Round storage round = session.rounds[_round];\\n        require(session.status == Status.Resolved, \\\"Session has an ongoing dispute.\\\");\\n        uint reward;\\n        // Allow to reimburse if funding of the round was unsuccessful.\\n        if (!round.hasPaid[_submissionID]) {\\n            reward = round.contributions[_beneficiary][_submissionID];\\n        } else if (session.ruling == 0 || !round.hasPaid[session.ruling - 1]) {\\n            // Reimburse unspent fees proportionally if there is no winner and loser. Also applies to the situation where the ultimate winner didn't pay appeal fees fully.\\n            reward = round.successfullyPaid > 0\\n                ? (round.contributions[_beneficiary][_submissionID] * round.feeRewards) / round.successfullyPaid\\n                : 0;\\n        } else if (session.ruling - 1 == _submissionID) {\\n            // Reward the winner. Subtract 1 from ruling to sync submissionID with arbitrator's choice.\\n            reward = round.paidFees[_submissionID] > 0\\n                ? (round.contributions[_beneficiary][_submissionID] * round.feeRewards) / round.paidFees[_submissionID]\\n                : 0;\\n        }\\n        round.contributions[_beneficiary][_submissionID] = 0;\\n\\n        _beneficiary.send(reward); // It is the user responsibility to accept ETH.\\n        reservedETH = reservedETH.subCap(reward);\\n    }\\n\\n    /** @dev Gives a ruling for a dispute. Must be called by the arbitrator.\\n     *  The purpose of this function is to ensure that the address calling it has the right to rule on the contract.\\n     *  @param _disputeID ID of the dispute in the Arbitrator contract.\\n     *  @param _ruling Ruling given by the arbitrator. Note that 0 is reserved for \\\"Refuse to arbitrate\\\".\\n     */\\n    function rule(uint _disputeID, uint _ruling) public {\\n        Session storage session = sessions[sessions.length - 1];\\n        require(msg.sender == address(arbitrator), \\\"Must be called by the arbitrator.\\\");\\n        require(session.status == Status.DisputeCreated, \\\"The dispute has already been resolved.\\\");\\n        require(_ruling <= session.submittedLists.length, \\\"Ruling is out of bounds.\\\");\\n\\n        if (shadowWinner != NO_SHADOW_WINNER) {\\n            emit Ruling(Arbitrator(msg.sender), _disputeID, shadowWinner + 1);\\n            executeRuling(_disputeID, shadowWinner + 1);\\n        } else {\\n            emit Ruling(Arbitrator(msg.sender), _disputeID, _ruling);\\n            executeRuling(_disputeID, _ruling);\\n        }\\n    }\\n\\n    /** @dev Allows to submit evidence for a current session.\\n     *  @param _evidenceURI Link to evidence.\\n     */\\n    function submitEvidence(string _evidenceURI) public {\\n        if (bytes(_evidenceURI).length > 0)\\n            emit Evidence(arbitrator, sessions.length - 1, msg.sender, _evidenceURI);\\n    }\\n\\n    /** @dev Executes a ruling of a dispute.\\n     *  @param _disputeID ID of the dispute in the Arbitrator contract.\\n     *  @param _ruling Ruling given by the arbitrator. Note that 0 is reserved for \\\"Refuse to arbitrate\\\".\\n     *  If the final ruling is \\\"0\\\" nothing is approved and deposits will stay locked in the contract.\\n     */\\n    function executeRuling(uint _disputeID, uint _ruling) internal {\\n        Session storage session = sessions[sessions.length - 1];\\n        if (_ruling != 0) {\\n            Submission storage submission = submissions[session.submittedLists[_ruling - 1]];\\n            submission.approved = true;\\n            submission.approvalTime = now;\\n            submission.submitter.send(session.sumDeposit);\\n        }\\n        // If the ruling is \\\"0\\\" the reserved funds of this session become expendable.\\n        reservedETH = reservedETH.subCap(session.sumDeposit);\\n\\n        session.sumDeposit = 0;\\n        shadowWinner = NO_SHADOW_WINNER;\\n        lastApprovalTime = now;\\n        session.status = Status.Resolved;\\n        session.ruling = _ruling;\\n        sessions.length++;\\n    }\\n\\n    /** @dev Executes selected transactions of the list. UNTRUSTED.\\n     *  @param _listID The index of the transaction list in the array of lists.\\n     *  @param _cursor Index of the transaction from which to start executing.\\n     *  @param _count Number of transactions to execute. Executes until the end if set to \\\"0\\\" or number higher than number of transactions in the list.\\n     */\\n    function executeTransactionList(uint _listID, uint _cursor, uint _count) public {\\n        Submission storage submission = submissions[_listID];\\n        require(submission.approved, \\\"Can't execute list that wasn't approved.\\\");\\n        require(now - submission.approvalTime <= executionTimeout, \\\"Time to execute the transaction list has passed.\\\");\\n        for (uint i = _cursor; i < submission.txs.length && (_count == 0 || i < _cursor + _count); i++) {\\n            Transaction storage transaction = submission.txs[i];\\n            uint expendableFunds = getExpendableFunds();\\n            if (!transaction.executed && transaction.value <= expendableFunds) {\\n                bool callResult = transaction.target.call.value(transaction.value)(transaction.data); // solium-disable-line security/no-call-value\\n                // An extra check to prevent re-entrancy through target call.\\n                if (callResult == true) {\\n                    require(!transaction.executed, \\\"This transaction has already been executed.\\\");\\n                    transaction.executed = true;\\n                }\\n            }\\n        }\\n    }\\n\\n    /** @dev Fallback function to receive funds for the execution of transactions.\\n     */\\n    function () public payable {}\\n\\n    /** @dev Gets the sum of contract funds that are used for the execution of transactions.\\n     *  @return Contract balance without reserved ETH.\\n     */\\n    function getExpendableFunds() public view returns (uint) {\\n        return address(this).balance.subCap(reservedETH);\\n    }\\n\\n    /** @dev Gets the info of the specified transaction in the specified list.\\n     *  @param _listID The index of the transaction list in the array of lists.\\n     *  @param _transactionIndex The index of the transaction.\\n     *  @return The transaction info.\\n     */\\n    function getTransactionInfo(uint _listID, uint _transactionIndex)\\n        public\\n        view\\n        returns (\\n            address target,\\n            uint value,\\n            bytes data,\\n            bool executed\\n        )\\n    {\\n        Submission storage submission = submissions[_listID];\\n        Transaction storage transaction = submission.txs[_transactionIndex];\\n        return (\\n            transaction.target,\\n            transaction.value,\\n            transaction.data,\\n            transaction.executed\\n        );\\n    }\\n\\n    /** @dev Gets the contributions made by a party for a given round of a session.\\n     *  Note that this function is O(n), where n is the number of submissions in the session. This could exceed the gas limit, therefore this function should only be used for interface display and not by other contracts.\\n     *  @param _session The ID of the session.\\n     *  @param _round The position of the round.\\n     *  @param _contributor The address of the contributor.\\n     *  @return The contributions.\\n     */\\n    function getContributions(\\n        uint _session,\\n        uint _round,\\n        address _contributor\\n    ) public view returns(uint[] contributions) {\\n        Session storage session = sessions[_session];\\n        Round storage round = session.rounds[_round];\\n\\n        contributions = new uint[](session.submittedLists.length);\\n        for (uint i = 0; i < contributions.length; i++) {\\n            contributions[i] = round.contributions[_contributor][i];\\n        }\\n    }\\n\\n    /** @dev Gets the information on a round of a session.\\n     *  Note that this function is O(n), where n is the number of submissions in the session. This could exceed the gas limit, therefore this function should only be used for interface display and not by other contracts.\\n     *  @param _session The ID of the session.\\n     *  @param _round The round to be queried.\\n     *  @return The round information.\\n     */\\n    function getRoundInfo(uint _session, uint _round)\\n        public\\n        view\\n        returns (\\n            uint[] paidFees,\\n            bool[] hasPaid,\\n            uint feeRewards,\\n            uint successfullyPaid\\n        )\\n    {\\n        Session storage session = sessions[_session];\\n        Round storage round = session.rounds[_round];\\n        paidFees = new uint[](session.submittedLists.length);\\n        hasPaid = new bool[](session.submittedLists.length);\\n\\n        for (uint i = 0; i < session.submittedLists.length; i++) {\\n            paidFees[i] = round.paidFees[i];\\n            hasPaid[i] = round.hasPaid[i];\\n        }\\n\\n        feeRewards = round.feeRewards;\\n        successfullyPaid = round.successfullyPaid;\\n    }\\n\\n    /** @dev Gets the array of submitted lists in the session.\\n     *  Note that this function is O(n), where n is the number of submissions in the session. This could exceed the gas limit, therefore this function should only be used for interface display and not by other contracts.\\n     *  @param _session The ID of the session.\\n     *  @return submittedLists Indexes of lists that were submitted during the session.\\n     */\\n    function getSubmittedLists(uint _session) public view returns (uint[] submittedLists) {\\n        Session storage session = sessions[_session];\\n        submittedLists = session.submittedLists;\\n    }\\n\\n    /** @dev Gets the number of transactions in the list.\\n     *  @param _listID The index of the transaction list in the array of lists.\\n     *  @return txCount The number of transactions in the list.\\n     */\\n    function getNumberOfTransactions(uint _listID) public view returns (uint txCount) {\\n        Submission storage submission = submissions[_listID];\\n        return submission.txs.length;\\n    }\\n\\n    /** @dev Gets the number of lists created in contract's lifetime.\\n     *  @return The number of created lists.\\n     */\\n    function getNumberOfCreatedLists() public view returns (uint) {\\n        return submissions.length;\\n    }\\n\\n    /** @dev Gets the number of the ongoing session.\\n     *  @return The number of the ongoing session.\\n     */\\n    function getCurrentSessionNumber() public view returns (uint) {\\n        return sessions.length - 1;\\n    }\\n\\n    /** @dev Gets the number rounds in ongoing session.\\n     *  @return The number of rounds in session.\\n     */\\n    function getSessionRoundsNumber(uint _session) public view returns (uint) {\\n        Session storage session = sessions[_session];\\n        return session.rounds.length;\\n    }\\n}\\n\",\"keccak256\":\"0xdf76c1577f934dc378cce987f000d89e2b7ca70b589d92a14b78aa08ff4d184d\"}},\"version\":1}",
+  "bytecode": "0x60806040523480156200001157600080fd5b5060405162004272380380620042728339810160409081528151602080840151928401516060850151608086015160a087015160c088015160e08901516101008a015160008054600160a060020a031916600160a060020a038b1617905598909901805197999098959794969395929491939092918a918a916200009c916001919084019062000103565b505042600b5550600487905560058690556006859055600784905560088390556009829055600a819055600019600c55600f805490620000e0906001830162000188565b505060028054600160a060020a0319163317905550620002ad9650505050505050565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f106200014657805160ff191683800117855562000176565b8280016001018555821562000176579182015b828111156200017657825182559160200191906001019062000159565b5062000184929150620001bc565b5090565b815481835581811115620001b757600802816008028360005260206000209182019101620001b79190620001dc565b505050565b620001d991905b80821115620001845760008155600101620001c3565b90565b620001d991905b8082111562000184576000620001fa828262000240565b600182016000905560028201600090556003820160006200021c919062000266565b5060006004820181905560058201805460ff191690556007820155600801620001e3565b508054600082556005029060005260206000209081019062000263919062000286565b50565b5080546000825590600052602060002090810190620002639190620001bc565b620001d991905b80821115620001845760006002820181905560048201556005016200028d565b613fb580620002bd6000396000f3006080604052600436106102195763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166302c891c5811461021b578063055287151461023b5780630c7ac7b61461025357806321cea538146102dd57806322b52d6614610345578063246c76df1461036c57806324baacc714610384578063311a6c561461039c578063325df188146103b757806346047838146103cf578063568586191461050557806368c76ffd1461052f5780636c0b7e71146105565780636cc6cde11461056b5780636cdc090f1461059c5780636cf39c2b146105b157806377b9fda8146105cf57806383c4b7a3146105e457806384e3a3111461063c5780638a9bb02a1461065157806390765279146107135780639244c7041461076c578063953d6651146107815780639543c9fd14610799578063965394ab146107b15780639b3ac998146107c65780639c15d1a2146107db578063a3c595c9146107f0578063a446ff57146108ae578063ad73349e146108b9578063b512570014610910578063b6cd08c614610925578063b6dc775414610940578063ba7079ca14610955578063bac91e2e146109bc578063bb0b86ff14610a15578063c4bd851914610a2a578063cc2bcdb414610a3f578063ce1d8ab214610a57578063d5f3948814610a6c578063d661dd3114610a81578063dc17bbdb14610a96578063f730c07f14610aae578063f8d18b0414610ac3575b005b34801561022757600080fd5b506102196004803560248101910135610adb565b34801561024757600080fd5b50610219600435610bc9565b34801561025f57600080fd5b50610268610c22565b6040805160208082528351818301528351919283929083019185019080838360005b838110156102a257818101518382015260200161028a565b50505050905090810190601f1680156102cf5780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b3480156102e957600080fd5b506102f5600435610caf565b60408051602080825283518183015283519192839290830191858101910280838360005b83811015610331578181015183820152602001610319565b505050509050019250505060405180910390f35b34801561035157600080fd5b5061035a610d2d565b60408051918252519081900360200190f35b34801561037857600080fd5b50610219600435610d33565b34801561039057600080fd5b50610219600435610d8c565b3480156103a857600080fd5b50610219600435602435610de5565b3480156103c357600080fd5b5061021960043561100b565b6040805160206004803580820135838102808601850190965280855261021995369593946024949385019291829185019084908082843750506040805187358901803560208181028481018201909552818452989b9a99890198929750908201955093508392508501908490808284375050604080516020601f89358b018035918201839004830284018301909452808352979a999881019791965091820194509250829150840183828082843750506040805187358901803560208181028481018201909552818452989b9a99890198929750908201955093508392508501908490808284375050604080516020601f89358b018035918201839004830284018301909452808352979a9998810197919650918201945092508291508401838280828437509497506110649650505050505050565b34801561051157600080fd5b50610219600160a060020a0360043516602435604435606435611a1f565b34801561053b57600080fd5b506102f5600435602435600160a060020a0360443516611c69565b34801561056257600080fd5b5061035a611d42565b34801561057757600080fd5b50610580611d4d565b60408051600160a060020a039092168252519081900360200190f35b3480156105a857600080fd5b5061035a611d5c565b3480156105bd57600080fd5b50610219600435602435604435611d62565b3480156105db57600080fd5b5061035a61205d565b3480156105f057600080fd5b506105fc600435612063565b6040518086815260200185815260200184815260200183600281111561061e57fe5b60ff1681526020018281526020019550505050505060405180910390f35b34801561064857600080fd5b5061035a6120ab565b34801561065d57600080fd5b5061066c6004356024356120b1565b604051808060200180602001858152602001848152602001838103835287818151815260200191508051906020019060200280838360005b838110156106bc5781810151838201526020016106a4565b50505050905001838103825286818151815260200191508051906020019060200280838360005b838110156106fb5781810151838201526020016106e3565b50505050905001965050505050505060405180910390f35b34801561071f57600080fd5b506040805160206004803580820135601f81018490048402850184019095528484526102199436949293602493928401919081908401838280828437509497506121f19650505050505050565b34801561077857600080fd5b5061021961234c565b34801561078d57600080fd5b5061021960043561288a565b3480156107a557600080fd5b5061021960043561296c565b3480156107bd57600080fd5b5061035a6129c5565b3480156107d257600080fd5b5061035a6129cb565b3480156107e757600080fd5b5061035a6129d1565b3480156107fc57600080fd5b5061080b6004356024356129d7565b6040518085600160a060020a0316600160a060020a031681526020018481526020018060200183151515158152602001828103825284818151815260200191508051906020019080838360005b83811015610870578181015183820152602001610858565b50505050905090810190601f16801561089d5780820380516001836020036101000a031916815260200191505b509550505050505060405180910390f35b610219600435612aeb565b3480156108c557600080fd5b506108d1600435613404565b60408051600160a060020a03909716875260208701959095528585019390935260608501919091521515608084015260a0830152519081900360c00190f35b34801561091c57600080fd5b5061035a613458565b34801561093157600080fd5b50610219600435602435613475565b34801561094c57600080fd5b5061035a6137ac565b34801561096157600080fd5b5060408051602060046024803582810135601f8101859004850286018501909652858552610219958335600160a060020a03169536956044949193909101919081908401838280828437509497506137b29650505050505050565b3480156109c857600080fd5b506040805160206004803580820135601f81018490048402850184019095528484526102199436949293602493928401919081908401838280828437509497506138c29650505050505050565b348015610a2157600080fd5b5061035a613984565b348015610a3657600080fd5b5061035a61398a565b348015610a4b57600080fd5b50610219600435613990565b348015610a6357600080fd5b5061035a6139e9565b348015610a7857600080fd5b506105806139ef565b348015610a8d57600080fd5b5061035a6139fe565b348015610aa257600080fd5b5061035a600435613a04565b348015610aba57600080fd5b5061035a613a31565b348015610acf57600080fd5b5061035a600435613a37565b600254600160a060020a03163314610b63576040805160e560020a62461bcd02815260206004820152603860248201527f43616e206f6e6c792062652063616c6c6564206f6e636520627920746865206460448201527f65706c6f796572206f662074686520636f6e74726163742e0000000000000000606482015290519081900360840190fd5b60028054600160a060020a0319169055600d5460408051602080825281018490527f61606860eb6c87306811e2695215385101daab53bd6ab4e9f9049aead9363c7d91859185918190810184848082843760405192018290039550909350505050a25050565b303314610c1d576040805160e560020a62461bcd0281526020600482015260236024820152600080516020613f6a833981519152604482015260e960020a6234b99702606482015290519081900360840190fd5b600a55565b60018054604080516020600284861615610100026000190190941693909304601f81018490048402820184019092528181529291830182828015610ca75780601f10610c7c57610100808354040283529160200191610ca7565b820191906000526020600020905b815481529060010190602001808311610c8a57829003601f168201915b505050505081565b60606000600f83815481101515610cc257fe5b9060005260206000209060080201905080600301805480602002602001604051908101604052809291908181526020018280548015610d2057602002820191906000526020600020905b815481526020019060010190808311610d0c575b5050505050915050919050565b60065481565b303314610d87576040805160e560020a62461bcd0281526020600482015260236024820152600080516020613f6a833981519152604482015260e960020a6234b99702606482015290519081900360840190fd5b600755565b303314610de0576040805160e560020a62461bcd0281526020600482015260236024820152600080516020613f6a833981519152604482015260e960020a6234b99702606482015290519081900360840190fd5b600455565b600f8054600091906000198101908110610dfb57fe5b60009182526020822091546008919091029091019150600160a060020a03163314610e7d576040805160e560020a62461bcd02815260206004820152602160248201527f4d7573742062652063616c6c6564206279207468652061726269747261746f72604482015260f960020a601702606482015290519081900360840190fd5b6001600582015460ff166002811115610e9257fe5b14610f0d576040805160e560020a62461bcd02815260206004820152602660248201527f54686520646973707574652068617320616c7265616479206265656e2072657360448201527f6f6c7665642e0000000000000000000000000000000000000000000000000000606482015290519081900360840190fd5b6003810154821115610f69576040805160e560020a62461bcd02815260206004820152601860248201527f52756c696e67206973206f7574206f6620626f756e64732e0000000000000000604482015290519081900360640190fd5b600c5460001914610fc557600c54604080516001909201825251849133917f394027a5fa6e098a1191094d1719d6929b9abc535fcc0c8f448d6a4e756222769181900360200190a3610fc083600c54600101613a61565b611006565b604080518381529051849133917f394027a5fa6e098a1191094d1719d6929b9abc535fcc0c8f448d6a4e756222769181900360200190a36110068383613a61565b505050565b30331461105f576040805160e560020a62461bcd0281526020600482015260236024820152600080516020613f6a833981519152604482015260e960020a6234b99702606482015290519081900360840190fd5b600955565b60008061106f613bf6565b6000806060600080600080600f6001600f805490500381548110151561109157fe5b90600052602060002090600802016007015490506110ba81600554613b6590919063ffffffff16565b600b5442031115611103576040805160e560020a62461bcd02815260206004820152601a6024820152600080516020613f4a833981519152604482015290519081900360640190fd5b8d518f51146111a9576040805160e560020a62461bcd028152602060048201526044602482018190527f496e636f727265637420696e7075742e2054617267657420616e642076616c75908201527f6520617272617973206d757374206265206f66207468652073616d65206c656e60648201527f6774682e00000000000000000000000000000000000000000000000000000000608482015290519081900360a40190fd5b8b518f511461124e576040805160e560020a62461bcd02815260206004820152604760248201527f496e636f727265637420696e7075742e2054617267657420616e64206461746160448201527f73697a6520617272617973206d757374206265206f66207468652073616d652060648201527f6c656e6774682e00000000000000000000000000000000000000000000000000608482015290519081900360a40190fd5b600f8054600019810190811061126057fe5b90600052602060002090600802019950600e8080548091906001016112859190613c15565b8154811061128f57fe5b6000918252602080832060079092029091018054600160a060020a03191633178155915460405160e060020a63f7434ea9028152600481019283526001805460026000198284161561010002019091160460248301819052949d50600160a060020a03929092169363f7434ea993918291604490910190849080156113555780601f1061132a57610100808354040283529160200191611355565b820191906000526020600020905b81548152906001019060200180831161133857829003601f168201915b505092505050602060405180830381600087803b15801561137557600080fd5b505af1158015611389573d6000803e3d6000fd5b505050506040513d602081101561139f57600080fd5b50516004540160018a01819055341015611429576040805160e560020a62461bcd02815260206004820152602860248201527f5375626d697373696f6e206465706f736974206d75737420626520706169642060448201527f696e2066756c6c2e000000000000000000000000000000000000000000000000606482015290519081900360840190fd5b600095505b8e51861015611803578b8681518110151561144557fe5b906020019060200201516040519080825280601f01601f19166020018201604052801561147c578160200160208202803883390190505b5060028a018054919650906114948260018301613c41565b8154811061149e57fe5b906000526020600020906004020193508e868151811015156114bc57fe5b60209081029190910101518454600160a060020a031916600160a060020a039091161784558d518e90879081106114ef57fe5b602090810290910101516001850155600092505b8b8681518110151561151157fe5b9060200190602002015183101561158e578c83880181518110151561153257fe5b90602001015160f860020a900460f860020a02858481518110151561155357fe5b9060200101907effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1916908160001a905350600190920191611503565b84516115a39060028601906020880190613c6d565b508b868151811015156115b257fe5b90602001906020020151870196508360000160009054906101000a9004600160a060020a03168460010154856002016040516020018084600160a060020a0316600160a060020a03166c010000000000000000000000000281526014018381526020018280546001816001161561010002031660029004801561166c5780601f1061164a57610100808354040283529182019161166c565b820191906000526020600020905b815481529060010190602001808311611658575b505093505050506040516020818303038152906040526040518082805190602001908083835b602083106116b15780518252601f199092019160209182019101611692565b51815160001960209485036101000a0190811690199091161790526040805192909401829003909120928d018390528c0151909110159250611766915050576040805160e560020a62461bcd02815260206004820152602860248201527f546865207472616e73616374696f6e732061726520696e20696e636f7272656360448201527f74206f726465722e000000000000000000000000000000000000000000000000606482015290519081900360840190fd5b604080890151895182516020818101939093528084019190915282518082038401815260609091019283905280519092918291908401908083835b602083106117c05780518252601f1990920191602091820191016117a1565b51815160209384036101000a600019018019909216911617905260408051949092018490039093208d528c0151918c01919091525050506001959095019461142e565b8751600090815260068b01602052604090205460ff1615611894576040805160e560020a62461bcd02815260206004820152602c60248201527f5468652073616d65206c6973742077617320616c7265616479207375626d697460448201527f746564206561726c6965722e0000000000000000000000000000000000000000606482015290519081900360840190fd5b8751600090815260068b01602090815260408220805460ff191660019081179091558a5160038d810191909155426004808f01919091558d830154908f0180549091019055600e54908e018054808401825581865293909420600019919091019201919091559054141561191c57600b5461191690429063ffffffff613b8616565b60078b01555b6001600f805490500333600160a060020a03166001600e80549050037f1a700b4f7df255aaf8c91c8b05abf0eab596e467dc17ef76fe4afc12541012488e6040518080602001828103825283818151815260200191508051906020019080838360005b8381101561199757818101518382015260200161197f565b50505050905090810190601f1680156119c45780820380516001836020036101000a031916815260200191505b509250505060405180910390a48860010154340391506000821115611a0057604051339083156108fc029084906000818181858888f150505050505b5050506001909501546003805490910190555050505050505050505050565b6000806000600f86815481101515611a3357fe5b906000526020600020906008020192508260000185815481101515611a5457fe5b6000918252602090912060059091020191506002600584015460ff166002811115611a7b57fe5b14611ad0576040805160e560020a62461bcd02815260206004820152601f60248201527f53657373696f6e2068617320616e206f6e676f696e6720646973707574652e00604482015290519081900360640190fd5b600084815260018301602052604090205460ff161515611b165750600160a060020a03861660009081526003820160209081526040808320868452909152902054611c08565b60018301541580611b415750600183810154600019016000908152908301602052604090205460ff16155b15611b9c576000826004015411611b59576000611b95565b60048201546002830154600160a060020a0389166000908152600385016020908152604080832089845290915290205402811515611b9357fe5b045b9050611c08565b8360018460010154031415611c085760008481526020839052604081205411611bc6576000611c05565b600084815260208381526040808320546002860154600160a060020a038c16855260038701845282852089865290935292205402811515611c0357fe5b045b90505b600160a060020a038716600081815260038401602090815260408083208884529091528082208290555183156108fc0291849190818181858888f15050600354611c5d9350915083905063ffffffff613b8616565b60035550505050505050565b60606000806000600f87815481101515611c7f57fe5b906000526020600020906008020192508260000186815481101515611ca057fe5b906000526020600020906005020191508260030180549050604051908082528060200260200182016040528015611ce1578160200160208202803883390190505b509350600090505b8351811015611d3857600160a060020a038516600090815260038301602090815260408083208484529091529020548451859083908110611d2657fe5b60209081029091010152600101611ce9565b5050509392505050565b600f54600019015b90565b600054600160a060020a031681565b600d5481565b6000806000806000600e88815481101515611d7957fe5b60009182526020909120600790910201600581015490955060ff161515611e10576040805160e560020a62461bcd02815260206004820152602860248201527f43616e27742065786563757465206c6973742074686174207761736e2774206160448201527f7070726f7665642e000000000000000000000000000000000000000000000000606482015290519081900360840190fd5b600680549086015442031115611e96576040805160e560020a62461bcd02815260206004820152603060248201527f54696d6520746f206578656375746520746865207472616e73616374696f6e2060448201527f6c69737420686173207061737365642e00000000000000000000000000000000606482015290519081900360840190fd5b8693505b600285015484108015611eb65750851580611eb6575085870184105b156120535760028501805485908110611ecb57fe5b90600052602060002090600402019250611ee3613458565b600384015490925060ff16158015611eff575081836001015411155b15612048578260000160009054906101000a9004600160a060020a0316600160a060020a03168360010154846002016040518082805460018160011615610100020316600290048015611f935780601f10611f6857610100808354040283529160200191611f93565b820191906000526020600020905b815481529060010190602001808311611f7657829003601f168201915b505091505060006040518083038185875af193505050508015156001141561204857600383015460ff1615612038576040805160e560020a62461bcd02815260206004820152602b60248201527f54686973207472616e73616374696f6e2068617320616c72656164792062656560448201527f6e2065786563757465642e000000000000000000000000000000000000000000606482015290519081900360840190fd5b60038301805460ff191660011790555b600190930192611e9a565b5050505050505050565b60035481565b600f80548290811061207157fe5b6000918252602090912060089091020160018101546002820154600483015460058401546007909401549294509092909160ff9091169085565b600c5481565b6060806000806000806000600f898154811015156120cb57fe5b9060005260206000209060080201925082600001888154811015156120ec57fe5b90600052602060002090600502019150826003018054905060405190808252806020026020018201604052801561212d578160200160208202803883390190505b506003840154604080518281526020808402820101909152919850801561215e578160200160208202803883390190505b509550600090505b60038301548110156121d957600081815260208390526040902054875188908390811061218f57fe5b60209081029091018101919091526000828152600184019091526040902054865160ff909116908790839081106121c257fe5b911515602092830290910190910152600101612166565b50600281015460049091015495989497509550505050565b303314612245576040805160e560020a62461bcd0281526020600482015260236024820152600080516020613f6a833981519152604482015260e960020a6234b99702606482015290519081900360840190fd5b600254600160a060020a0316156122a6576040805160e560020a62461bcd02815260206004820152601960248201527f4d65746165766964656e636520776173206e6f74207365742e00000000000000604482015290519081900360640190fd5b600d80546001019081905560408051602080825284518183015284517f61606860eb6c87306811e2695215385101daab53bd6ab4e9f9049aead9363c7d938693928392918301919085019080838360005b8381101561230f5781810151838201526020016122f7565b50505050905090810190601f16801561233c5780820380516001836020036101000a031916815260200191505b509250505060405180910390a250565b6000806000806000600f6001600f805490500381548110151561236b57fe5b906000526020600020906008020160070154905061239481600554613b6590919063ffffffff16565b600b54420311612414576040805160e560020a62461bcd02815260206004820152602260248201527f417070726f76616c2074696d6520686173206e6f74207374617274656420796560448201527f742e000000000000000000000000000000000000000000000000000000000000606482015290519081900360840190fd5b600f8054600019810190811061242657fe5b6000918252602082206008909102019550600586015460ff16600281111561244a57fe5b146124c5576040805160e560020a62461bcd02815260206004820152603760248201527f43616e277420617070726f7665207472616e73616374696f6e206c697374207760448201527f68696c652064697370757465206973206163746976652e000000000000000000606482015290519081900360840190fd5b600385015415156124fb5742600b5560058501805460ff19166002179055600f8054906124f59060018301613ceb565b50612883565b6003850154600114156125cd57600e85600301600081548110151561251c57fe5b906000526020600020015481548110151561253357fe5b6000918252602082206005600790920201908101805460ff19166001179055426006820155600487018054908390558154604051929750909550600160a060020a03169185156108fc02918691818181858888f1505042600b5550505060058501805460ff19166002179055600f8054906125b19060018301613ceb565b506003546125c5908463ffffffff613b8616565b600355612883565b60058501805460ff1916600190811790915560005460405160e060020a63f7434ea9028152602060048201908152835460026101008287161502600019019091160460248301819052600160a060020a039093169363f7434ea99390928291604490910190849080156126815780601f1061265657610100808354040283529160200191612681565b820191906000526020600020905b81548152906001019060200180831161266457829003601f168201915b505092505050602060405180830381600087803b1580156126a157600080fd5b505af11580156126b5573d6000803e3d6000fd5b505050506040513d60208110156126cb57600080fd5b50516000546003870154604080517fc13517e100000000000000000000000000000000000000000000000000000000815260048101838152602482019283526001805460026000198284161561010002019091160460448401819052969850600160a060020a039095169563c13517e19589959490939091606490910190849080156127985780601f1061276d57610100808354040283529160200191612798565b820191906000526020600020905b81548152906001019060200180831161277b57829003601f168201915b505093505050506020604051808303818588803b1580156127b857600080fd5b505af11580156127cc573d6000803e3d6000fd5b50505050506040513d60208110156127e357600080fd5b5051600286015584546127f98660018301613d17565b50600485015461280f908363ffffffff613b8616565b6004860155600354612827908363ffffffff613b8616565b6003556002850154600054600d54600f546040805192835260001990910160208301528051600160a060020a03909316927f74baab670a4015ab2f1b467c5252a96141a2573f2908e58a92081e80d3cfde3d9281900390910190a35b5050505050565b3033146128de576040805160e560020a62461bcd0281526020600482015260236024820152600080516020613f6a833981519152604482015260e960020a6234b99702606482015290519081900360840190fd5b600f80546000919060001981019081106128f457fe5b906000526020600020906008020160070154905061291d81600554613b6590919063ffffffff16565b600b5442031115612966576040805160e560020a62461bcd02815260206004820152601a6024820152600080516020613f4a833981519152604482015290519081900360640190fd5b50600555565b3033146129c0576040805160e560020a62461bcd0281526020600482015260236024820152600080516020613f6a833981519152604482015260e960020a6234b99702606482015290519081900360840190fd5b600855565b600a5481565b60095481565b60075481565b60008060606000806000600e888154811015156129f057fe5b906000526020600020906007020191508160020187815481101515612a1157fe5b60009182526020918290206004919091020180546001808301546003840154600280860180546040805161010097831615979097026000190190911692909204601f8101899004890286018901909252818552959750600160a060020a039094169591949360ff9091169291849190830182828015612ad15780601f10612aa657610100808354040283529160200191612ad1565b820191906000526020600020905b815481529060010190602001808311612ab457829003601f168201915b505050505091509550955095509550505092959194509250565b600080600080600080600080600080600f6001600f8054905003815481101515612b1157fe5b9060005260206000209060080201995060018a60030180549050038b11151515612b85576040805160e560020a62461bcd02815260206004820152601e60248201527f5375626d697373696f6e4944206973206f7574206f6620626f756e64732e0000604482015290519081900360640190fd5b600160058b015460ff166002811115612b9a57fe5b14612bef576040805160e560020a62461bcd02815260206004820152601560248201527f4e6f206469737075746520746f2061707065616c2e0000000000000000000000604482015290519081900360640190fd5b60016000805460028d0154604080517f10f169e8000000000000000000000000000000000000000000000000000000008152600481019290925251600160a060020a03909216926310f169e8926024808401936020939083900390910190829087803b158015612c5e57600080fd5b505af1158015612c72573d6000803e3d6000fd5b505050506040513d6020811015612c8857600080fd5b50516002811115612c9557fe5b14612cea576040805160e560020a62461bcd02815260206004820152601a60248201527f44697370757465206973206e6f742061707065616c61626c652e000000000000604482015290519081900360640190fd5b6000805460028c0154604080517fafe15cfb00000000000000000000000000000000000000000000000000000000815260048101929092528051600160a060020a039093169363afe15cfb936024808501949192918390030190829087803b158015612d5557600080fd5b505af1158015612d69573d6000803e3d6000fd5b505050506040513d6040811015612d7f57600080fd5b5080516020909101519099509750428911801590612d9c57508742105b1515612e18576040805160e560020a62461bcd02815260206004820152603260248201527f41707065616c2066656573206d75737420626520706169642077697468696e2060448201527f7468652061707065616c20706572696f642e0000000000000000000000000000606482015290519081900360840190fd5b6000805460028c0154604080517f1c3db16d000000000000000000000000000000000000000000000000000000008152600481019290925251600160a060020a0390921692631c3db16d926024808401936020939083900390910190829087803b158015612e8557600080fd5b505af1158015612e99573d6000803e3d6000fd5b505050506040513d6020811015612eaf57600080fd5b5051965060018b01871415612ec8576009549550612f64565b861515612ed9576008549550612f64565b600289890304428a900310612f5e576040805160e560020a62461bcd02815260206004820152603e60248201527f546865206c6f736572206d7573742070617920647572696e672074686520666960448201527f7273742068616c66206f66207468652061707065616c20706572696f642e0000606482015290519081900360840190fd5b600a5495505b89548a906000198101908110612f7657fe5b600091825260208083208e84526001600590930201918201905260409091205490955060ff1615612ffe576040805160e560020a62461bcd02815260206004820152602160248201527f41707065616c206665652068617320616c7265616479206265656e2070616964604482015260f960020a601702606482015290519081900360840190fd5b6000546002808c0154604080517ff23f16e6000000000000000000000000000000000000000000000000000000008152600481018381526024820192835260018054600019818316156101000201169590950460448301819052600160a060020a039096169563f23f16e69593919260640190849080156130c05780601f10613095576101008083540402835291602001916130c0565b820191906000526020600020905b8154815290600101906020018083116130a357829003601f168201915b50509350505050602060405180830381600087803b1580156130e157600080fd5b505af11580156130f5573d6000803e3d6000fd5b505050506040513d602081101561310b57600080fd5b5051935061313d612710613125868963ffffffff613ba316565b81151561312e57fe5b8691900463ffffffff613b6516565b60008c81526020879052604090205490935061316b90349061316690869063ffffffff613b8616565b613bd4565b80925081935050508185600301600033600160a060020a0316600160a060020a0316815260200190815260200160002060008d815260200190815260200160002060008282540192505081905550818560000160008d815260200190815260200160002060008282540192505081905550828560000160008d8152602001908152602001600020541015156132515760008b815260018681016020526040909120805460ff19169091179055600c54600019141561322957600c8b90555b60008b8152602086905260409020805460028701805490910190555460048601805490910190555b604051339082156108fc029083906000818181858888f1505060038054860190555050600c54600019148015915061328b57508a600c5414155b80156132a7575060008b815260018601602052604090205460ff165b156133f757600019600c8190556000546002808d0154604080517f49912f8800000000000000000000000000000000000000000000000000000000815260048101838152602482019283526001805480821615610100029098019097169490940460448201819052600160a060020a03909516956349912f88958b9591939192606401908490801561337a5780601f1061334f5761010080835404028352916020019161337a565b820191906000526020600020905b81548152906001019060200180831161335d57829003601f168201915b505093505050506000604051808303818588803b15801561339a57600080fd5b505af11580156133ae573d6000803e3d6000fd5b50508c5492506133c591508c905060018301613d17565b5060028501546133db908563ffffffff613b8616565b60028601556003546133f3908563ffffffff613b8616565b6003555b5050505050505050505050565b600e80548290811061341257fe5b6000918252602090912060079091020180546001820154600383015460048401546005850154600690950154600160a060020a0390941695509193909260ff9091169086565b6003546000906134709030319063ffffffff613b8616565b905090565b600f80546000918291600019810190811061348c57fe5b90600052602060002090600802019150600e82600301858154811015156134af57fe5b90600052602060002001548154811015156134c657fe5b9060005260206000209060070201905060026005548115156134e457fe5b04600b54420311151515613568576040805160e560020a62461bcd02815260206004820152603c60248201527f4c697374732063616e2062652077697468647261776e206f6e6c7920696e207460448201527f68652066697273742068616c66206f662074686520706572696f642e00000000606482015290519081900360840190fd5b600381015483146135e9576040805160e560020a62461bcd02815260206004820152603460248201527f50726f7669646564206861736820646f65736e277420636f72726573706f6e6460448201527f2077697468207375626d697373696f6e2049442e000000000000000000000000606482015290519081900360840190fd5b8054600160a060020a03163314613670576040805160e560020a62461bcd02815260206004820152603060248201527f43616e277420776974686472617720746865206c69737420637265617465642060448201527f627920736f6d656f6e6520656c73652e00000000000000000000000000000000606482015290519081900360840190fd5b6007546004820154420311156136d0576040805160e560020a62461bcd02815260206004820152601c60248201527f5769746864726177696e672074696d6520686173207061737365642e00000000604482015290519081900360640190fd5b60038201805460001981019081106136e457fe5b9060005260206000200154826003018581548110151561370057fe5b60009182526020808320909101929092558481526006840190915260409020805460ff191690556003820180549061373c906000198301613d43565b50600181015460048301546137569163ffffffff613b8616565b60048301556001810154604051339180156108fc02916000818181858888f1935050505015801561378b573d6000803e3d6000fd5b5060018101546003546137a39163ffffffff613b8616565b60035550505050565b600e5490565b303314613806576040805160e560020a62461bcd0281526020600482015260236024820152600080516020613f6a833981519152604482015260e960020a6234b99702606482015290519081900360840190fd5b600f805460009190600019810190811061381c57fe5b906000526020600020906008020160070154905061384581600554613b6590919063ffffffff16565b600b544203111561388e576040805160e560020a62461bcd02815260206004820152601a6024820152600080516020613f4a833981519152604482015290519081900360640190fd5b60008054600160a060020a031916600160a060020a03851617905581516138bc906001906020850190613c6d565b50505050565b60008151111561398157600f5460008054604080516020808252865181830152865133966000190195600160a060020a03909516947fdccf2f8b2cc26eafcd61905cba744cff4b81d14740725f6376390dc6298a6a3c9489949384939184019290860191908190849084905b8381101561394657818101518382015260200161392e565b50505050905090810190601f1680156139735780820380516001836020036101000a031916815260200191505b509250505060405180910390a45b50565b60045481565b60055481565b3033146139e4576040805160e560020a62461bcd0281526020600482015260236024820152600080516020613f6a833981519152604482015260e960020a6234b99702606482015290519081900360840190fd5b600655565b60085481565b600254600160a060020a031681565b61271081565b600080600e83815481101515613a1657fe5b60009182526020909120600260079092020101549392505050565b600b5481565b600080600f83815481101515613a4957fe5b60009182526020909120600890910201549392505050565b600f805460009182916000198101908110613a7857fe5b90600052602060002090600802019150826000141515613b1257600e8260030160018503815481101515613aa857fe5b9060005260206000200154815481101515613abf57fe5b6000918252602082206005600790920201908101805460ff1916600117905542600682015580546004850154604051929450600160a060020a039091169281156108fc029290818181858888f150505050505b6004820154600354613b299163ffffffff613b8616565b60035560006004830155600019600c5542600b5560058201805460ff191660021790556001808301849055600f80549161288391908301613ceb565b600082820183811015613b7a57600019613b7c565b805b91505b5092915050565b600082821115613b9857506000613b9d565b508082035b92915050565b600080831515613bb65760009150613b7f565b50828202828482811515613bc657fe5b0414613b7a57600019613b7c565b60008083831115613be757839150613bef565b508190508083035b9250929050565b6060604051908101604052806003906020820280388339509192915050565b815481835581811115611006576007028160070283600052602060002091820191016110069190613d67565b815481835581811115611006576004028160040283600052602060002091820191016110069190613dc3565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f10613cae57805160ff1916838001178555613cdb565b82800160010185558215613cdb579182015b82811115613cdb578251825591602001919060010190613cc0565b50613ce7929150613e0a565b5090565b815481835581811115611006576008028160080283600052602060002091820191016110069190613e24565b815481835581811115611006576005028160050283600052602060002091820191016110069190613e81565b81548183558181111561100657600083815260209020611006918101908301613e0a565b611d4a91905b80821115613ce7578054600160a060020a0319168155600060018201819055613d996002830182613ea5565b506000600382018190556004820181905560058201805460ff191690556006820155600701613d6d565b611d4a91905b80821115613ce7578054600160a060020a0319168155600060018201819055613df56002830182613ec6565b5060038101805460ff19169055600401613dc9565b611d4a91905b80821115613ce75760008155600101613e10565b611d4a91905b80821115613ce7576000613e3e8282613f0a565b60018201600090556002820160009055600382016000613e5e9190613f2b565b5060006004820181905560058201805460ff191690556007820155600801613e2a565b611d4a91905b80821115613ce7576000600282018190556004820155600501613e87565b50805460008255600402906000526020600020908101906139819190613dc3565b50805460018160011615610100020316600290046000825580601f10613eec5750613981565b601f0160209004906000526020600020908101906139819190613e0a565b50805460008255600502906000526020600020908101906139819190613e81565b50805460008255906000526020600020908101906139819190613e0a56005375626d697373696f6e2074696d652068617320656e6465642e0000000000004f6e6c792074686520676f7665726e6f722063616e2065786563757465207468a165627a7a723058200569bfc6b2b14e3bab81fc890b703c4bff84049b72e47c0425e629bd5d74843b0029",
+  "deployedBytecode": "0x6080604052600436106102195763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166302c891c5811461021b578063055287151461023b5780630c7ac7b61461025357806321cea538146102dd57806322b52d6614610345578063246c76df1461036c57806324baacc714610384578063311a6c561461039c578063325df188146103b757806346047838146103cf578063568586191461050557806368c76ffd1461052f5780636c0b7e71146105565780636cc6cde11461056b5780636cdc090f1461059c5780636cf39c2b146105b157806377b9fda8146105cf57806383c4b7a3146105e457806384e3a3111461063c5780638a9bb02a1461065157806390765279146107135780639244c7041461076c578063953d6651146107815780639543c9fd14610799578063965394ab146107b15780639b3ac998146107c65780639c15d1a2146107db578063a3c595c9146107f0578063a446ff57146108ae578063ad73349e146108b9578063b512570014610910578063b6cd08c614610925578063b6dc775414610940578063ba7079ca14610955578063bac91e2e146109bc578063bb0b86ff14610a15578063c4bd851914610a2a578063cc2bcdb414610a3f578063ce1d8ab214610a57578063d5f3948814610a6c578063d661dd3114610a81578063dc17bbdb14610a96578063f730c07f14610aae578063f8d18b0414610ac3575b005b34801561022757600080fd5b506102196004803560248101910135610adb565b34801561024757600080fd5b50610219600435610bc9565b34801561025f57600080fd5b50610268610c22565b6040805160208082528351818301528351919283929083019185019080838360005b838110156102a257818101518382015260200161028a565b50505050905090810190601f1680156102cf5780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b3480156102e957600080fd5b506102f5600435610caf565b60408051602080825283518183015283519192839290830191858101910280838360005b83811015610331578181015183820152602001610319565b505050509050019250505060405180910390f35b34801561035157600080fd5b5061035a610d2d565b60408051918252519081900360200190f35b34801561037857600080fd5b50610219600435610d33565b34801561039057600080fd5b50610219600435610d8c565b3480156103a857600080fd5b50610219600435602435610de5565b3480156103c357600080fd5b5061021960043561100b565b6040805160206004803580820135838102808601850190965280855261021995369593946024949385019291829185019084908082843750506040805187358901803560208181028481018201909552818452989b9a99890198929750908201955093508392508501908490808284375050604080516020601f89358b018035918201839004830284018301909452808352979a999881019791965091820194509250829150840183828082843750506040805187358901803560208181028481018201909552818452989b9a99890198929750908201955093508392508501908490808284375050604080516020601f89358b018035918201839004830284018301909452808352979a9998810197919650918201945092508291508401838280828437509497506110649650505050505050565b34801561051157600080fd5b50610219600160a060020a0360043516602435604435606435611a1f565b34801561053b57600080fd5b506102f5600435602435600160a060020a0360443516611c69565b34801561056257600080fd5b5061035a611d42565b34801561057757600080fd5b50610580611d4d565b60408051600160a060020a039092168252519081900360200190f35b3480156105a857600080fd5b5061035a611d5c565b3480156105bd57600080fd5b50610219600435602435604435611d62565b3480156105db57600080fd5b5061035a61205d565b3480156105f057600080fd5b506105fc600435612063565b6040518086815260200185815260200184815260200183600281111561061e57fe5b60ff1681526020018281526020019550505050505060405180910390f35b34801561064857600080fd5b5061035a6120ab565b34801561065d57600080fd5b5061066c6004356024356120b1565b604051808060200180602001858152602001848152602001838103835287818151815260200191508051906020019060200280838360005b838110156106bc5781810151838201526020016106a4565b50505050905001838103825286818151815260200191508051906020019060200280838360005b838110156106fb5781810151838201526020016106e3565b50505050905001965050505050505060405180910390f35b34801561071f57600080fd5b506040805160206004803580820135601f81018490048402850184019095528484526102199436949293602493928401919081908401838280828437509497506121f19650505050505050565b34801561077857600080fd5b5061021961234c565b34801561078d57600080fd5b5061021960043561288a565b3480156107a557600080fd5b5061021960043561296c565b3480156107bd57600080fd5b5061035a6129c5565b3480156107d257600080fd5b5061035a6129cb565b3480156107e757600080fd5b5061035a6129d1565b3480156107fc57600080fd5b5061080b6004356024356129d7565b6040518085600160a060020a0316600160a060020a031681526020018481526020018060200183151515158152602001828103825284818151815260200191508051906020019080838360005b83811015610870578181015183820152602001610858565b50505050905090810190601f16801561089d5780820380516001836020036101000a031916815260200191505b509550505050505060405180910390f35b610219600435612aeb565b3480156108c557600080fd5b506108d1600435613404565b60408051600160a060020a03909716875260208701959095528585019390935260608501919091521515608084015260a0830152519081900360c00190f35b34801561091c57600080fd5b5061035a613458565b34801561093157600080fd5b50610219600435602435613475565b34801561094c57600080fd5b5061035a6137ac565b34801561096157600080fd5b5060408051602060046024803582810135601f8101859004850286018501909652858552610219958335600160a060020a03169536956044949193909101919081908401838280828437509497506137b29650505050505050565b3480156109c857600080fd5b506040805160206004803580820135601f81018490048402850184019095528484526102199436949293602493928401919081908401838280828437509497506138c29650505050505050565b348015610a2157600080fd5b5061035a613984565b348015610a3657600080fd5b5061035a61398a565b348015610a4b57600080fd5b50610219600435613990565b348015610a6357600080fd5b5061035a6139e9565b348015610a7857600080fd5b506105806139ef565b348015610a8d57600080fd5b5061035a6139fe565b348015610aa257600080fd5b5061035a600435613a04565b348015610aba57600080fd5b5061035a613a31565b348015610acf57600080fd5b5061035a600435613a37565b600254600160a060020a03163314610b63576040805160e560020a62461bcd02815260206004820152603860248201527f43616e206f6e6c792062652063616c6c6564206f6e636520627920746865206460448201527f65706c6f796572206f662074686520636f6e74726163742e0000000000000000606482015290519081900360840190fd5b60028054600160a060020a0319169055600d5460408051602080825281018490527f61606860eb6c87306811e2695215385101daab53bd6ab4e9f9049aead9363c7d91859185918190810184848082843760405192018290039550909350505050a25050565b303314610c1d576040805160e560020a62461bcd0281526020600482015260236024820152600080516020613f6a833981519152604482015260e960020a6234b99702606482015290519081900360840190fd5b600a55565b60018054604080516020600284861615610100026000190190941693909304601f81018490048402820184019092528181529291830182828015610ca75780601f10610c7c57610100808354040283529160200191610ca7565b820191906000526020600020905b815481529060010190602001808311610c8a57829003601f168201915b505050505081565b60606000600f83815481101515610cc257fe5b9060005260206000209060080201905080600301805480602002602001604051908101604052809291908181526020018280548015610d2057602002820191906000526020600020905b815481526020019060010190808311610d0c575b5050505050915050919050565b60065481565b303314610d87576040805160e560020a62461bcd0281526020600482015260236024820152600080516020613f6a833981519152604482015260e960020a6234b99702606482015290519081900360840190fd5b600755565b303314610de0576040805160e560020a62461bcd0281526020600482015260236024820152600080516020613f6a833981519152604482015260e960020a6234b99702606482015290519081900360840190fd5b600455565b600f8054600091906000198101908110610dfb57fe5b60009182526020822091546008919091029091019150600160a060020a03163314610e7d576040805160e560020a62461bcd02815260206004820152602160248201527f4d7573742062652063616c6c6564206279207468652061726269747261746f72604482015260f960020a601702606482015290519081900360840190fd5b6001600582015460ff166002811115610e9257fe5b14610f0d576040805160e560020a62461bcd02815260206004820152602660248201527f54686520646973707574652068617320616c7265616479206265656e2072657360448201527f6f6c7665642e0000000000000000000000000000000000000000000000000000606482015290519081900360840190fd5b6003810154821115610f69576040805160e560020a62461bcd02815260206004820152601860248201527f52756c696e67206973206f7574206f6620626f756e64732e0000000000000000604482015290519081900360640190fd5b600c5460001914610fc557600c54604080516001909201825251849133917f394027a5fa6e098a1191094d1719d6929b9abc535fcc0c8f448d6a4e756222769181900360200190a3610fc083600c54600101613a61565b611006565b604080518381529051849133917f394027a5fa6e098a1191094d1719d6929b9abc535fcc0c8f448d6a4e756222769181900360200190a36110068383613a61565b505050565b30331461105f576040805160e560020a62461bcd0281526020600482015260236024820152600080516020613f6a833981519152604482015260e960020a6234b99702606482015290519081900360840190fd5b600955565b60008061106f613bf6565b6000806060600080600080600f6001600f805490500381548110151561109157fe5b90600052602060002090600802016007015490506110ba81600554613b6590919063ffffffff16565b600b5442031115611103576040805160e560020a62461bcd02815260206004820152601a6024820152600080516020613f4a833981519152604482015290519081900360640190fd5b8d518f51146111a9576040805160e560020a62461bcd028152602060048201526044602482018190527f496e636f727265637420696e7075742e2054617267657420616e642076616c75908201527f6520617272617973206d757374206265206f66207468652073616d65206c656e60648201527f6774682e00000000000000000000000000000000000000000000000000000000608482015290519081900360a40190fd5b8b518f511461124e576040805160e560020a62461bcd02815260206004820152604760248201527f496e636f727265637420696e7075742e2054617267657420616e64206461746160448201527f73697a6520617272617973206d757374206265206f66207468652073616d652060648201527f6c656e6774682e00000000000000000000000000000000000000000000000000608482015290519081900360a40190fd5b600f8054600019810190811061126057fe5b90600052602060002090600802019950600e8080548091906001016112859190613c15565b8154811061128f57fe5b6000918252602080832060079092029091018054600160a060020a03191633178155915460405160e060020a63f7434ea9028152600481019283526001805460026000198284161561010002019091160460248301819052949d50600160a060020a03929092169363f7434ea993918291604490910190849080156113555780601f1061132a57610100808354040283529160200191611355565b820191906000526020600020905b81548152906001019060200180831161133857829003601f168201915b505092505050602060405180830381600087803b15801561137557600080fd5b505af1158015611389573d6000803e3d6000fd5b505050506040513d602081101561139f57600080fd5b50516004540160018a01819055341015611429576040805160e560020a62461bcd02815260206004820152602860248201527f5375626d697373696f6e206465706f736974206d75737420626520706169642060448201527f696e2066756c6c2e000000000000000000000000000000000000000000000000606482015290519081900360840190fd5b600095505b8e51861015611803578b8681518110151561144557fe5b906020019060200201516040519080825280601f01601f19166020018201604052801561147c578160200160208202803883390190505b5060028a018054919650906114948260018301613c41565b8154811061149e57fe5b906000526020600020906004020193508e868151811015156114bc57fe5b60209081029190910101518454600160a060020a031916600160a060020a039091161784558d518e90879081106114ef57fe5b602090810290910101516001850155600092505b8b8681518110151561151157fe5b9060200190602002015183101561158e578c83880181518110151561153257fe5b90602001015160f860020a900460f860020a02858481518110151561155357fe5b9060200101907effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1916908160001a905350600190920191611503565b84516115a39060028601906020880190613c6d565b508b868151811015156115b257fe5b90602001906020020151870196508360000160009054906101000a9004600160a060020a03168460010154856002016040516020018084600160a060020a0316600160a060020a03166c010000000000000000000000000281526014018381526020018280546001816001161561010002031660029004801561166c5780601f1061164a57610100808354040283529182019161166c565b820191906000526020600020905b815481529060010190602001808311611658575b505093505050506040516020818303038152906040526040518082805190602001908083835b602083106116b15780518252601f199092019160209182019101611692565b51815160001960209485036101000a0190811690199091161790526040805192909401829003909120928d018390528c0151909110159250611766915050576040805160e560020a62461bcd02815260206004820152602860248201527f546865207472616e73616374696f6e732061726520696e20696e636f7272656360448201527f74206f726465722e000000000000000000000000000000000000000000000000606482015290519081900360840190fd5b604080890151895182516020818101939093528084019190915282518082038401815260609091019283905280519092918291908401908083835b602083106117c05780518252601f1990920191602091820191016117a1565b51815160209384036101000a600019018019909216911617905260408051949092018490039093208d528c0151918c01919091525050506001959095019461142e565b8751600090815260068b01602052604090205460ff1615611894576040805160e560020a62461bcd02815260206004820152602c60248201527f5468652073616d65206c6973742077617320616c7265616479207375626d697460448201527f746564206561726c6965722e0000000000000000000000000000000000000000606482015290519081900360840190fd5b8751600090815260068b01602090815260408220805460ff191660019081179091558a5160038d810191909155426004808f01919091558d830154908f0180549091019055600e54908e018054808401825581865293909420600019919091019201919091559054141561191c57600b5461191690429063ffffffff613b8616565b60078b01555b6001600f805490500333600160a060020a03166001600e80549050037f1a700b4f7df255aaf8c91c8b05abf0eab596e467dc17ef76fe4afc12541012488e6040518080602001828103825283818151815260200191508051906020019080838360005b8381101561199757818101518382015260200161197f565b50505050905090810190601f1680156119c45780820380516001836020036101000a031916815260200191505b509250505060405180910390a48860010154340391506000821115611a0057604051339083156108fc029084906000818181858888f150505050505b5050506001909501546003805490910190555050505050505050505050565b6000806000600f86815481101515611a3357fe5b906000526020600020906008020192508260000185815481101515611a5457fe5b6000918252602090912060059091020191506002600584015460ff166002811115611a7b57fe5b14611ad0576040805160e560020a62461bcd02815260206004820152601f60248201527f53657373696f6e2068617320616e206f6e676f696e6720646973707574652e00604482015290519081900360640190fd5b600084815260018301602052604090205460ff161515611b165750600160a060020a03861660009081526003820160209081526040808320868452909152902054611c08565b60018301541580611b415750600183810154600019016000908152908301602052604090205460ff16155b15611b9c576000826004015411611b59576000611b95565b60048201546002830154600160a060020a0389166000908152600385016020908152604080832089845290915290205402811515611b9357fe5b045b9050611c08565b8360018460010154031415611c085760008481526020839052604081205411611bc6576000611c05565b600084815260208381526040808320546002860154600160a060020a038c16855260038701845282852089865290935292205402811515611c0357fe5b045b90505b600160a060020a038716600081815260038401602090815260408083208884529091528082208290555183156108fc0291849190818181858888f15050600354611c5d9350915083905063ffffffff613b8616565b60035550505050505050565b60606000806000600f87815481101515611c7f57fe5b906000526020600020906008020192508260000186815481101515611ca057fe5b906000526020600020906005020191508260030180549050604051908082528060200260200182016040528015611ce1578160200160208202803883390190505b509350600090505b8351811015611d3857600160a060020a038516600090815260038301602090815260408083208484529091529020548451859083908110611d2657fe5b60209081029091010152600101611ce9565b5050509392505050565b600f54600019015b90565b600054600160a060020a031681565b600d5481565b6000806000806000600e88815481101515611d7957fe5b60009182526020909120600790910201600581015490955060ff161515611e10576040805160e560020a62461bcd02815260206004820152602860248201527f43616e27742065786563757465206c6973742074686174207761736e2774206160448201527f7070726f7665642e000000000000000000000000000000000000000000000000606482015290519081900360840190fd5b600680549086015442031115611e96576040805160e560020a62461bcd02815260206004820152603060248201527f54696d6520746f206578656375746520746865207472616e73616374696f6e2060448201527f6c69737420686173207061737365642e00000000000000000000000000000000606482015290519081900360840190fd5b8693505b600285015484108015611eb65750851580611eb6575085870184105b156120535760028501805485908110611ecb57fe5b90600052602060002090600402019250611ee3613458565b600384015490925060ff16158015611eff575081836001015411155b15612048578260000160009054906101000a9004600160a060020a0316600160a060020a03168360010154846002016040518082805460018160011615610100020316600290048015611f935780601f10611f6857610100808354040283529160200191611f93565b820191906000526020600020905b815481529060010190602001808311611f7657829003601f168201915b505091505060006040518083038185875af193505050508015156001141561204857600383015460ff1615612038576040805160e560020a62461bcd02815260206004820152602b60248201527f54686973207472616e73616374696f6e2068617320616c72656164792062656560448201527f6e2065786563757465642e000000000000000000000000000000000000000000606482015290519081900360840190fd5b60038301805460ff191660011790555b600190930192611e9a565b5050505050505050565b60035481565b600f80548290811061207157fe5b6000918252602090912060089091020160018101546002820154600483015460058401546007909401549294509092909160ff9091169085565b600c5481565b6060806000806000806000600f898154811015156120cb57fe5b9060005260206000209060080201925082600001888154811015156120ec57fe5b90600052602060002090600502019150826003018054905060405190808252806020026020018201604052801561212d578160200160208202803883390190505b506003840154604080518281526020808402820101909152919850801561215e578160200160208202803883390190505b509550600090505b60038301548110156121d957600081815260208390526040902054875188908390811061218f57fe5b60209081029091018101919091526000828152600184019091526040902054865160ff909116908790839081106121c257fe5b911515602092830290910190910152600101612166565b50600281015460049091015495989497509550505050565b303314612245576040805160e560020a62461bcd0281526020600482015260236024820152600080516020613f6a833981519152604482015260e960020a6234b99702606482015290519081900360840190fd5b600254600160a060020a0316156122a6576040805160e560020a62461bcd02815260206004820152601960248201527f4d65746165766964656e636520776173206e6f74207365742e00000000000000604482015290519081900360640190fd5b600d80546001019081905560408051602080825284518183015284517f61606860eb6c87306811e2695215385101daab53bd6ab4e9f9049aead9363c7d938693928392918301919085019080838360005b8381101561230f5781810151838201526020016122f7565b50505050905090810190601f16801561233c5780820380516001836020036101000a031916815260200191505b509250505060405180910390a250565b6000806000806000600f6001600f805490500381548110151561236b57fe5b906000526020600020906008020160070154905061239481600554613b6590919063ffffffff16565b600b54420311612414576040805160e560020a62461bcd02815260206004820152602260248201527f417070726f76616c2074696d6520686173206e6f74207374617274656420796560448201527f742e000000000000000000000000000000000000000000000000000000000000606482015290519081900360840190fd5b600f8054600019810190811061242657fe5b6000918252602082206008909102019550600586015460ff16600281111561244a57fe5b146124c5576040805160e560020a62461bcd02815260206004820152603760248201527f43616e277420617070726f7665207472616e73616374696f6e206c697374207760448201527f68696c652064697370757465206973206163746976652e000000000000000000606482015290519081900360840190fd5b600385015415156124fb5742600b5560058501805460ff19166002179055600f8054906124f59060018301613ceb565b50612883565b6003850154600114156125cd57600e85600301600081548110151561251c57fe5b906000526020600020015481548110151561253357fe5b6000918252602082206005600790920201908101805460ff19166001179055426006820155600487018054908390558154604051929750909550600160a060020a03169185156108fc02918691818181858888f1505042600b5550505060058501805460ff19166002179055600f8054906125b19060018301613ceb565b506003546125c5908463ffffffff613b8616565b600355612883565b60058501805460ff1916600190811790915560005460405160e060020a63f7434ea9028152602060048201908152835460026101008287161502600019019091160460248301819052600160a060020a039093169363f7434ea99390928291604490910190849080156126815780601f1061265657610100808354040283529160200191612681565b820191906000526020600020905b81548152906001019060200180831161266457829003601f168201915b505092505050602060405180830381600087803b1580156126a157600080fd5b505af11580156126b5573d6000803e3d6000fd5b505050506040513d60208110156126cb57600080fd5b50516000546003870154604080517fc13517e100000000000000000000000000000000000000000000000000000000815260048101838152602482019283526001805460026000198284161561010002019091160460448401819052969850600160a060020a039095169563c13517e19589959490939091606490910190849080156127985780601f1061276d57610100808354040283529160200191612798565b820191906000526020600020905b81548152906001019060200180831161277b57829003601f168201915b505093505050506020604051808303818588803b1580156127b857600080fd5b505af11580156127cc573d6000803e3d6000fd5b50505050506040513d60208110156127e357600080fd5b5051600286015584546127f98660018301613d17565b50600485015461280f908363ffffffff613b8616565b6004860155600354612827908363ffffffff613b8616565b6003556002850154600054600d54600f546040805192835260001990910160208301528051600160a060020a03909316927f74baab670a4015ab2f1b467c5252a96141a2573f2908e58a92081e80d3cfde3d9281900390910190a35b5050505050565b3033146128de576040805160e560020a62461bcd0281526020600482015260236024820152600080516020613f6a833981519152604482015260e960020a6234b99702606482015290519081900360840190fd5b600f80546000919060001981019081106128f457fe5b906000526020600020906008020160070154905061291d81600554613b6590919063ffffffff16565b600b5442031115612966576040805160e560020a62461bcd02815260206004820152601a6024820152600080516020613f4a833981519152604482015290519081900360640190fd5b50600555565b3033146129c0576040805160e560020a62461bcd0281526020600482015260236024820152600080516020613f6a833981519152604482015260e960020a6234b99702606482015290519081900360840190fd5b600855565b600a5481565b60095481565b60075481565b60008060606000806000600e888154811015156129f057fe5b906000526020600020906007020191508160020187815481101515612a1157fe5b60009182526020918290206004919091020180546001808301546003840154600280860180546040805161010097831615979097026000190190911692909204601f8101899004890286018901909252818552959750600160a060020a039094169591949360ff9091169291849190830182828015612ad15780601f10612aa657610100808354040283529160200191612ad1565b820191906000526020600020905b815481529060010190602001808311612ab457829003601f168201915b505050505091509550955095509550505092959194509250565b600080600080600080600080600080600f6001600f8054905003815481101515612b1157fe5b9060005260206000209060080201995060018a60030180549050038b11151515612b85576040805160e560020a62461bcd02815260206004820152601e60248201527f5375626d697373696f6e4944206973206f7574206f6620626f756e64732e0000604482015290519081900360640190fd5b600160058b015460ff166002811115612b9a57fe5b14612bef576040805160e560020a62461bcd02815260206004820152601560248201527f4e6f206469737075746520746f2061707065616c2e0000000000000000000000604482015290519081900360640190fd5b60016000805460028d0154604080517f10f169e8000000000000000000000000000000000000000000000000000000008152600481019290925251600160a060020a03909216926310f169e8926024808401936020939083900390910190829087803b158015612c5e57600080fd5b505af1158015612c72573d6000803e3d6000fd5b505050506040513d6020811015612c8857600080fd5b50516002811115612c9557fe5b14612cea576040805160e560020a62461bcd02815260206004820152601a60248201527f44697370757465206973206e6f742061707065616c61626c652e000000000000604482015290519081900360640190fd5b6000805460028c0154604080517fafe15cfb00000000000000000000000000000000000000000000000000000000815260048101929092528051600160a060020a039093169363afe15cfb936024808501949192918390030190829087803b158015612d5557600080fd5b505af1158015612d69573d6000803e3d6000fd5b505050506040513d6040811015612d7f57600080fd5b5080516020909101519099509750428911801590612d9c57508742105b1515612e18576040805160e560020a62461bcd02815260206004820152603260248201527f41707065616c2066656573206d75737420626520706169642077697468696e2060448201527f7468652061707065616c20706572696f642e0000000000000000000000000000606482015290519081900360840190fd5b6000805460028c0154604080517f1c3db16d000000000000000000000000000000000000000000000000000000008152600481019290925251600160a060020a0390921692631c3db16d926024808401936020939083900390910190829087803b158015612e8557600080fd5b505af1158015612e99573d6000803e3d6000fd5b505050506040513d6020811015612eaf57600080fd5b5051965060018b01871415612ec8576009549550612f64565b861515612ed9576008549550612f64565b600289890304428a900310612f5e576040805160e560020a62461bcd02815260206004820152603e60248201527f546865206c6f736572206d7573742070617920647572696e672074686520666960448201527f7273742068616c66206f66207468652061707065616c20706572696f642e0000606482015290519081900360840190fd5b600a5495505b89548a906000198101908110612f7657fe5b600091825260208083208e84526001600590930201918201905260409091205490955060ff1615612ffe576040805160e560020a62461bcd02815260206004820152602160248201527f41707065616c206665652068617320616c7265616479206265656e2070616964604482015260f960020a601702606482015290519081900360840190fd5b6000546002808c0154604080517ff23f16e6000000000000000000000000000000000000000000000000000000008152600481018381526024820192835260018054600019818316156101000201169590950460448301819052600160a060020a039096169563f23f16e69593919260640190849080156130c05780601f10613095576101008083540402835291602001916130c0565b820191906000526020600020905b8154815290600101906020018083116130a357829003601f168201915b50509350505050602060405180830381600087803b1580156130e157600080fd5b505af11580156130f5573d6000803e3d6000fd5b505050506040513d602081101561310b57600080fd5b5051935061313d612710613125868963ffffffff613ba316565b81151561312e57fe5b8691900463ffffffff613b6516565b60008c81526020879052604090205490935061316b90349061316690869063ffffffff613b8616565b613bd4565b80925081935050508185600301600033600160a060020a0316600160a060020a0316815260200190815260200160002060008d815260200190815260200160002060008282540192505081905550818560000160008d815260200190815260200160002060008282540192505081905550828560000160008d8152602001908152602001600020541015156132515760008b815260018681016020526040909120805460ff19169091179055600c54600019141561322957600c8b90555b60008b8152602086905260409020805460028701805490910190555460048601805490910190555b604051339082156108fc029083906000818181858888f1505060038054860190555050600c54600019148015915061328b57508a600c5414155b80156132a7575060008b815260018601602052604090205460ff165b156133f757600019600c8190556000546002808d0154604080517f49912f8800000000000000000000000000000000000000000000000000000000815260048101838152602482019283526001805480821615610100029098019097169490940460448201819052600160a060020a03909516956349912f88958b9591939192606401908490801561337a5780601f1061334f5761010080835404028352916020019161337a565b820191906000526020600020905b81548152906001019060200180831161335d57829003601f168201915b505093505050506000604051808303818588803b15801561339a57600080fd5b505af11580156133ae573d6000803e3d6000fd5b50508c5492506133c591508c905060018301613d17565b5060028501546133db908563ffffffff613b8616565b60028601556003546133f3908563ffffffff613b8616565b6003555b5050505050505050505050565b600e80548290811061341257fe5b6000918252602090912060079091020180546001820154600383015460048401546005850154600690950154600160a060020a0390941695509193909260ff9091169086565b6003546000906134709030319063ffffffff613b8616565b905090565b600f80546000918291600019810190811061348c57fe5b90600052602060002090600802019150600e82600301858154811015156134af57fe5b90600052602060002001548154811015156134c657fe5b9060005260206000209060070201905060026005548115156134e457fe5b04600b54420311151515613568576040805160e560020a62461bcd02815260206004820152603c60248201527f4c697374732063616e2062652077697468647261776e206f6e6c7920696e207460448201527f68652066697273742068616c66206f662074686520706572696f642e00000000606482015290519081900360840190fd5b600381015483146135e9576040805160e560020a62461bcd02815260206004820152603460248201527f50726f7669646564206861736820646f65736e277420636f72726573706f6e6460448201527f2077697468207375626d697373696f6e2049442e000000000000000000000000606482015290519081900360840190fd5b8054600160a060020a03163314613670576040805160e560020a62461bcd02815260206004820152603060248201527f43616e277420776974686472617720746865206c69737420637265617465642060448201527f627920736f6d656f6e6520656c73652e00000000000000000000000000000000606482015290519081900360840190fd5b6007546004820154420311156136d0576040805160e560020a62461bcd02815260206004820152601c60248201527f5769746864726177696e672074696d6520686173207061737365642e00000000604482015290519081900360640190fd5b60038201805460001981019081106136e457fe5b9060005260206000200154826003018581548110151561370057fe5b60009182526020808320909101929092558481526006840190915260409020805460ff191690556003820180549061373c906000198301613d43565b50600181015460048301546137569163ffffffff613b8616565b60048301556001810154604051339180156108fc02916000818181858888f1935050505015801561378b573d6000803e3d6000fd5b5060018101546003546137a39163ffffffff613b8616565b60035550505050565b600e5490565b303314613806576040805160e560020a62461bcd0281526020600482015260236024820152600080516020613f6a833981519152604482015260e960020a6234b99702606482015290519081900360840190fd5b600f805460009190600019810190811061381c57fe5b906000526020600020906008020160070154905061384581600554613b6590919063ffffffff16565b600b544203111561388e576040805160e560020a62461bcd02815260206004820152601a6024820152600080516020613f4a833981519152604482015290519081900360640190fd5b60008054600160a060020a031916600160a060020a03851617905581516138bc906001906020850190613c6d565b50505050565b60008151111561398157600f5460008054604080516020808252865181830152865133966000190195600160a060020a03909516947fdccf2f8b2cc26eafcd61905cba744cff4b81d14740725f6376390dc6298a6a3c9489949384939184019290860191908190849084905b8381101561394657818101518382015260200161392e565b50505050905090810190601f1680156139735780820380516001836020036101000a031916815260200191505b509250505060405180910390a45b50565b60045481565b60055481565b3033146139e4576040805160e560020a62461bcd0281526020600482015260236024820152600080516020613f6a833981519152604482015260e960020a6234b99702606482015290519081900360840190fd5b600655565b60085481565b600254600160a060020a031681565b61271081565b600080600e83815481101515613a1657fe5b60009182526020909120600260079092020101549392505050565b600b5481565b600080600f83815481101515613a4957fe5b60009182526020909120600890910201549392505050565b600f805460009182916000198101908110613a7857fe5b90600052602060002090600802019150826000141515613b1257600e8260030160018503815481101515613aa857fe5b9060005260206000200154815481101515613abf57fe5b6000918252602082206005600790920201908101805460ff1916600117905542600682015580546004850154604051929450600160a060020a039091169281156108fc029290818181858888f150505050505b6004820154600354613b299163ffffffff613b8616565b60035560006004830155600019600c5542600b5560058201805460ff191660021790556001808301849055600f80549161288391908301613ceb565b600082820183811015613b7a57600019613b7c565b805b91505b5092915050565b600082821115613b9857506000613b9d565b508082035b92915050565b600080831515613bb65760009150613b7f565b50828202828482811515613bc657fe5b0414613b7a57600019613b7c565b60008083831115613be757839150613bef565b508190508083035b9250929050565b6060604051908101604052806003906020820280388339509192915050565b815481835581811115611006576007028160070283600052602060002091820191016110069190613d67565b815481835581811115611006576004028160040283600052602060002091820191016110069190613dc3565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f10613cae57805160ff1916838001178555613cdb565b82800160010185558215613cdb579182015b82811115613cdb578251825591602001919060010190613cc0565b50613ce7929150613e0a565b5090565b815481835581811115611006576008028160080283600052602060002091820191016110069190613e24565b815481835581811115611006576005028160050283600052602060002091820191016110069190613e81565b81548183558181111561100657600083815260209020611006918101908301613e0a565b611d4a91905b80821115613ce7578054600160a060020a0319168155600060018201819055613d996002830182613ea5565b506000600382018190556004820181905560058201805460ff191690556006820155600701613d6d565b611d4a91905b80821115613ce7578054600160a060020a0319168155600060018201819055613df56002830182613ec6565b5060038101805460ff19169055600401613dc9565b611d4a91905b80821115613ce75760008155600101613e10565b611d4a91905b80821115613ce7576000613e3e8282613f0a565b60018201600090556002820160009055600382016000613e5e9190613f2b565b5060006004820181905560058201805460ff191690556007820155600801613e2a565b611d4a91905b80821115613ce7576000600282018190556004820155600501613e87565b50805460008255600402906000526020600020908101906139819190613dc3565b50805460018160011615610100020316600290046000825580601f10613eec5750613981565b601f0160209004906000526020600020908101906139819190613e0a565b50805460008255600502906000526020600020908101906139819190613e81565b50805460008255906000526020600020908101906139819190613e0a56005375626d697373696f6e2074696d652068617320656e6465642e0000000000004f6e6c792074686520676f7665726e6f722063616e2065786563757465207468a165627a7a723058200569bfc6b2b14e3bab81fc890b703c4bff84049b72e47c0425e629bd5d74843b0029",
+  "devdoc": {
+    "methods": {
+      "changeArbitrator(address,bytes)": {
+        "details": "Changes the arbitrator of the contract.",
+        "params": {
+          "_arbitrator": "The new trusted arbitrator.",
+          "_arbitratorExtraData": "The extra data used by the new arbitrator."
+        }
+      },
+      "changeExecutionTimeout(uint256)": {
+        "details": "Changes the time allocated for list's execution.",
+        "params": {
+          "_executionTimeout": "The new duration of the execution timeout, in seconds."
+        }
+      },
+      "changeLoserMultiplier(uint256)": {
+        "details": "Changes the proportion of appeal fees that must be added to appeal cost for the losing party.",
+        "params": {
+          "_loserMultiplier": "The new loser multiplier value in basis points."
+        }
+      },
+      "changeMetaEvidence(string)": {
+        "details": "Update the meta evidence used for disputes.",
+        "params": {
+          "_metaEvidence": "URI to the new meta evidence file."
+        }
+      },
+      "changeSharedMultiplier(uint256)": {
+        "details": "Changes the proportion of appeal fees that must be added to appeal cost when there is no winner or loser.",
+        "params": {
+          "_sharedMultiplier": "The new shared multiplier value in basis points."
+        }
+      },
+      "changeSubmissionDeposit(uint256)": {
+        "details": "Changes the value of the base deposit required for submitting a list.",
+        "params": {
+          "_submissionBaseDeposit": "The new value of the base deposit, in wei."
+        }
+      },
+      "changeSubmissionTimeout(uint256)": {
+        "details": "Changes the time allocated for submission.",
+        "params": {
+          "_submissionTimeout": "The new duration of the submission period, in seconds."
+        }
+      },
+      "changeWinnerMultiplier(uint256)": {
+        "details": "Changes the proportion of appeal fees that must be added to appeal cost for the winning party.",
+        "params": {
+          "_winnerMultiplier": "The new winner multiplier value in basis points."
+        }
+      },
+      "changeWithdrawTimeout(uint256)": {
+        "details": "Changes list withdrawal timeout. Note that withdrawals are only possible in the first half of the submission period.",
+        "params": {
+          "_withdrawTimeout": "The new duration of withdraw period, in seconds."
+        }
+      },
+      "executeSubmissions()": {
+        "details": "Approves a transaction list or creates a dispute if more than one list was submitted. TRUSTED. If nothing was submitted changes session."
+      },
+      "executeTransactionList(uint256,uint256,uint256)": {
+        "details": "Executes selected transactions of the list. UNTRUSTED.",
+        "params": {
+          "_count": "Number of transactions to execute. Executes until the end if set to \"0\" or number higher than number of transactions in the list.",
+          "_cursor": "Index of the transaction from which to start executing.",
+          "_listID": "The index of the transaction list in the array of lists."
+        }
+      },
+      "fundAppeal(uint256)": {
+        "details": "Takes up to the total amount required to fund a side of an appeal. Reimburses the rest. Creates an appeal if at least two lists are funded. TRUSTED.",
+        "params": {
+          "_submissionID": "Submission's index in the array of submitted lists of the current sesssion. Note that submissionID can be swapped with an ID of a withdrawn list in submission period."
+        }
+      },
+      "getContributions(uint256,uint256,address)": {
+        "details": "Gets the contributions made by a party for a given round of a session. Note that this function is O(n), where n is the number of submissions in the session. This could exceed the gas limit, therefore this function should only be used for interface display and not by other contracts.",
+        "params": {
+          "_contributor": "The address of the contributor.",
+          "_round": "The position of the round.",
+          "_session": "The ID of the session."
+        },
+        "return": "The contributions."
+      },
+      "getCurrentSessionNumber()": {
+        "details": "Gets the number of the ongoing session.",
+        "return": "The number of the ongoing session."
+      },
+      "getExpendableFunds()": {
+        "details": "Gets the sum of contract funds that are used for the execution of transactions.",
+        "return": "Contract balance without reserved ETH."
+      },
+      "getNumberOfCreatedLists()": {
+        "details": "Gets the number of lists created in contract's lifetime.",
+        "return": "The number of created lists."
+      },
+      "getNumberOfTransactions(uint256)": {
+        "details": "Gets the number of transactions in the list.",
+        "params": {
+          "_listID": "The index of the transaction list in the array of lists."
+        },
+        "return": "txCount The number of transactions in the list."
+      },
+      "getRoundInfo(uint256,uint256)": {
+        "details": "Gets the information on a round of a session. Note that this function is O(n), where n is the number of submissions in the session. This could exceed the gas limit, therefore this function should only be used for interface display and not by other contracts.",
+        "params": {
+          "_round": "The round to be queried.",
+          "_session": "The ID of the session."
+        },
+        "return": "The round information."
+      },
+      "getSessionRoundsNumber(uint256)": {
+        "details": "Gets the number rounds in ongoing session.",
+        "return": "The number of rounds in session."
+      },
+      "getSubmittedLists(uint256)": {
+        "details": "Gets the array of submitted lists in the session. Note that this function is O(n), where n is the number of submissions in the session. This could exceed the gas limit, therefore this function should only be used for interface display and not by other contracts.",
+        "params": {
+          "_session": "The ID of the session."
+        },
+        "return": "submittedLists Indexes of lists that were submitted during the session."
+      },
+      "getTransactionInfo(uint256,uint256)": {
+        "details": "Gets the info of the specified transaction in the specified list.",
+        "params": {
+          "_listID": "The index of the transaction list in the array of lists.",
+          "_transactionIndex": "The index of the transaction."
+        },
+        "return": "The transaction info."
+      },
+      "rule(uint256,uint256)": {
+        "details": "Gives a ruling for a dispute. Must be called by the arbitrator. The purpose of this function is to ensure that the address calling it has the right to rule on the contract.",
+        "params": {
+          "_disputeID": "ID of the dispute in the Arbitrator contract.",
+          "_ruling": "Ruling given by the arbitrator. Note that 0 is reserved for \"Refuse to arbitrate\"."
+        }
+      },
+      "setMetaEvidence(string)": {
+        "details": "Sets the meta evidence. Can only be called once. Convenience function that removes the need to precompute the deployed contract address for the metaevidence data.",
+        "params": {
+          "_metaEvidence": "The URI of the meta evidence file."
+        }
+      },
+      "submitEvidence(string)": {
+        "details": "Allows to submit evidence for a current session.",
+        "params": {
+          "_evidenceURI": "Link to evidence."
+        }
+      },
+      "submitList(address[],uint256[],bytes,uint256[],string)": {
+        "details": "Creates transaction list based on input parameters and submits it for potential approval and execution. Transactions must be ordered by their hash.",
+        "params": {
+          "_data": "Concatenated calldata of all transactions of this list.",
+          "_dataSize": "List of lengths in bytes required to split calldata for its respective targets.",
+          "_description": "String in CSV format that describes list's transactions.",
+          "_target": "List of addresses to call.",
+          "_value": "List of values required for respective addresses."
+        }
+      },
+      "withdrawFeesAndRewards(address,uint256,uint256,uint256)": {
+        "details": "Sends the fee stake rewards and reimbursements proportional to the contributions made to the winner of a dispute. Reimburses contributions if there is no winner.",
+        "params": {
+          "_beneficiary": "The address that made contributions to a request.",
+          "_round": "The round from which to withdraw.",
+          "_session": "The session from which to withdraw.",
+          "_submissionID": "Submission's index in the array of submitted lists of the session which the beneficiary contributed to."
+        }
+      },
+      "withdrawTransactionList(uint256,bytes32)": {
+        "details": "Withdraws submitted transaction list. Reimburses submission deposit. Withdrawal is only possible during the first half of the submission period and during withdrawTimeout seconds after the submission is made.",
+        "params": {
+          "_listHash": "Hash of a withdrawing list.",
+          "_submissionID": "Submission's index in the array of submitted lists of the current sesssion."
+        }
+      }
+    },
+    "title": "KlerosGovernor Note that this contract trusts that the Arbitrator is honest and will not re-enter or modify its costs during a call. Also note that tx.origin should not matter in contracts called by the governor."
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}
