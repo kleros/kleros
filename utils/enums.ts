@@ -17,3 +17,9 @@ export enum Status {
   appeable,
   solved,
 }
+
+export enum GovernorStatus {
+  NoDispute,
+  DisputeCreated,
+  Resolved,
+}
