@@ -25,6 +25,12 @@ export interface SubcourtInfo {
   sortitionSumTreeK: PromiseOrValue<BigNumberish>;
 }
 
+export interface PartyTxFees {
+  arbitration: BigNumber;
+  appeal: BigNumber;
+  evidenceSumbission: BigNumber;
+}
+
 export interface FixedLengthArray<T, L extends number> extends ArrayLike<T> {
   length: L;
 }
