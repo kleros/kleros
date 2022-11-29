@@ -49,7 +49,7 @@ Refresh the list of deployed contracts by running `./scripts/generateDeployments
 - [PolicyRegistry](https://goerli.etherscan.io/address/0x4075a2C1cf212Ec386Ca79978B63afe1c168bB01)
 - [SortitionSumTreeFactory](https://goerli.etherscan.io/address/0x17aA5CDbe970fB8C0FdfD9090F2883fF70c83DD8)
 
-## Get Started
+## Getting Started
 
 1.  Clone this repo.
 2.  Install dependencies.
@@ -119,7 +119,7 @@ yarn node | hardhat deploy
 yarn deploy --network localhost --tags <tag>
 ```
 
-#### 3. Deploy to Public Testnets
+#### 4. Deploy to Public Testnets
 
 ```bash
 # Goerli
