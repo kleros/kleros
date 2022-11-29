@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { setup, useDisputeSetup } from 'utils/fixtures/kleros-liquid';
+import { setup, useDisputeSetup } from '../setups';
 import { Period, Status } from 'utils/index';
 
 const NUMBER_OF_CHOICES = 2;

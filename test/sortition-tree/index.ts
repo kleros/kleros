@@ -1,4 +1,4 @@
-import { ethers, deployments, getNamedAccounts } from 'hardhat';
+import { ethers, deployments } from 'hardhat';
 import { expect } from 'chai';
 import { ExposedSortitionSumTreeFactory } from '../../typechain-types';
 

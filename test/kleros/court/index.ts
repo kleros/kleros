@@ -3,7 +3,7 @@ import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
 import { TwoPartyArbitrable } from 'typechain-types';
 import { Period, Status } from 'utils/enums';
-import { setup } from 'utils/fixtures/kleros-liquid';
+import { setup } from './setups';
 import { PartyTxFees } from 'utils/interfaces';
 import {
   execute,

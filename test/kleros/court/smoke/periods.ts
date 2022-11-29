@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { useDisputeSetup, useStakedSetup } from 'utils/fixtures/kleros-liquid';
+import { useDisputeSetup, useStakedSetup } from '../setups';
 import { Period } from 'utils/index';
 import { getVoteIDs, increaseTime } from 'utils/test-helpers';
 

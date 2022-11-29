@@ -2,8 +2,8 @@ import { ethers } from 'hardhat';
 import { expect } from 'chai';
 
 import { increaseTime } from 'utils/test-helpers';
-import { useDisputeSetup } from 'utils/fixtures/kleros-liquid';
 import { KlerosLiquidExtraViews } from 'typechain-types';
+import { useDisputeSetup } from '../court/setups';
 
 const setup = async (numberOfJurors?: number, treeDepth?: number) => {
   const {

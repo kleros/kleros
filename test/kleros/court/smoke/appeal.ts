@@ -1,7 +1,6 @@
 import { expect } from 'chai';
 import { Period } from 'utils/enums';
-
-import { useVotedSetup } from 'utils/fixtures/kleros-liquid';
+import { useVotedSetup } from '../setups';
 
 describe('Smoke: Dispute - Appeal', () => {
   it('Should appeal the ruling of a dispute', async () => {

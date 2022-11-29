@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import { asyncForEach } from 'utils/test-helpers';
 import { SubcourtInfo } from 'utils/interfaces';
 
-import { setup } from 'utils/fixtures/kleros-liquid';
+import { setup } from '../setups';
 
 describe('Smoke: Court Tree', () => {
   describe('Construction', () => {

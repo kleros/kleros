@@ -28,10 +28,6 @@ describe('Smoke: Governor - Approved List Transactions', () => {
     expect(dispute.arbitrated).to.equal(governor.address);
     expect(dispute.choices).to.equal(11);
     expect(dispute.fee).to.equal(args.arbitrationFee);
-
-    // TODO: comparison fails. Can't see the reason atm
-    const withdrawTime = await governor.withdrawTimeout();
-    //expect(withdrawTime).to.equal(20);
   });
 
   it('Should correctly execute batch transactions', async () => {

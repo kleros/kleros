@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { BigNumber, BigNumberish } from 'ethers';
 import { ethers } from 'hardhat';
 
-import { useVotedSetup } from 'utils/fixtures/kleros-liquid';
+import { useVotedSetup } from '../setups';
 import { getJurorsBalances, increaseTime } from 'utils/test-helpers';
 
 const disputeID = 0;
@@ -57,7 +57,7 @@ describe('Smoke: Dispute - Execution', () => {
     //update balance change of the jurors[0] due to tx fee
     const receipt = await tx.wait();
     const txFee = receipt.gasUsed.mul(gasPrice);
-    
+
     jurorsBalancesBefore.set(
       jurors[0].address,
       jurorsBalancesBefore.get(jurors[0].address)?.sub(txFee) as BigNumber

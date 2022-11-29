@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
 
-import { useStakedSetup } from 'utils/fixtures/kleros-liquid';
+import { useStakedSetup } from '../setups';
 import { getVoteIDs } from 'utils/test-helpers';
 
 describe('Smoke: Dispute - Voting', () => {

@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { useDisputeSetup } from 'utils/fixtures/kleros-liquid';
+import { useDisputeSetup } from '../setups';
 import { increaseTime } from 'utils/test-helpers';
 
 describe('Smoke: Dispute - Drawing', () => {

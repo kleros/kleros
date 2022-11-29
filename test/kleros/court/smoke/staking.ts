@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { anyValue } from '@nomicfoundation/hardhat-chai-matchers/withArgs';
 
-import { setup, useDisputeSetup } from 'utils/fixtures/kleros-liquid';
+import { setup, useDisputeSetup } from '../setups';
 import { increaseTime } from 'utils/test-helpers';
 import { Phase } from 'utils';
 
