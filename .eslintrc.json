@@ -1,0 +1,43 @@
+{
+  "parserOptions": {
+    "ecmaVersion": 2020
+  },
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true,
+    "mocha": true,
+    "es2020": true
+  },
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "extends": [
+    "standard",
+    "plugin:prettier/recommended",
+    "plugin:node/recommended",
+    "plugin:import/typescript"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "rules": {
+    "node/no-unsupported-features/es-syntax": [
+      "error",
+      {
+        "ignores": [
+          "modules"
+        ]
+      }
+    ],
+    "node/no-missing-import": [
+      "error",
+      {
+        "tryExtensions": [
+          ".js",
+          ".ts",
+          ".json",
+          ".node"
+        ]
+      }
+    ]
+  }
+}
