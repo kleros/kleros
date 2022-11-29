@@ -6,7 +6,7 @@ import { SubcourtInfo } from 'utils/interfaces';
 
 import { setup } from 'utils/fixtures/kleros-liquid';
 
-describe('Court Tree Smoke', () => {
+describe('Smoke: Court Tree', () => {
   describe('Construction', () => {
     it('Should create subcourts under specified parent court', async () => {
       const { klerosLiquid, subcourtMap } = await setup();

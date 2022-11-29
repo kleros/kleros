@@ -1,42 +1,16 @@
 import { expect } from 'chai';
 import { Period } from 'utils/enums';
 
-import { useStakedSetup } from 'utils/fixtures/kleros-liquid';
-import { getRandomNumber, getVoteIDs } from 'utils/test-helpers';
+import { useVotedSetup } from 'utils/fixtures/kleros-liquid';
 
 describe('Smoke: Dispute - Appeal', () => {
   it('Should appeal the ruling of a dispute', async () => {
     const disputeID = 0;
     const numberOfJurors = 5;
-    const choices = new Map<string, number>();
-    const { klerosLiquid, jurors } = await useStakedSetup(numberOfJurors);
-
-    const tx = await klerosLiquid.drawJurors(disputeID, 6);
-    await klerosLiquid.passPeriod(disputeID);
-
-    const voteIDs = await getVoteIDs(tx);
-
-    voteIDs.forEach((_, juror) => choices.set(juror, getRandomNumber(2) + 1));
-
-    console.log({ choices });
-
-    for (const juror of Object.values(jurors)) {
-      const voteId = Number(voteIDs.get(juror.address));
-      const choice = Number(choices.get(juror.address));
-
-      if (voteIDs.has(juror.address))
-        await klerosLiquid
-          .connect(juror)
-          .castVote(disputeID, [voteId], choice, 0);
-    }
+    const { klerosLiquid, jurors } = await useVotedSetup(numberOfJurors);
 
     await klerosLiquid.passPeriod(disputeID);
     const appealFee = await klerosLiquid.appealCost(disputeID, '0x00');
-
-    let dispute1 = await klerosLiquid.disputes(disputeID);
-    let subcourtID = dispute1.subcourtID;
-    console.log(dispute1.subcourtID.toNumber());
-    console.log(await klerosLiquid.courts(subcourtID));
 
     await expect(
       klerosLiquid.appeal(disputeID, '0x00', {
