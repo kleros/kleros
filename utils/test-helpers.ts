@@ -1,10 +1,14 @@
+import { JsonRpcProvider } from '@ethersproject/providers';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import {
   BigNumber,
   BigNumberish,
+  Contract,
   ContractFunction,
   ContractTransaction,
 } from 'ethers';
 import { ethers } from 'hardhat';
+import { MiniMeTokenERC20 } from 'typechain-types';
 import { PromiseOrValue } from 'typechain-types/common';
 
 export const getCurrentTimestamp = async () =>
@@ -105,4 +109,53 @@ export const getRandomNumber = (maxNumber: number): number => {
   return ethers.BigNumber.from(ethers.utils.randomBytes(32))
     .mod(maxNumber)
     .toNumber();
+};
+
+export const getJurorsBalances = async (
+  drawnJurors: string[],
+  balanceChecker: JsonRpcProvider | MiniMeTokenERC20
+): Promise<Map<string, BigNumber>> => {
+  const jurorsBalances = new Map<string, BigNumber>();
+
+  for (const juror of drawnJurors) {
+    if (isERC20(balanceChecker)) {
+      jurorsBalances.set(
+        juror,
+        (await balanceChecker?.balanceOf(juror)) as BigNumber
+      );
+    } else {
+      jurorsBalances.set(
+        juror,
+        (await balanceChecker?.getBalance(juror)) as BigNumber
+      );
+    }
+  }
+
+  return jurorsBalances;
+};
+
+const isERC20 = (obj: any): obj is MiniMeTokenERC20 => {
+  return 'balanceOf' in obj;
+};
+
+export const execute = async <C extends Contract, F extends keyof C>(
+  contract: C,
+  method: string,
+  value: BigNumber,
+  singer: SignerWithAddress,
+  _args?: Parameters<C[F]>,
+  _gasPrice?: BigNumber
+) => {
+  const gasPrice = _gasPrice || 1000000000;
+  const tx = _args
+    ? await contract.connect(singer)[method](..._args, {
+        gasPrice,
+        value,
+      })
+    : await contract.connect(singer)[method]({
+        gasPrice,
+        value,
+      });
+  const receipt = await tx.wait();
+  return receipt.gasUsed.mul(gasPrice);
 };
