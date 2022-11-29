@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-import { ethers } from 'hardhat';
 
 import { useDisputeSetup, useStakedSetup } from 'utils/fixtures/kleros-liquid';
 import { Period } from 'utils/index';
