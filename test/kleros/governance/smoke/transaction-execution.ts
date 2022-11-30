@@ -13,10 +13,16 @@ describe("Smoke: Governor - Approved List Transactions", () => {
     const tx1 = await governor.getTransactionInfo(0, 0);
     expect(tx1.executed).to.equal(true);
 
-    const tx2 = await governor.getTransactionInfo(0, 1);
+    let tx2 = await governor.getTransactionInfo(0, 1);
     expect(tx2.executed).to.equal(false);
 
+    await governor.connect(users.deployer).executeTransactionList(0, 1, 1);
+
+    tx2 = await governor.getTransactionInfo(0, 1);
+    expect(tx2.executed).to.equal(true);
+
     const dispute = await appeableArbitrator.disputes(0);
+
     expect(dispute.arbitrated).to.equal(governor.address);
     expect(dispute.choices).to.equal(11);
     expect(dispute.fee).to.equal(args.arbitrationFee);
