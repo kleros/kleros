@@ -28,6 +28,7 @@
   },
   "include": [
     "hardhat.config.ts",
+    "commitlint.config.ts",
     "./src",
     "./scripts",
     "./test",
