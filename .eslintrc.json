@@ -3,7 +3,7 @@
     "ecmaVersion": 2020
   },
   "env": {
-    "browser": true,
+    "browser": false,
     "es6": true,
     "node": true,
     "mocha": true,
@@ -13,10 +13,11 @@
     "@typescript-eslint"
   ],
   "extends": [
+    "plugin:@typescript-eslint/recommended",
     "standard",
-    "plugin:prettier/recommended",
     "plugin:node/recommended",
-    "plugin:import/typescript"
+    "plugin:import/typescript",
+    "plugin:prettier/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "rules": {
