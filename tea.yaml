@@ -1,0 +1,12 @@
+# https://tea.xyz/what-is-this-file
+---
+version: 1.0.0
+codeOwners:
+  - '0x79AEf56BD3569b8Fc720Fa2c04878582E14b51AE' # jaybuidl
+  - '0xb66b98fd235c88cbE923759d0Dfe7D5bf44eFA19' # alcercu
+  - '0x4E2Df335b794e654eaDf7bD421bFBD5C37AFda34' # gmkung
+  - '0x611E4F9bad45fEAB9E0820B27e81de4ebC843302' # greenlucid
+  - '0xE0836714d42d5aA57d624EE5D72a9f87D9201335' # kemuru
+  - '0x406eB1dD2A418686C1861a324D45ef2f12c30bB2' # harman-singh-waraich
+  - '0xbB09388cF4269FE932B41A5079b30F006623012a' # divyangchauhan
+quorum: 3
