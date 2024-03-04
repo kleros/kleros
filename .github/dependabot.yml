@@ -26,4 +26,3 @@ updates:
       interval: "daily"
     labels:
       - "dependencies"
-    

@@ -14,33 +14,61 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "prettify": "kathari prettify",
-    "lint:sol": "kathari lint:sol",
-    "lint:js": "kathari lint:js",
-    "lint": "yarn run lint:sol && yarn run lint:js",
-    "test:ganache": "ganache-cli --gasLimit 8000000 --quiet &",
-    "test:truffle": "truffle test",
-    "test": "solidity-coverage",
-    "test:coveralls": "coveralls --verbose < ./coverage/lcov.info",
-    "cz": "kathari cz",
-    "build": "truffle compile"
-  },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
+    "build": "hardhat compile",
+    "build:clean": "hardhat clean && hardhat compile",
+    "check": "solhint src/**/*.sol",
+    "test": "hardhat test",
+    "node": "hardhat node",
+    "deploy": "hardhat deploy",
+    "lint": "eslint . --fix",
+    "prettier": "prettier . --write",
+    "postinstall": "husky install"
   },
   "devDependencies": {
-    "@kleros/kathari": "^0.23.0",
+    "@commitlint/cli": "^17.3.0",
+    "@commitlint/config-conventional": "^17.3.0",
+    "@nomicfoundation/hardhat-chai-matchers": "^1.0.4",
+    "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers",
+    "@nomiclabs/hardhat-etherscan": "^3.1.2",
+    "@typechain/ethers-v5": "^10.1.1",
+    "@typechain/hardhat": "^6.1.4",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^18.11.9",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "chai": "^4.3.7",
+    "chai-ethers": "^0.0.1",
     "coveralls": "^3.0.2",
-    "ganache-cli": "^6.3.0",
-    "husky": "^3.0.9",
+    "dotenv": "^16.0.3",
+    "eslint": "^8.28.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.5.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "ethers": "^5.7.2",
+    "hardhat": "^2.12.2",
+    "hardhat-deploy": "^0.11.20",
+    "hardhat-deploy-ethers": "^0.3.0-beta.13",
+    "husky": "^8.0.0",
+    "lint-staged": "^13.0.4",
+    "mocha": "^10.1.0",
     "npm-run-all": "^4.1.5",
     "openzeppelin-solidity": "^1.12.0",
+    "prettier": "^2.8.0",
+    "prettier-plugin-solidity": "^1.0.0",
+    "solhint": "^3.3.7",
+    "solhint-plugin-prettier": "^0.0.5",
     "solidity-coverage": "^0.5.11",
     "standard-version": "^9.5.0",
-    "truffle": "^4.1.14",
-    "web3-utils": "^1.0.0-beta.36"
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.1.0",
+    "typechain": "^8.1.1",
+    "typescript": "^4.9.3",
+    "web3-utils": "^1.8.1"
   },
   "dependencies": {
     "@kleros/kleros-interaction": "^0.9.0",
@@ -49,11 +77,5 @@
   "files": [
     "build",
     "contracts"
-  ],
-  "husky": {
-    "hooks": {
-      "commit-msg": "kathari commitmsg",
-      "pre-commit": "yarn run lint && yarn run test:ganache && yarn run test:truffle"
-    }
-  }
+  ]
 }
